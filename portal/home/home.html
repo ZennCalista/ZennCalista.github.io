@@ -1,0 +1,855 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cavite State University - Imus Campus | Extension Services</title>
+  <link rel="stylesheet" href="home.css?v=3.2">
+</head>
+<body>
+
+  <!-- Sidebar Menu -->
+  <nav class="app-sidebar" id="app-sidebar">
+    <div class="app-sidebar-header">
+      <div class="user-profile">
+        <img src="../images/placeholder.jpg" alt="User Avatar" class="user-avatar">
+        <div class="user-info">
+          <h3 id="user-name">Guest</h3>
+          <p class="status" id="user-role">Not signed in</p>
+        </div>
+      </div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="home.html" class="nav-link active">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Home</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="../archive/archive.html" class="nav-link">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Archive</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="../../register/entry.php" class="nav-link">
+          <span class="nav-icon">🚀</span>
+          <span class="nav-text">Tracker</span>
+        </a>
+      </li>
+      <li class="nav-divider" aria-hidden="true"></li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Account Settings</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a id="auth-link" href="../../index.php" class="nav-link">
+          <span class="nav-icon">🔓</span>
+          <span class="nav-text" id="auth-link-text">Logout</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="nav-divider" aria-hidden="true"></div>
+    <div class="dept-section">
+      <ul class="dept-list">
+        <li class="dept-item">
+          <span>Department of Biological Sciences and Physical Sciences CvSU Extension</span>
+          <img src="../images/LOGOS/dp1.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Computer Studies CvSU Extension</span>
+          <img src="../images/LOGOS/dp2.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Hospitality Management CvSU Extension</span>
+          <img src="../images/LOGOS/dp3.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Languages and Mass Communication CvSU Extension</span>
+          <img src="../images/LOGOS/dp4.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Management CvSU Extension</span>
+          <img src="../images/LOGOS/dp5.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Physical Education CvSU Extension</span>
+          <img src="../images/LOGOS/dp6.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Social Sciences and Humanities CvSU Extension</span>
+          <img src="../images/LOGOS/dp7.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Teacher Education Department CvSU Extension</span>
+          <img src="../images/LOGOS/dp8.png" alt="Dept logo">
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Overlay to close menu when clicking outside -->
+  <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="menu-icon">&#9776;</div>
+    <div class="logo-section">
+      <img src="../images/LOGOS/logo1.png" alt="CvSU Logo" class="logo">
+      <div class="title">
+        <h1>Cavite State University</h1>
+        <h2>Imus Campus</h2>
+        <p>Extension Services</p>
+      </div>
+      <img src="../images/LOGOS/logo2.png" alt="Extension Logo " class="logo2">
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <main class="main-layout">
+
+    <!-- Carousel -->
+    <section class="carousel">
+      <div class="carousel-box">
+        <span class="arrow left" id="prev">&#10094;</span>
+        <img id="carousel-img" src="slide1.jpg" alt="Carousel Image">
+        <span class="arrow right" id="next">&#10095;</span>
+        <div class="carousel-caption" id="carousel-caption">Picture 1 description</div>
+      </div>
+    </section>
+
+    <!-- Sidebar: Mission, Vision, Goals, Objectives -->
+    <aside class="sidebar">
+      <div class="card">
+        <h3>Mission</h3>
+        <p>
+          Cavite State University shall provide excellent, equitable and relevant educational opportunities in the arts, 
+          sciences and technology through quality instruction and responsive research and development activities. 
+          It shall produce professional, skilled and morally upright individuals for global competitiveness.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Vision</h3>
+        <p>
+          The premier university in historic Cavite globally recognized for excellence in character development, academics, 
+          research, innovation and sustainable community engagement.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Goals</h3>
+        <p>
+          The Extension Services of Cavite State University (CvSU) shall be geared towards the improvement of the lives of the 
+          community especially those that belong to economically and socially disadvantaged sectors through the conduct of relevant 
+          education and training; farm and business advisory activities; demonstration projects; and information, communication, and 
+          technology services.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Objectives</h3>
+        <p>
+          Conceptualize, coordinate, and conduct relevant, efficient, gender-responsive, and sustainable interdisciplinary extension programs, 
+          projects, and activities;<br><br>
+          Establish linkages with government and private agencies engaged in extension and community development;<br><br>
+          Coordinate, monitor, and evaluate the extension programs, projects, and activities of various colleges, campuses, and other extension 
+          implementing units of the University;<br><br>
+          Promote community and social enterprises; and<br><br>
+          Coordinate with the Office of Business Affairs and Marketing in promoting agricultural and other potential income-generated projects.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Content Section -->
+    <section class="content">
+      <h2>Extension Services Background</h2>
+      <p>
+        As mandated, the University shall "provide advanced instruction and professional training in agriculture, science and technology, 
+        education and other related fields, undertare research and extension services, and provide progressive leadership in these areas." 
+        (Republic Act No. 8468, converting the Don Severino Agricultural College into University Status, to be called Cavite State University).
+        <br><br>
+        Republic Act No. 8435 or the Agriculture and Fisheries Modernization Act of 1997 (AFMA) under section 86 states, 
+        "It is hereby declared the policy of the state to promote science and technology, as essential for national development and progress. 
+        The State shall give priority to the utilization of research results through formal and non-formal education, extension, and training services."
+        <br><br>
+        "Extension refers to the act of communicating, persuading, and helping specific sectors or target clientele to enable them to effectively improve 
+        production, community and/or institutions, and quality of life" (CHED Memo No. 08, s 2008).
+      </p>
+    </section>
+
+    <!-- Programs Article Section -->
+    <section class="articles" id="programs-container">
+      <!-- Programs will be loaded here dynamically -->
+      <div class="loading-message">Loading programs...</div>
+    </section>
+    <div class="load-more-container">
+      <button id="load-more-btn" type="button" style="display:none;">Load more</button>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <img src="footer-logo.png" alt="CvSU Footer Logo">
+      <p>Cavite State University<br>Extension Services</p>
+    </div>
+    <div class="footer-right">
+      <p><strong>Contact Information</strong><br>
+        Cavite Civic Center, Palico IV, Imus City, Cavite 4103<br>
+        (046) 471-6607<br>
+        cvis@cvsu.edu.ph
+      </p>
+    </div>
+  </footer>
+
+  <!-- Load Floating Action Button (Upload) -->
+  <div id="fab-container"></div>
+  <script>
+    (async function() {
+      try {
+        const response = await fetch('../shared/fab_upload.html');
+        const html = await response.text();
+        
+        // Create a temporary container to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Extract and append non-script elements
+        const container = document.getElementById('fab-container');
+        Array.from(tempDiv.children).forEach(child => {
+          if (child.tagName !== 'SCRIPT') {
+            container.appendChild(child.cloneNode(true));
+          }
+        });
+        
+        // Extract and execute scripts
+        const scripts = tempDiv.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement('script');
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          document.body.appendChild(newScript);
+        });
+        
+        console.log('FAB loaded successfully');
+      } catch (error) {
+        console.error('Error loading FAB:', error);
+      }
+    })();
+  </script>
+
+  <!-- JavaScript for Carousel and Programs article -->
+  <script>
+    // Page transition functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle navigation links with smooth transitions
+      const navLinks = document.querySelectorAll('.nav-link[href]:not([href="#"]):not([href*="entry.php"])');
+      
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          
+          // Check if it's an external link or same page
+          if (href.startsWith('http') || href.includes('#')) {
+            return; // Let it navigate normally
+          }
+          
+          e.preventDefault();
+          
+          // Add exit animation
+          document.body.classList.add('page-exit');
+          
+          // Navigate after animation completes
+          setTimeout(() => {
+            window.location.href = href;
+          }, 400);
+        });
+      });
+    });
+    
+    // Carousel functionality
+    const images = [
+      { src: "../images/download.jpg", caption: "Picture 1 description" },
+      { src: "../images/download1.jpg", caption: "Picture 2 description" },
+      { src: "../images/download2.jpg", caption: "Picture 3 description" }
+    ];
+
+    let currentIndex = 0;
+    const imgElement = document.getElementById("carousel-img");
+    const captionElement = document.getElementById("carousel-caption");
+
+    function showSlide(index) {
+      currentIndex = (index + images.length) % images.length;
+      imgElement.src = images[currentIndex].src;
+      captionElement.textContent = images[currentIndex].caption;
+    }
+
+    document.getElementById("prev").addEventListener("click", () => {
+      showSlide(currentIndex - 1);
+    });
+
+    document.getElementById("next").addEventListener("click", () => {
+      showSlide(currentIndex + 1);
+    });
+
+    // Initialize first image immediately
+    showSlide(0);
+
+    // Auto slide every 5 seconds
+    setInterval(() => {
+      showSlide(currentIndex + 1);
+    }, 5000);
+
+    // Auth/session display
+    async function loadSession() {
+      try {
+        const res = await fetch('backend/session_user.php', { credentials: 'include' });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        if (data && data.authenticated && data.user) {
+          const name = `${data.user.firstname || ''} ${data.user.lastname || ''}`.trim() || data.user.email;
+          document.getElementById('user-name').textContent = name;
+          document.getElementById('user-role').textContent = data.user.role ? `Role: ${data.user.role}` : 'Online';
+          window.userRole = data.user.role; // Store user role globally
+          const authLink = document.getElementById('auth-link');
+          const authText = document.getElementById('auth-link-text');
+          authLink.href = '../../index.php';
+          authText.textContent = 'Logout';
+        } else {
+          window.userRole = null; // Not logged in
+        }
+      } catch (e) {
+        window.userRole = null; // Guest
+      }
+    }
+
+    // Programs article functionality
+    let allPrograms = [];
+    let renderedCount = 0;
+    const BATCH_SIZE = 3;
+    function truncateText(text, maxLength) {
+      if (text.length <= maxLength) return text;
+      // Find the last space before maxLength to avoid cutting words
+      const truncated = text.substring(0, maxLength);
+      const lastSpace = truncated.lastIndexOf(' ');
+      return (lastSpace > 0 ? truncated.substring(0, lastSpace) : truncated) + '...';
+    }
+    function renderNextBatch() {
+      const container = document.getElementById('programs-container');
+      const nextSlice = allPrograms.slice(renderedCount, renderedCount + BATCH_SIZE);
+      const html = nextSlice.map(program => {
+        // Use first image if available, otherwise use placeholder
+        const imageSource = program.images && program.images.length > 0 
+          ? program.images[0].image_url 
+          : '../images/placeholder.jpg';
+        
+        return `
+          <div class="article-card is-entering">
+            <img src="${imageSource}" alt="${program.program_name}"> 
+            <h4>${program.program_name}</h4>
+            <p>${truncateText(program.description || 'No description available.', 120)}</p>
+            <div class="program-details">
+              <small><strong>Department:</strong> ${program.department}</small><br>
+              <small><strong>Location:</strong> ${program.location}</small><br>
+              <small><strong>Status:</strong> ${program.status}</small>
+            </div>
+            <button class="read-more-btn" data-program-id="${program.id}">Read More</button>
+          </div>
+        `;
+      }).join('');
+      container.insertAdjacentHTML('beforeend', html);
+      // trigger enter animation
+      requestAnimationFrame(() => {
+        container.querySelectorAll('.article-card.is-entering').forEach(el => {
+          // force reflow then remove class to animate to default
+          void el.offsetWidth;
+          el.classList.remove('is-entering');
+        });
+      });
+      renderedCount += nextSlice.length;
+
+      const btn = document.getElementById('load-more-btn');
+      btn.style.display = renderedCount < allPrograms.length ? 'inline-block' : 'none';
+    }
+
+    async function loadPrograms() {
+      try {
+        const response = await fetch('backend/get_programs.php');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const programs = await response.json();
+
+        const container = document.getElementById('programs-container');
+        const btn = document.getElementById('load-more-btn');
+
+        // Check if response contains an error
+        if (programs.error) {
+          container.innerHTML = `<div class="error-message">Database Error: ${programs.error}</div>`;
+          return;
+        }
+
+        if (!Array.isArray(programs) || programs.length === 0) {
+          container.innerHTML = '<div class="no-programs">No programs available at the moment.</div>';
+          return;
+        }
+
+        allPrograms = programs;
+        container.innerHTML = '';
+        renderedCount = 0;
+        renderNextBatch();
+        btn.addEventListener('click', renderNextBatch);
+        
+      } catch (error) {
+        console.error('Error loading programs:', error);
+        document.getElementById('programs-container').innerHTML = `<div class="error-message">Error loading programs: ${error.message}<br><br>Please check the browser console for more details.</div>`;
+      }
+    }
+
+    // Modal logic
+    let modalState = { images: [], index: 0 };
+    function openProgramModal(program) {
+      const overlay = document.getElementById('program-modal-overlay');
+      const modal = document.getElementById('program-modal');
+      const title = document.getElementById('program-modal-title');
+      const desc = document.getElementById('program-modal-description');
+      const dept = document.getElementById('program-modal-dept');
+      const loc = document.getElementById('program-modal-loc');
+      const status = document.getElementById('program-modal-status');
+      const mainImg = document.getElementById('modal-main-img');
+      const thumbs = document.getElementById('modal-thumbs');
+
+      title.textContent = program.program_name;
+      desc.textContent = program.description || 'No description available.';
+      dept.textContent = program.department || '—';
+      loc.textContent = program.location || '—';
+      status.textContent = program.status || '—';
+
+      // Use program images if available, otherwise use placeholder
+      if (program.images && program.images.length > 0) {
+        modalState.images = program.images.map(imageObj => ({
+          url: imageObj.image_url,
+          alt: imageObj.image_desc || 'Program image'
+        }));
+      } else {
+        modalState.images = [{
+          url: '../images/placeholder.jpg',
+          alt: 'No image available'
+        }];
+      }
+      modalState.index = 0;
+      modalState.programId = program.id; // Store program ID for deletion
+        // Resolve image URLs relative to the current page and attach robust error handlers
+        function resolveImageUrl(url) {
+          try {
+            // If url is absolute (http, https) this returns it unchanged
+            return new URL(url, window.location.href).href;
+          } catch (e) {
+            return url;
+          }
+        }
+
+        const placeholder = resolveImageUrl('../images/placeholder.jpg');
+
+        // Set main image safely
+        const firstImg = modalState.images[0];
+        mainImg.src = resolveImageUrl(firstImg.url || placeholder);
+        mainImg.alt = firstImg.alt || 'Program image';
+    mainImg.onerror = function() { console.warn('Modal main image failed to load for program', modalState.programId, this.src); this.onerror = null; this.src = placeholder; };
+
+        // Build thumbnails programmatically so we can attach proper listeners and error handlers
+        thumbs.innerHTML = '';
+        modalState.images.forEach((imgObj, i) => {
+          const thumb = document.createElement('img');
+          thumb.src = resolveImageUrl(imgObj.url || placeholder);
+          thumb.alt = imgObj.alt || 'Program thumbnail';
+          thumb.dataset.idx = String(i);
+          if (i === 0) thumb.classList.add('active');
+          thumb.loading = 'lazy';
+    thumb.addEventListener('error', function() { console.warn('Thumbnail failed to load for program', modalState.programId, this.src); this.onerror = null; this.src = placeholder; });
+          thumb.addEventListener('click', function() { setModalImage(parseInt(this.dataset.idx)); });
+          thumbs.appendChild(thumb);
+        });
+
+      overlay.classList.add('active');
+      modal.classList.add('active');
+
+      // thumb click
+      thumbs.querySelectorAll('img').forEach(img => {
+        img.addEventListener('click', function() {
+          setModalImage(parseInt(this.getAttribute('data-idx')));
+        });
+      });
+
+      // Add admin actions if user is admin
+      const modalBody = document.getElementById('program-modal-body');
+      const existingAdminActions = modalBody.querySelector('.admin-actions');
+      if (existingAdminActions) existingAdminActions.remove(); // Remove any previous
+      if (window.userRole === 'admin') {
+        const adminActions = document.createElement('div');
+        adminActions.className = 'admin-actions';
+        adminActions.innerHTML = '<button id="delete-program-btn" class="delete-btn">Archive Program</button>';
+        modalBody.appendChild(adminActions);
+      }
+    }
+
+    function setModalImage(idx) {
+      if (idx < 0) idx = modalState.images.length - 1;
+      if (idx >= modalState.images.length) idx = 0;
+      modalState.index = idx;
+      const mainImg = document.getElementById('modal-main-img');
+      mainImg.src = modalState.images[idx].url;
+      mainImg.alt = modalState.images[idx].alt;
+      const thumbs = document.getElementById('modal-thumbs');
+      thumbs.querySelectorAll('img').forEach((img, i) => {
+        if (i === idx) img.classList.add('active'); else img.classList.remove('active');
+      });
+    }
+
+    function closeProgramModal() {
+      document.getElementById('program-modal-overlay').classList.remove('active');
+      document.getElementById('program-modal').classList.remove('active');
+      // Remove admin actions if present
+      const adminActions = document.querySelector('.admin-actions');
+      if (adminActions) adminActions.remove();
+    }
+
+    // Event delegation for dynamic Read More buttons
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('.read-more-btn');
+      if (!btn) return;
+      const programId = btn.getAttribute('data-program-id');
+      const program = allPrograms.find(p => String(p.id) === String(programId));
+      if (program) openProgramModal(program);
+    });
+
+    // Event delegation for delete button
+    document.addEventListener('click', function(e){
+      if (e.target.id === 'delete-program-btn') {
+        showConfirmModal(
+          'Archive Program',
+          'Are you sure you want to archive this program? This will move it to the archive table.',
+          function() {
+            const programId = modalState.programId;
+            const programName = document.getElementById('program-modal-title').textContent;
+            
+            console.log('Attempting to archive program ID:', programId);
+            
+            fetch(`backend/archive_program.php?id=${programId}`)
+              .then(res => {
+                console.log('Response status:', res.status);
+                console.log('Response headers:', res.headers);
+                console.log('Response ok:', res.ok);
+                
+                if (!res.ok) {
+                  throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                // Get the response text first
+                return res.text();
+              })
+              .then(text => {
+                console.log('Response text received:', text);
+                console.log('Response text length:', text.length);
+                
+                // Check if response is empty
+                if (!text || text.trim() === '') {
+                  throw new Error('Server returned empty response. Check PHP error logs.');
+                }
+                
+                // Try to parse as JSON
+                try {
+                  const data = JSON.parse(text);
+                  console.log('Parsed JSON:', data);
+                  
+                  if (data.success) {
+                    // Remove from DOM
+                    const card = document.querySelector(`.read-more-btn[data-program-id="${programId}"]`).closest('.article-card');
+                    if (card) {
+                      card.style.opacity = '0';
+                      card.style.transform = 'scale(0.9)';
+                      setTimeout(() => card.remove(), 300);
+                    }
+                    // Remove from allPrograms array
+                    allPrograms = allPrograms.filter(p => p.id != programId);
+                    // Update renderedCount if necessary
+                    if (renderedCount > 0) renderedCount--;
+                    // Update load more button
+                    const btn = document.getElementById('load-more-btn');
+                    btn.style.display = renderedCount < allPrograms.length ? 'inline-block' : 'none';
+                    closeProgramModal();
+                    showNotification(`Program "${programName}" has been archived successfully.`, 'success');
+                  } else {
+                    showNotification('Error archiving program: ' + (data.error || 'Unknown error'), 'error');
+                  }
+                } catch (jsonError) {
+                  console.error('JSON parse error:', jsonError);
+                  console.error('Response text:', text);
+                  showNotification('Invalid response from server: ' + text.substring(0, 100), 'error');
+                }
+              })
+              .catch(err => {
+                console.error('Archive error:', err);
+                showNotification('Error: ' + err.message, 'error');
+              });
+          }
+        );
+      }
+    });
+
+    // Confirmation Modal Functions
+    function showConfirmModal(title, message, onConfirm) {
+      const overlay = document.getElementById('confirm-modal-overlay');
+      const titleEl = document.getElementById('confirm-modal-title');
+      const messageEl = document.getElementById('confirm-modal-message');
+      
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      overlay.classList.add('active');
+      
+      // Store callback
+      window.confirmCallback = onConfirm;
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal-overlay').classList.remove('active');
+      window.confirmCallback = null;
+    }
+
+    function confirmAction() {
+      if (window.confirmCallback) {
+        window.confirmCallback();
+      }
+      closeConfirmModal();
+    }
+
+    // Notification Function
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10001;
+        animation: slideIn 0.3s ease-out;
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Load programs when page loads
+    document.addEventListener('DOMContentLoaded', function(){ loadPrograms(); loadSession(); });
+
+    // Sidebar Menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuIcon = document.querySelector('.menu-icon');
+      const sidebar = document.getElementById('app-sidebar');
+      const overlay = document.getElementById('app-sidebar-overlay');
+      
+      // Toggle sidebar function
+      function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+        menuIcon.classList.toggle('active');
+      }
+      
+      // Menu icon click event
+      menuIcon.addEventListener('click', toggleSidebar);
+      
+      // Overlay click event (close menu)
+      overlay.addEventListener('click', toggleSidebar);
+      
+      // Escape key to close menu
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+          toggleSidebar();
+        }
+      });
+      
+      // Navigation link click events
+      const navLinks = document.querySelectorAll('.nav-link');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          // Remove active class from all links
+          navLinks.forEach(l => l.classList.remove('active'));
+          // Add active class to clicked link
+          this.classList.add('active');
+          
+          // Close menu after navigation (uncomment if desired)
+          // toggleSidebar();
+        });
+      });
+
+      // Modal controls
+      document.getElementById('program-modal-close').addEventListener('click', closeProgramModal);
+      document.getElementById('program-modal-overlay').addEventListener('click', closeProgramModal);
+      document.getElementById('modal-prev').addEventListener('click', function(){ setModalImage(modalState.index - 1); });
+      document.getElementById('modal-next').addEventListener('click', function(){ setModalImage(modalState.index + 1); });
+      
+      // Confirmation modal controls
+      document.getElementById('confirm-btn-cancel').addEventListener('click', closeConfirmModal);
+      document.getElementById('confirm-btn-confirm').addEventListener('click', confirmAction);
+      document.getElementById('confirm-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeConfirmModal();
+      });
+      
+      document.addEventListener('keydown', function(e){
+        const isOpen = document.getElementById('program-modal').classList.contains('active');
+        if (!isOpen) return;
+        if (e.key === 'Escape') closeProgramModal();
+        if (e.key === 'ArrowLeft') setModalImage(modalState.index - 1);
+        if (e.key === 'ArrowRight') setModalImage(modalState.index + 1);
+      });
+
+      // Fullscreen image viewer functionality
+      const fullscreenOverlay = document.getElementById('fullscreen-image-overlay');
+      const fullscreenImage = document.getElementById('fullscreen-image');
+      const fullscreenClose = document.getElementById('fullscreen-close');
+
+      function openFullscreenImage(imageSrc, imageAlt) {
+        fullscreenImage.src = imageSrc;
+        fullscreenImage.alt = imageAlt || 'Fullscreen image';
+        fullscreenOverlay.classList.add('active');
+        // Prevent background scrolling and add blur to page content
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('blurred');
+      }
+
+      function closeFullscreenImage() {
+        fullscreenOverlay.classList.remove('active');
+        // Restore scrolling and remove blur
+        document.body.style.overflow = '';
+        document.body.classList.remove('blurred');
+      }
+
+      // Close fullscreen on close button click
+      fullscreenClose.addEventListener('click', closeFullscreenImage);
+
+      // Close fullscreen on overlay click
+      fullscreenOverlay.addEventListener('click', function(e) {
+        if (e.target === fullscreenOverlay) {
+          closeFullscreenImage();
+        }
+      });
+
+      // Close fullscreen on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && fullscreenOverlay.classList.contains('active')) {
+          closeFullscreenImage();
+        }
+      });
+
+      // Make modal main image clickable for fullscreen view
+      document.addEventListener('click', function(e) {
+        const modalMainImg = document.getElementById('modal-main-img');
+        if (e.target === modalMainImg) {
+          openFullscreenImage(modalMainImg.src, modalMainImg.alt);
+        }
+        // Make main carousel image clickable for fullscreen view
+        const carouselImg = document.getElementById('carousel-img');
+        if (e.target === carouselImg) {
+          openFullscreenImage(carouselImg.src, carouselImg.alt);
+        }
+      });
+    });
+
+    // Modify fullscreen open/close functions to add/remove blur class on body
+    // (these functions are declared inside the DOMContentLoaded handler above, but
+    // we'll augment the existing ones by locating them via their names in the same scope)
+  </script>
+
+  <!-- Program Details Modal -->
+  <div class="program-modal-overlay" id="program-modal-overlay"></div>
+  <div class="program-modal" id="program-modal" aria-hidden="true">
+    <div class="program-modal-header">
+      <h3 id="program-modal-title">Program Title</h3>
+      <button class="program-modal-close" id="program-modal-close" aria-label="Close">✕</button>
+    </div>
+    <div class="program-modal-content">
+      <div class="modal-carousel">
+        <div class="modal-carousel-main">
+          <button class="modal-carousel-arrow left" id="modal-prev">❮</button>
+          <img id="modal-main-img" src="../images/placeholder.jpg" alt="Program image">
+          <button class="modal-carousel-arrow right" id="modal-next">❯</button>
+        </div>
+        <div class="modal-thumbs" id="modal-thumbs"></div>
+      </div>
+      <div class="program-modal-body" id="program-modal-body" style="margin-top:12px;">
+        <p id="program-modal-description">Description goes here...</p>
+        <p style="margin-top:8px; font-size:14px; color:#555;">
+          <strong>Department:</strong> <span id="program-modal-dept"></span><br>
+          <strong>Location:</strong> <span id="program-modal-loc"></span><br>
+          <strong>Status:</strong> <span id="program-modal-status"></span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Lightbox -->
+  <div class="fullscreen-image-overlay" id="fullscreen-image-overlay">
+    <div class="fullscreen-image-container">
+      <button class="fullscreen-close" id="fullscreen-close" aria-label="Close fullscreen">✕</button>
+      <img class="fullscreen-image" id="fullscreen-image" src="" alt="">
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal-overlay" id="confirm-modal-overlay">
+    <div class="confirm-modal">
+      <div class="confirm-modal-title" id="confirm-modal-title">Confirm Action</div>
+      <div class="confirm-modal-message" id="confirm-modal-message">Are you sure?</div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-btn confirm-btn-cancel" id="confirm-btn-cancel">Cancel</button>
+        <button class="confirm-btn confirm-btn-confirm" id="confirm-btn-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+    .article-card {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+  </style>
+
+</body>
+</html>

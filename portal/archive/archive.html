@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archived Programs - CvSU Extension Services</title>
+  <link rel="stylesheet" href="archive.css?v=1.2">
+</head>
+<body>
+
+  <!-- Sidebar Menu (same as home page) -->
+  <nav class="app-sidebar" id="app-sidebar">
+    <div class="app-sidebar-header">
+      <div class="user-profile">
+        <img src="../images/placeholder.jpg" alt="User Avatar" class="user-avatar">
+        <div class="user-info">
+          <h3 id="user-name">Guest</h3>
+          <p class="status" id="user-role">Not signed in</p>
+        </div>
+      </div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="../home/home.html" class="nav-link">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Home</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="archive.html" class="nav-link active">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Archive</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="../../register/entry.php" class="nav-link">
+          <span class="nav-icon">🚀</span>
+          <span class="nav-text">Tracker</span>
+        </a>
+      </li>
+      <li class="nav-divider" aria-hidden="true"></li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Account Settings</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a id="auth-link" href="../login/login.html" class="nav-link">
+          <span class="nav-icon">🔓</span>
+          <span class="nav-text" id="auth-link-text">Login</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="nav-divider" aria-hidden="true"></div>
+    <div class="dept-section">
+      <ul class="dept-list">
+        <li class="dept-item">
+          <span>Department of Biological Sciences and Physical Sciences CvSU Extension</span>
+          <img src="../images/LOGOS/dp1.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Computer Studies CvSU Extension</span>
+          <img src="../images/LOGOS/dp2.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Hospitality Management CvSU Extension</span>
+          <img src="../images/LOGOS/dp3.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Languages and Mass Communication CvSU Extension</span>
+          <img src="../images/LOGOS/dp4.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Management CvSU Extension</span>
+          <img src="../images/LOGOS/dp5.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Physical Education CvSU Extension</span>
+          <img src="../images/LOGOS/dp6.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Department of Social Sciences and Humanities CvSU Extension</span>
+          <img src="../images/LOGOS/dp7.png" alt="Dept logo">
+        </li>
+        <li class="dept-item">
+          <span>Teacher Education Department CvSU Extension</span>
+          <img src="../images/LOGOS/dp8.png" alt="Dept logo">
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Overlay to close menu when clicking outside -->
+  <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+  <!-- Header (same as home page) -->
+  <header class="header">
+    <div class="menu-icon">&#9776;</div>
+    <div class="logo-section">
+      <img src="../images/LOGOS/logo1.png" alt="CvSU Logo" class="logo">
+      <div class="title">
+        <h1>Cavite State University</h1>
+        <h2>Imus Campus</h2>
+        <p>Extension Services - Archive</p>
+      </div>
+      <img src="../images/LOGOS/logo2.png" alt="Extension Logo" class="logo2">
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="archive-container">
+    <!-- Archive Header -->
+    <div class="archive-header">
+      <h1>📦 Archived Programs</h1>
+      <p>View and manage archived extension programs and activities</p>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container" id="table-container">
+      <table class="archive-table">
+        <thead>
+          <tr>
+            <th>Program Name</th>
+            <th>Department</th>
+            <th>Location</th>
+            <th>Date Range</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="archive-tbody">
+          <tr>
+            <td colspan="6" class="loading-message">Loading archived programs...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Program Details Modal (overlay wraps modal) -->
+  <div class="program-modal-overlay" id="program-modal-overlay">
+    <div class="program-modal" id="program-modal" aria-hidden="true">
+      <div class="program-modal-header">
+        <h3 id="program-modal-title">Program Title</h3>
+        <button class="program-modal-close" id="program-modal-close">✕</button>
+      </div>
+      <div class="program-modal-content">
+        <div class="modal-carousel">
+          <div class="modal-carousel-main">
+            <button class="modal-carousel-arrow left" id="modal-prev">❮</button>
+            <img id="modal-main-img" src="../images/placeholder.jpg" alt="Program image">
+            <button class="modal-carousel-arrow right" id="modal-next">❯</button>
+          </div>
+          <div class="modal-thumbs" id="modal-thumbs"></div>
+        </div>
+        <div class="program-modal-body" id="program-modal-body">
+          <p id="program-modal-description">Description goes here...</p>
+          <p style="margin-top:8px; font-size:14px; color:#555;">
+            <strong>Department:</strong> <span id="program-modal-dept">-</span><br>
+            <strong>Location:</strong> <span id="program-modal-loc">-</span><br>
+            <strong>Date Range:</strong> <span id="program-modal-dates">-</span><br>
+            <strong>Status:</strong> <span id="program-modal-status">-</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    let archivedPrograms = [];
+    let modalState = { images: [], index: 0 };
+
+    // Load session
+    async function loadSession() {
+      try {
+        const res = await fetch('../home/backend/session_user.php', { credentials: 'include' });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+        if (data && data.authenticated && data.user) {
+          const name = `${data.user.firstname || ''} ${data.user.lastname || ''}`.trim() || data.user.email;
+          document.getElementById('user-name').textContent = name;
+          document.getElementById('user-role').textContent = data.user.role ? `Role: ${data.user.role}` : 'Online';
+          window.userRole = data.user.role;
+          const authLink = document.getElementById('auth-link');
+          const authText = document.getElementById('auth-link-text');
+          authLink.href = '../login/logout.php';
+          authText.textContent = 'Logout';
+        } else {
+          window.userRole = null;
+        }
+      } catch (e) {
+        window.userRole = null;
+      }
+    }
+
+    // Load archived programs
+    async function loadArchivedPrograms() {
+      try {
+        const response = await fetch('backend/get_archived_programs.php');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const programs = await response.json();
+        const tbody = document.getElementById('archive-tbody');
+
+        if (programs.error) {
+          tbody.innerHTML = `<tr><td colspan="6" class="error-message">Error: ${programs.error}</td></tr>`;
+          return;
+        }
+
+        if (!Array.isArray(programs) || programs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="no-records">No archived programs found.</td></tr>';
+          return;
+        }
+
+        archivedPrograms = programs;
+  // loaded archived programs
+        tbody.innerHTML = '';
+
+        programs.forEach(program => {
+          const row = document.createElement('tr');
+          row.setAttribute('data-program-id', program.id);
+          
+          const statusClass = `status-${program.status}`;
+          const dateRange = `${formatDate(program.start_date)} - ${formatDate(program.end_date)}`;
+          
+          row.innerHTML = `
+            <td><strong>${program.program_name}</strong></td>
+            <td>${program.department || '-'}</td>
+            <td>${program.location || '-'}</td>
+            <td>${dateRange}</td>
+            <td><span class="status-badge ${statusClass}">${program.status}</span></td>
+            <td><button class="view-details-btn" data-program-id="${program.id}">View Details</button></td>
+          `;
+          
+          tbody.appendChild(row);
+        });
+        
+      } catch (error) {
+        console.error('Error loading archived programs:', error);
+        document.getElementById('archive-tbody').innerHTML = 
+          `<tr><td colspan="6" class="error-message">Error loading programs: ${error.message}</td></tr>`;
+      }
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // View program details
+    function viewProgram(programId) {
+  const program = archivedPrograms.find(p => p.id == programId); // Use loose equality
+      if (!program) {
+        console.error('Program not found with ID:', programId);
+        return;
+      }
+
+      openModal(program);
+    }
+
+    // Open modal
+    function openModal(program) {
+  const overlay = document.getElementById('program-modal-overlay');
+  const modal = document.getElementById('program-modal');
+      
+  document.getElementById('program-modal-title').textContent = program.program_name;
+  document.getElementById('program-modal-description').textContent = program.description || 'No description available';
+  document.getElementById('program-modal-dept').textContent = program.department || '-';
+  document.getElementById('program-modal-loc').textContent = program.location || '-';
+  document.getElementById('program-modal-dates').textContent = `${formatDate(program.start_date)} - ${formatDate(program.end_date)}`;
+  document.getElementById('program-modal-status').textContent = program.status || '-';
+
+      // Setup images
+      if (program.images && program.images.length > 0) {
+        modalState.images = program.images.map(img => ({
+          url: img.image_url,
+          alt: img.image_desc || 'Program image'
+        }));
+      } else {
+        modalState.images = [{
+          url: '../images/placeholder.jpg',
+          alt: 'No image available'
+        }];
+      }
+      
+  modalState.index = 0;
+  modalState.archiveId = program.id;
+      updateModalImage();
+
+      // Show modal by activating overlay + modal classes (CSS handles visibility & animation)
+      overlay.classList.add('active');
+      modal.classList.add('active');
+      // Prevent background scrolling
+      document.body.style.overflow = 'hidden';
+
+      // Add admin actions if user is admin
+      const modalBody = document.getElementById('program-modal-body');
+      const existingAdminActions = modalBody.querySelector('.admin-actions');
+      if (existingAdminActions) existingAdminActions.remove();
+      if (window.userRole === 'admin') {
+        const adminActions = document.createElement('div');
+        adminActions.className = 'admin-actions';
+        adminActions.innerHTML = '<button id="restore-program-btn" class="restore-btn">Restore Program</button>';
+        modalBody.appendChild(adminActions);
+      }
+    }
+
+    // Close modal
+    function closeModal() {
+      const overlay = document.getElementById('program-modal-overlay');
+      const modal = document.getElementById('program-modal');
+      // remove active classes so CSS will hide modal & overlay with transitions
+      modal.classList.remove('active');
+      overlay.classList.remove('active');
+      // Restore scrolling
+      document.body.style.overflow = '';
+    }
+
+    // Update modal image
+    function updateModalImage() {
+      const mainImg = document.getElementById('modal-main-img');
+      const thumbs = document.getElementById('modal-thumbs');
+      // Resolve URLs robustly and attach error handlers programmatically
+      function resolveImageUrl(url) {
+        try { return new URL(url, window.location.href).href; } catch (e) { return url; }
+      }
+      const placeholder = resolveImageUrl('../images/placeholder.jpg');
+
+      const current = modalState.images[modalState.index] || { url: placeholder, alt: 'No image' };
+      mainImg.src = resolveImageUrl(current.url || placeholder);
+      mainImg.alt = current.alt || 'Program image';
+  mainImg.onerror = function() { console.warn('Archived modal main image failed to load for archiveId', modalState.archiveId, this.src); this.onerror = null; this.src = placeholder; };
+
+      thumbs.innerHTML = '';
+      modalState.images.forEach((img, i) => {
+        const t = document.createElement('img');
+        t.src = resolveImageUrl(img.url || placeholder);
+        t.alt = img.alt || 'Program thumbnail';
+        t.className = i === modalState.index ? 'active' : '';
+        t.loading = 'lazy';
+  t.addEventListener('error', function() { console.warn('Archived thumbnail failed to load for archiveId', modalState.archiveId, this.src); this.onerror = null; this.src = placeholder; });
+        t.addEventListener('click', function() { setModalImage(i); });
+        thumbs.appendChild(t);
+      });
+    }
+
+    // Set modal image
+    function setModalImage(index) {
+      if (index < 0) index = modalState.images.length - 1;
+      if (index >= modalState.images.length) index = 0;
+      modalState.index = index;
+      updateModalImage();
+    }
+
+    // Sidebar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuIcon = document.querySelector('.menu-icon');
+      const sidebar = document.getElementById('app-sidebar');
+      const overlay = document.getElementById('app-sidebar-overlay');
+      
+      function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+        menuIcon.classList.toggle('active');
+      }
+      
+      menuIcon.addEventListener('click', toggleSidebar);
+      overlay.addEventListener('click', toggleSidebar);
+      
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+          toggleSidebar();
+        }
+      });
+
+      // Modal controls
+  document.getElementById('program-modal-close').addEventListener('click', closeModal);
+  document.getElementById('program-modal-overlay').addEventListener('click', function(e){ if (e.target === this) closeModal(); });
+      document.getElementById('modal-prev').addEventListener('click', () => setModalImage(modalState.index - 1));
+      document.getElementById('modal-next').addEventListener('click', () => setModalImage(modalState.index + 1));
+
+      // Event delegation for view details buttons
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-details-btn')) {
+          const programId = parseInt(e.target.getAttribute('data-program-id'));
+          viewProgram(programId);
+        }
+      });
+
+      // Handle restore action from modal (delegated)
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'restore-program-btn') {
+          const archiveId = modalState.archiveId;
+          if (!archiveId) return alert('Archive id missing');
+          if (!confirm('Are you sure you want to restore this program back to active programs?')) return;
+          fetch(`backend/restore_program.php?id=${archiveId}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                // remove row from table
+                const row = document.querySelector(`tr[data-program-id="${archiveId}"]`);
+                if (row) row.remove();
+                closeModal();
+                alert('Program restored successfully');
+              } else {
+                alert('Restore failed: ' + (data.error || 'Unknown error'));
+              }
+            }).catch(err => {
+              console.error('Restore error:', err);
+              alert('Restore request failed');
+            });
+        }
+      });
+
+      // Load data
+      loadSession();
+      loadArchivedPrograms();
+    });
+  </script>
+
+  <!-- Load Floating Action Button (Upload) -->
+  <div id="fab-container"></div>
+  <script>
+    (async function() {
+      try {
+        const response = await fetch('../shared/fab_upload.html');
+        const html = await response.text();
+        
+        // Create a temporary container to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Extract and append non-script elements
+        const container = document.getElementById('fab-container');
+        Array.from(tempDiv.children).forEach(child => {
+          if (child.tagName !== 'SCRIPT') {
+            container.appendChild(child.cloneNode(true));
+          }
+        });
+        
+        // Extract and execute scripts
+        const scripts = tempDiv.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement('script');
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          document.body.appendChild(newScript);
+        });
+        
+        console.log('FAB loaded successfully');
+      } catch (error) {
+        console.error('Error loading FAB:', error);
+      }
+    })();
+  </script>
+
+</body>
+</html>

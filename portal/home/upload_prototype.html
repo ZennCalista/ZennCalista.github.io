@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Upload - CvSU Extension Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #054634;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #054634;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #054634;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: #054634;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #054634;
+            background: #f0f8f5;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-upload-btn {
+            background: #054634;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .file-upload-btn:hover {
+            background: #07624a;
+        }
+
+        .image-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .image-preview {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .image-preview .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .image-preview .desc-input {
+            padding: 8px;
+            border: none;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        .submit-btn {
+            background: #054634;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #07624a;
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 0;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Upload New Program</h1>
+            <p>Cavite State University - Imus Campus Extension Services</p>
+        </div>
+
+        <div class="form-container">
+            <div id="message-container"></div>
+
+            <form id="program-upload-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="program_name">Program Name <span class="required">*</span></label>
+                    <input type="text" id="program_name" name="program_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="project_titles">Project Titles</label>
+                    <textarea id="project_titles" name="project_titles" placeholder="Enter project titles (optional)"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="department">Department <span class="required">*</span></label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="1">Biological Sciences and Physical Sciences</option>
+                            <option value="2">Computer Studies</option>
+                            <option value="3">Hospitality Management</option>
+                            <option value="4">Languages and Mass Communication</option>
+                            <option value="5">Management</option>
+                            <option value="6">Physical Education</option>
+                            <option value="7">Social Sciences and Humanities</option>
+                            <option value="8">Teacher Education</option>
+                        </select>
+                        <input type="hidden" id="department_hidden" name="department_hidden" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location <span class="required">*</span></label>
+                        <input type="text" id="location" name="location" required placeholder="e.g., Imus Campus, Community Center">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" id="start_date" name="start_date">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" id="end_date" name="end_date">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="status">Status <span class="required">*</span></label>
+                        <select id="status" name="status" required>
+                            <option value="">Select Status</option>
+                            <option value="planning">Planning</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="ended">Ended</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max_students">Maximum Students</label>
+                        <input type="number" id="max_students" name="max_students" min="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description <span class="required">*</span></label>
+                    <textarea id="description" name="description" required placeholder="Provide a detailed description of the program"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="sdg_goals">SDG Goals</label>
+                    <textarea id="sdg_goals" name="sdg_goals" placeholder="List relevant Sustainable Development Goals"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="faculty_id">Faculty ID</label>
+                    <input type="number" id="faculty_id" name="faculty_id" placeholder="Enter faculty ID">
+                </div>
+
+                <div class="form-group">
+                    <label>Program Images</label>
+                    <div class="file-upload-area" id="file-upload-area">
+                        <p>Drag and drop images here or</p>
+                        <button type="button" class="file-upload-btn" onclick="document.getElementById('images').click()">
+                            Choose Images
+                        </button>
+                        <input type="file" id="images" name="images[]" multiple accept="image/*" class="file-input">
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                            Supported formats: JPG, PNG, WEBP (Max 5MB each)
+                        </p>
+                    </div>
+                    <div id="image-preview-container" class="image-preview-container"></div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    Upload Program
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let imageDescriptions = {};
+
+        // File upload handling
+        const fileInput = document.getElementById('images');
+        const fileUploadArea = document.getElementById('file-upload-area');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const form = document.getElementById('program-upload-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const messageContainer = document.getElementById('message-container');
+
+        // Load session and auto-fill user info if available
+        async function loadSessionAndFill() {
+            try {
+                const res = await fetch('backend/session_user.php', { credentials: 'include' });
+                if (res.status === 401) {
+                    console.log('No active session - initializing one');
+                    // initialize a session so server will send a PHPSESSID cookie
+                    await fetch('backend/init_session.php', { credentials: 'include' });
+                    return; // nothing to fill after init
+                }
+
+                if (!res.ok) {
+                    console.warn('Unexpected response from session_user.php', res.status);
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.authenticated && data.user) {
+                    const u = data.user;
+                    console.log('Session user:', u);
+                    // Auto-fill faculty_id and disable editing
+                    const facultyInput = document.getElementById('faculty_id');
+                    if (facultyInput && u.id) {
+                        facultyInput.value = u.id;
+                        facultyInput.readOnly = true;
+                        facultyInput.title = 'Filled from session';
+                    }
+
+                    // Auto-select department using department_id if provided
+                    if (u.department_id) {
+                        const deptSelect = document.getElementById('department');
+                        const deptHidden = document.getElementById('department_hidden');
+                        if (deptSelect) {
+                            deptSelect.value = String(u.department_id);
+                            // keep a hidden field with the department id so it is always submitted even if we disable the visible select
+                            if (deptHidden) deptHidden.value = String(u.department_id);
+                            // visually disable selection to indicate it's set by session, but keep the hidden field as the authoritative value
+                            deptSelect.disabled = true;
+                            deptSelect.title = 'Filled from session';
+
+                            // Keep the hidden input in sync if the select is ever changed programmatically
+                            deptSelect.addEventListener('change', () => {
+                                if (deptHidden) deptHidden.value = deptSelect.value;
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading session:', err);
+            }
+        }
+
+        // Drag and drop functionality
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(Array.from(e.target.files));
+        });
+
+        function handleFiles(files) {
+            files.forEach(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    showMessage('File ' + file.name + ' is too large. Maximum size is 5MB.', 'error');
+                    return;
+                }
+                
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                    imageDescriptions[file.name] = '';
+                    displayImagePreview(file);
+                }
+            });
+        }
+
+        function displayImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'image-preview';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="${file.name}">
+                    <button type="button" class="remove-btn" onclick="removeImage('${file.name}')">&times;</button>
+                    <input type="text" class="desc-input" placeholder="Image description" 
+                           onchange="updateImageDescription('${file.name}', this.value)">
+                `;
+                imagePreviewContainer.appendChild(previewDiv);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(fileName) {
+            selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+            delete imageDescriptions[fileName];
+            updateImagePreviews();
+        }
+
+        function updateImagePreviews() {
+            imagePreviewContainer.innerHTML = '';
+            selectedFiles.forEach(file => displayImagePreview(file));
+        }
+
+        function updateImageDescription(fileName, description) {
+            imageDescriptions[fileName] = description;
+        }
+
+        function showMessage(message, type) {
+            messageContainer.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Form validation
+        function validateDates() {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                showMessage('End date must be after start date.', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        // Form submission
+    form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!validateDates()) {
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            
+            // Add form fields
+            const formElements = form.elements;
+            for (let element of formElements) {
+                if (element.name && element.type !== 'file') {
+                    formData.append(element.name, element.value);
+                }
+            }
+
+            // Add images and descriptions
+            selectedFiles.forEach((file, index) => {
+                formData.append('images[]', file);
+                formData.append('image_descriptions[]', imageDescriptions[file.name] || '');
+            });
+
+            try {
+                console.log('Submitting form data:', formData);
+                // Better FormData inspection: iterate entries to show what will be sent
+                for (let pair of formData.entries()) {
+                    console.log('FormData entry:', pair[0], pair[1]);
+                }
+
+                // Compute absolute endpoint URL so we can be sure the browser is requesting the correct path.
+                const endpoint = new URL('backend/upload_program.php', window.location.href).href;
+                console.log('Computed upload endpoint:', endpoint);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    throw new Error(`Invalid JSON response: ${responseText}`);
+                }
+
+                if (result.success) {
+                    showMessage('Program uploaded successfully!', 'success');
+                    form.reset();
+                    selectedFiles = [];
+                    imageDescriptions = {};
+                    imagePreviewContainer.innerHTML = '';
+                } else {
+                    showMessage('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showMessage('Upload failed: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Upload Program';
+            }
+        });
+
+        // Run session loader on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessionAndFill();
+        });
+
+        // Auto-resize textareas
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        });
+    </script>
+</body>
+</html>

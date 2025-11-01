@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>eTracker Admin Dashboard</title>
+  <link rel="stylesheet" href="Dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>eTracker Admin</h2>
+    <a href="Dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="User.html"><i class="fas fa-users"></i> User Management</a>
+    <a href="Programs.html"><i class="fas fa-calendar-alt"></i> Program Schedule</a>
+        <a href="ProjectEvaluation.html"><i class="fas fa-clipboard-check"></i> Project Evaluation</a>
+    <a href="Attendance.html"><i class="fas fa-check-square"></i> Attendance Tracker</a>
+    <a href="Evaluation.html"><i class="fas fa-poll"></i> Evaluation & Feedback</a>
+    <a href="Reports.html"><i class="fas fa-chart-bar"></i> Reports & Analytics</a>
+    <a href="Document.html"><i class="fas fa-folder"></i> Document Management</a>
+    <a href="Certificates.html"><i class="fas fa-certificate"></i> Certificates</a>
+    <a href="Notifications.html"><i class="fas fa-bell"></i> Notifications</a>
+  <a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a>
+    
+    <div style="margin-top: auto; padding-top: 20px;">
+  <a href="../register/logout.php" style="color: none; text-decoration: none; display: block; padding: 12px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="main-header" style="margin-bottom:2rem;">
+      <h1>Dashboard Overview</h1>
+      <input class="search" type="text" placeholder="Search..." />
+      <div class="header-icons">
+        <span class="notif"><i class="fas fa-bell"></i></span>
+      </div>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="cards" style="margin-bottom:2rem;">
+      <div class="card">
+        <div class="card-title">Total Students</div>
+        <div class="card-value" id="stat-students">-</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Faculty Members</div>
+        <div class="card-value" id="stat-faculty">-</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ongoing Programs</div>
+        <div class="card-value" id="stat-programs">-</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Certificates Issued</div>
+        <div class="card-value" id="stat-certificates">-</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+      <!-- Left Column -->
+      <div style="flex:2; min-width:320px;">
+        <div class="panel" style="margin-bottom:1.5rem;">
+          <h3>Attendance Rate</h3>
+          <canvas id="attendanceRateChart" width="120" height="120"></canvas>
+          <p style="text-align:center;font-weight:bold;" id="attendanceRateLabel">--%</p>
+        </div>
+        <div class="panel" style="margin-bottom:1.5rem;">
+          <h3>Upcoming Sessions</h3>
+          <ul id="upcomingSessionsList" style="padding-left:0;list-style:none;"></ul>
+        </div>
+        <div class="panel">
+          <h3>Feedback Highlights</h3>
+          <div class="feedback-box" id="feedbackHighlight">
+            “The speaker was very engaging and made the content easy to understand.”
+          </div>
+        </div>
+      </div>
+      <!-- Right Column -->
+      <div style="flex:1; min-width:320px;">
+        <div class="panel" style="margin-bottom:1.5rem;">
+          <h3>Program Trends</h3>
+          <canvas id="programTrendsChart" height="180"></canvas>
+        </div>
+        <div class="panel" style="margin-bottom:1.5rem;">
+          <h3>Quick Actions</h3>
+          <div class="quick-actions">
+            <button onclick="window.location.href='Programs.html'"><i class="fas fa-plus"></i> Create Program</button>
+            <button onclick="window.location.href='Reports.html'"><i class="fas fa-file-export"></i> Export Report</button>
+          </div>
+        </div>
+        <div class="panel notifications">
+          <h3>Notifications</h3>
+          <p>3 students missed attendance yesterday.</p>
+          <p>Feedback deadline for Program X is today.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+async function loadDashboardStats() {
+  const res = await fetch('/backend/dashboard_stats.php');
+  const stats = await res.json();
+
+  document.getElementById('stat-students').innerText = stats.students;
+  document.getElementById('stat-faculty').innerText = stats.faculty;
+  document.getElementById('stat-programs').innerText = stats.programs;
+  document.getElementById('stat-certificates').innerText = stats.certificates;
+
+  // Attendance Rate Chart
+  const ctxAttendance = document.getElementById('attendanceRateChart').getContext('2d');
+  document.getElementById('attendanceRateLabel').innerText = stats.attendanceRate + "%";
+  new Chart(ctxAttendance, {
+    type: 'doughnut',
+    data: {
+      labels: ['Present', 'Absent'],
+      datasets: [{
+        data: [stats.attendanceRate, 100 - stats.attendanceRate],
+        backgroundColor: ['#1B472B', '#e5e7eb'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '75%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false }
+      }
+    }
+  });
+
+  // Upcoming Sessions
+  const upcomingList = document.getElementById('upcomingSessionsList');
+  upcomingList.innerHTML = '';
+  stats.upcomingSessions.forEach(s =>
+    upcomingList.innerHTML += `<li style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <span>${new Date(s.date).toLocaleDateString()}</span>
+      <span>${s.program_name}</span>
+    </li>`
+  );
+
+  // Feedback Highlight (random)
+  document.getElementById('feedbackHighlight').innerText =
+    stats.feedback.length ? stats.feedback[Math.floor(Math.random() * stats.feedback.length)] : 'No feedback yet.';
+
+  // Program Trends Chart
+  const ctxTrends = document.getElementById('programTrendsChart').getContext('2d');
+  new Chart(ctxTrends, {
+    type: 'bar',
+    data: {
+      labels: stats.programTrends.labels,
+      datasets: [{
+        label: 'Enrollment',
+        data: stats.programTrends.data,
+        backgroundColor: '#1B472B'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+
+window.addEventListener('DOMContentLoaded', loadDashboardStats);
+  </script>
+</body>
+</html>

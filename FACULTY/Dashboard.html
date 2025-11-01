@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>eTracker Faculty Dashboard</title>
+  <link rel="stylesheet" href="Dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body>
+    
+      
+  <div class="container">
+    <!-- Sidebar -->
+      <aside class="sidebar">
+      <div class="logo">
+        <img src="logo.png" alt="Logo" class="logo-img" />
+        <span class="logo-text">eTRACKER</span>
+      </div>
+      <nav>
+        <ul>
+          <li class="active"><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li ><a href="profile.php"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="Programs.php"><i class="fas fa-tasks"></i> Program</a></li>
+          <li><a href="attendance.php"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+          <li><a href="evaluation.php"><i class="fas fa-star-half-alt"></i> Evaluation</a></li>
+          <li><a href="certificate.php"><i class="fas fa-certificate"></i> Certificate</a></li>
+          <li><a href="upload.php"><i class="fas fa-upload"></i> Documents </a></li>  
+          <li><a href="reports.php"><i class="fas fa-chart-line"></i> Reports</a></li>
+        </ul>
+ <div class="sign-out" style="position: absolute; bottom: 30px; left: 0; width: 100%; text-align: center;">
+          <a href="../register/logout.php" style="color: inherit; text-decoration: none; display: block; padding: 12px 0;">Sign Out</a>
+        </div>      </nav>
+    </aside>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Center Content -->
+      <div class="main-content">
+        <header class="topbar">
+          <div class="last-login">Last login: 05-24-25 13:45:00</div>
+          <div class="top-actions">
+            <!-- Removed search bar and message icon -->
+          </div>
+        </header>
+
+        <section class="overview">
+          <h1 class="role-label">Faculty</h1>
+          <h2>Welcome, [Faculty Name]!</h2>
+          <div class="overview-box">
+            <div class="quick-actions">
+              <button class="quick-btn">Create New Program</button>
+              <button class="quick-btn">Mark Attendance</button>
+            </div>
+
+            <div class="cards">
+
+              <!-- Row 1: My Programs & Document Submission Tracker -->
+              <div class="card">
+                <h3><i class="fas fa-chalkboard-teacher"></i> My Programs</h3>
+                <ul>
+                  <li>
+                    <strong>Community Outreach</strong> <span style="color:green;">(Active)</span><br>
+                    <small>Enrolled: 25/30 | Attendance: 88%</small>
+                    <div>
+                      <button>Manage</button>
+                      <button>View Students</button>
+                    </div>
+                  </li>
+                  <li>
+                    <strong>Volunteer Mentoring</strong> <span style="color:green;">(Active)</span><br>
+                    <small>Enrolled: 12/20 | Attendance: 91%</small>
+                    <div>
+                      <button>Manage</button>
+                      <button>View Students</button>
+                    </div>
+                  </li>
+                  <li>
+                    <strong>Tech Workshop</strong> <span style="color:gray;">(Completed)</span><br>
+                    <small>Enrolled: 15/15 | Attendance: 100%</small>
+                    <div>
+                      <button>View Report</button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="card">
+                <h3><i class="fas fa-file-upload"></i> Document Submission Tracker</h3>
+                <ul>
+                  <li>
+                    <strong>Workload Report</strong>
+                    <span style="color:green;">Submitted</span>
+                  </li>
+                  <li>
+                    <strong>Attendance Sheets</strong>
+                    <span style="color:orange;">Pending</span>
+                    <button>Upload</button>
+                  </li>
+                  <li>
+                    <strong>Evaluation Forms</strong>
+                    <span style="color:orange;">Pending</span>
+                    <button>Upload</button>
+                  </li>
+                  <li>
+                    <strong>Photo Documentation</strong>
+                    <span style="color:green;">Submitted</span>
+                  </li>
+                </ul>
+                <div class="progress-bar">
+                  <div class="progress" style="width: 75%;"></div>
+                </div>
+                <small>75% Documents Submitted</small>
+                <button>View All Requirements</button>
+              </div>
+
+              <!-- Row 2: Attendance, Deadlines, Analytics -->
+              <div class="card">
+                <h3><i class="fas fa-calendar-check"></i> Attendance Overview</h3>
+                <p>Today's Sessions: <strong>2</strong></p>
+                <p>Students Present: <strong>34</strong></p>
+                <p>Students Absent: <strong>3</strong></p>
+                <button>View Attendance Logs</button>
+              </div>
+
+              <div class="card">
+                <h3><i class="fas fa-hourglass-half"></i> Upcoming Program Deadlines</h3>
+                <ul>
+                  <li>
+                    <strong>Program Registration</strong>
+                    <span style="color:orange;">May 30, 2025</span>
+                  </li>
+                  <li>
+                    <strong>Workload Report Submission</strong>
+                    <span style="color:orange;">May 20, 2025</span>
+                  </li>
+                  <li>
+                    <strong>Extension Coordinators Meeting</strong>
+                    <span style="color:orange;">May 25, 2025</span>
+                  </li>
+                </ul>
+                <button>View All Deadlines</button>
+              </div>
+
+              <div class="card">
+                <h3><i class="fas fa-chart-line"></i> Analytics Snapshot</h3>
+                <ul>
+                  <li>Active Programs: <strong>2</strong></li>
+                  <li>Avg. Attendance: <strong>89%</strong></li>
+                  <li>Certificates Issued: <strong>12</strong></li>
+                </ul>
+                <button>View Detailed Analytics</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+      </div>
+
+      <!-- Right Side -->
+      <div class="right-panel">
+        <div class="user-info">
+          <div class="name">Full Name</div>
+          <div class="email">email@cvsu.edu.ph</div>
+        </div>
+        <div class="notifications" id="facultyNotifications">
+          <h3>🔔 Notifications</h3>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Placeholder for future backend integration
+    console.log("Faculty Dashboard Loaded");
+
+    // Set this to the faculty's department code, e.g., 'cs', 'hospitality', etc.
+const facultyDepartment = 'cs'; // <-- Replace with dynamic value as needed
+
+function loadFacultyNotifications() {
+  fetch(`../ADMIN/api_notifications.php?for=faculty&department=${facultyDepartment}`)
+    .then(res => res.json())
+    .then(data => {
+      const notifList = document.getElementById('notifList');
+      notifList.innerHTML = '';
+      if (data.success && data.data.length > 0) {
+        data.data.forEach(n => {
+          notifList.innerHTML += `
+            <div class="note notif-${n.priority}">
+              <span class="notif-badge">${n.priority.toUpperCase()}</span>
+              ${n.message}
+              <div class="notif-date">Expires: ${n.expires_at}</div>
+            </div>
+          `;
+        });
+      } else {
+        notifList.innerHTML = `<div class="note">No notifications.</div>`;
+      }
+    });
+}
+
+window.addEventListener('DOMContentLoaded', loadFacultyNotifications);
+  </script>
+</body>
+</html>
