@@ -1,8 +1,8 @@
 <?php
 // Database connection settings
-$db_server = 'localhost';
-$db_user = 'root';
-$db_pass = '';
+$db_server = 'database-1.ch0e2sa0mf0l.ap-southeast-2.rds.amazonaws.com';
+$db_user = 'admin';
+$db_pass = 'admin1234!';
 $db_name = 'etracker';
 
 try {

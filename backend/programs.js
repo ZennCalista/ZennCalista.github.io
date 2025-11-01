@@ -4,11 +4,11 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2/promise');
 
-// Update with your own DB config
+// AWS RDS Database Configuration
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'yourpassword',
+  host: 'database-1.ch0e2sa0mf0l.ap-southeast-2.rds.amazonaws.com',
+  user: 'admin',
+  password: 'admin1234!',
   database: 'etracker',
 });
 
