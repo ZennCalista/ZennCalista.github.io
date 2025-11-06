@@ -141,32 +141,39 @@ try {
     // Copy program images if they exist
     $img_check = $conn->query("SHOW TABLES LIKE 'images'");
     if ($img_check && $img_check->num_rows > 0) {
-        $img_result = $conn->query("SELECT * FROM images WHERE id = $id");
-        if ($img_result && $img_result->num_rows > 0) {
-            while ($img = $img_result->fetch_assoc()) {
-                    // Ensure images_archive table exists and copy image into it
-                    $create_images_archive = "CREATE TABLE IF NOT EXISTS images_archive (
-                        archive_image_id INT AUTO_INCREMENT PRIMARY KEY,
-                        archive_program_id INT NOT NULL,
-                        image_data LONGBLOB,
-                        image_desc VARCHAR(255),
-                        uploaded_at DATETIME,
-                        INDEX (archive_program_id)
-                    )";
+        // Use prepared statement for security
+        $img_stmt_select = $conn->prepare("SELECT image_name, image_desc FROM images WHERE program_id = ?");
+        if ($img_stmt_select) {
+            $img_stmt_select->bind_param("i", $id);
+            $img_stmt_select->execute();
+            $img_result = $img_stmt_select->get_result();
+            
+            if ($img_result && $img_result->num_rows > 0) {
+                // Ensure images_archive table exists
+                $create_images_archive = "CREATE TABLE IF NOT EXISTS images_archive (
+                    archive_image_id INT AUTO_INCREMENT PRIMARY KEY,
+                    archive_program_id INT NOT NULL,
+                    image_data LONGBLOB,
+                    image_desc VARCHAR(255),
+                    uploaded_at DATETIME,
+                    INDEX (archive_program_id)
+                )";
 
-                    if (!$conn->query($create_images_archive)) {
-                        throw new Exception('Failed to create images_archive table: ' . $conn->error);
-                    }
-
-                    $img_stmt = $conn->prepare("INSERT INTO images_archive (archive_program_id, image_data, image_desc, uploaded_at) VALUES (?, ?, ?, ?)");
+                if (!$conn->query($create_images_archive)) {
+                    throw new Exception('Failed to create images_archive table: ' . $conn->error);
+                }
+                
+                while ($img = $img_result->fetch_assoc()) {
+                    $img_stmt = $conn->prepare("INSERT INTO images_archive (archive_program_id, image_data, image_desc, uploaded_at) VALUES (?, ?, ?, NOW())");
                     if ($img_stmt) {
-                        // Bind as blob and strings
-                        $img_stmt->bind_param("isss", $archive_id, $img['image_data'], $img['image_desc'], $img['uploaded_at']);
+                        // image_name from images table becomes image_data in images_archive table
+                        $img_stmt->bind_param("iss", $archive_id, $img['image_name'], $img['image_desc']);
                         $img_stmt->execute();
                         $img_stmt->close();
                     }
+                }
             }
-            
+            $img_stmt_select->close();
         }
     }
     
