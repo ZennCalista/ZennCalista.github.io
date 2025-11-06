@@ -73,14 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     error_log("Login successful: user_id={$user['id']}, role={$user['role']}");
-    // Route based on role: faculty -> faculty dashboard, admin -> admin dashboard, otherwise student
-    if ($user['role'] === 'faculty') {
-        $redirect_url = '../FACULTY/Dashboard.php';
-    } elseif ($user['role'] === 'admin') {
-        $redirect_url = '../ADMIN/Dashboard.html';
-    } else {
-        $redirect_url = '../STUDENT/index.php';
-    }
+    // All users redirect to the portal home page (new landing page)
+    $redirect_url = '../portal/home/home.html';
     echo json_encode(['status' => 'success', 'redirect_url' => $redirect_url]);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);

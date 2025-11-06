@@ -28,84 +28,83 @@
           <span class="nav-text">Home</span>
         </a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item auth-required" style="display: none;">
         <a href="../archive/archive.html" class="nav-link">
           <span class="nav-icon">📦</span>
           <span class="nav-text">Archive</span>
         </a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item auth-required" style="display: none;">
         <a href="../../register/entry.php" class="nav-link">
           <span class="nav-icon">🚀</span>
           <span class="nav-text">Tracker</span>
         </a>
       </li>
-      <li class="nav-divider" aria-hidden="true"></li>
-      <li class="nav-item">
+      <li class="nav-divider auth-required" style="display: none;" aria-hidden="true"></li>
+      <li class="nav-item auth-required" style="display: none;">
         <a href="#" class="nav-link">
           <span class="nav-icon">⚙️</span>
           <span class="nav-text">Account Settings</span>
         </a>
       </li>
       <li class="nav-item">
-        <a id="auth-link" href="../../index.php" class="nav-link">
+        <a id="auth-link" href="../../register/index.html" class="nav-link">
           <span class="nav-icon">🔓</span>
-          <span class="nav-text" id="auth-link-text">Logout</span>
+          <span class="nav-text" id="auth-link-text">Login</span>
         </a>
       </li>
     </ul>
 
-    <div class="nav-divider" aria-hidden="true"></div>
-    <div class="dept-section">
-      <ul class="dept-list">
-        <li class="dept-item">
-          <span>Department of Biological Sciences and Physical Sciences CvSU Extension</span>
-          <img src="../images/LOGOS/dp1.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Department of Computer Studies CvSU Extension</span>
-          <img src="../images/LOGOS/dp2.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Department of Hospitality Management CvSU Extension</span>
-          <img src="../images/LOGOS/dp3.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Department of Languages and Mass Communication CvSU Extension</span>
-          <img src="../images/LOGOS/dp4.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Department of Management CvSU Extension</span>
-          <img src="../images/LOGOS/dp5.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Department of Physical Education CvSU Extension</span>
-          <img src="../images/LOGOS/dp6.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Department of Social Sciences and Humanities CvSU Extension</span>
-          <img src="../images/LOGOS/dp7.png" alt="Dept logo">
-        </li>
-        <li class="dept-item">
-          <span>Teacher Education Department CvSU Extension</span>
-          <img src="../images/LOGOS/dp8.png" alt="Dept logo">
-        </li>
-      </ul>
-    </div>
   </nav>
 
   <!-- Overlay to close menu when clicking outside -->
   <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
 
+  <!-- Menu Icon Bar -->
+  <div class="menu-bar">
+    <div class="menu-icon">&#9776;</div>
+  </div>
+
   <!-- Header -->
   <header class="header">
-    <div class="menu-icon">&#9776;</div>
     <div class="logo-section">
       <img src="../images/LOGOS/logo1.png" alt="CvSU Logo" class="logo">
       <div class="title">
         <h1>Cavite State University</h1>
         <h2>Imus Campus</h2>
         <p>Extension Services</p>
+        
+        <!-- Navigation Dropdown Menu -->
+        <nav class="header-nav">
+          <ul class="nav-dropdown-menu">
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">Departments ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="#dept-bio">Department of Biological Sciences and Physical Sciences</a></li>
+                <li><a href="#dept-cs">Department of Computer Studies</a></li>
+                <li><a href="#dept-hm">Department of Hospitality Management</a></li>
+                <li><a href="#dept-lmc">Department of Languages and Mass Communication</a></li>
+                <li><a href="#dept-mgmt">Department of Management</a></li>
+                <li><a href="#dept-pe">Department of Physical Education</a></li>
+                <li><a href="#dept-ssh">Department of Social Sciences and Humanities</a></li>
+                <li><a href="#dept-ted">Teacher Education Department</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown admin-only" style="display: none;">
+              <a href="#" class="nav-dropdown-toggle">Services ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="../../register/entry.php">eTracker</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">Coordinators ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="#coordinator-info">Coordinator Information</a></li>
+                <li><a href="#contact-coordinators">Contact Coordinators</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
       </div>
       <img src="../images/LOGOS/logo2.png" alt="Extension Logo " class="logo2">
     </div>
@@ -317,17 +316,70 @@
         if (data && data.authenticated && data.user) {
           const name = `${data.user.firstname || ''} ${data.user.lastname || ''}`.trim() || data.user.email;
           document.getElementById('user-name').textContent = name;
-          document.getElementById('user-role').textContent = data.user.role ? `Role: ${data.user.role}` : 'Online';
+          // Remove "Role:" prefix - just show the role value
+          document.getElementById('user-role').textContent = data.user.role || 'Online';
           window.userRole = data.user.role; // Store user role globally
           const authLink = document.getElementById('auth-link');
           const authText = document.getElementById('auth-link-text');
-          authLink.href = '../../index.php';
+          authLink.href = '#';
           authText.textContent = 'Logout';
+          
+          // Add logout click handler
+          authLink.onclick = function(e) {
+            e.preventDefault();
+            fetch('../../register/logout.php')
+              .then(() => {
+                // Reload current page after logout
+                window.location.reload();
+              })
+              .catch(err => {
+                console.error('Logout error:', err);
+                window.location.reload();
+              });
+          };
+          
+          // Show auth-required menu items
+          document.querySelectorAll('.auth-required').forEach(el => {
+            el.style.display = '';
+          });
+          
+          // Show admin-only dropdown items
+          if (data.user.role === 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => {
+              el.style.display = '';
+            });
+          }
         } else {
-          window.userRole = null; // Not logged in
+          // Not logged in - show login button
+          document.getElementById('user-name').textContent = 'Guest';
+          document.getElementById('user-role').textContent = 'Not signed in';
+          window.userRole = null;
+          const authLink = document.getElementById('auth-link');
+          const authText = document.getElementById('auth-link-text');
+          authLink.href = '../../register/index.html';
+          authText.textContent = 'Login';
+          authLink.onclick = null; // Remove logout handler
+          
+          // Hide auth-required menu items
+          document.querySelectorAll('.auth-required').forEach(el => {
+            el.style.display = 'none';
+          });
         }
       } catch (e) {
-        window.userRole = null; // Guest
+        // Error fetching session - show login button
+        document.getElementById('user-name').textContent = 'Guest';
+        document.getElementById('user-role').textContent = 'Not signed in';
+        window.userRole = null;
+        const authLink = document.getElementById('auth-link');
+        const authText = document.getElementById('auth-link-text');
+        authLink.href = '../../register/index.html';
+        authText.textContent = 'Login';
+        authLink.onclick = null; // Remove logout handler
+        
+        // Hide auth-required menu items
+        document.querySelectorAll('.auth-required').forEach(el => {
+          el.style.display = 'none';
+        });
       }
     }
 
@@ -848,6 +900,88 @@
     }
     .article-card {
       transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    /* Header Navigation Dropdown Styles */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    
+    .nav-dropdown-menu {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 20px;
+      justify-content: center;
+    }
+    
+    .nav-dropdown {
+      position: relative;
+    }
+    
+    .nav-dropdown-toggle {
+      display: block;
+      padding: 8px 16px;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      border-radius: 4px;
+    }
+    
+    .nav-dropdown-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+    
+    .nav-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: white;
+      min-width: 280px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+      list-style: none;
+      margin: 0;
+      padding: 8px 0;
+      z-index: 1000;
+    }
+    
+    .nav-dropdown:hover .nav-dropdown-content {
+      display: block;
+    }
+    
+    .nav-dropdown-content li {
+      margin: 0;
+    }
+    
+    .nav-dropdown-content a {
+      display: block;
+      padding: 10px 20px;
+      color: #333;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .nav-dropdown-content a:hover {
+      background-color: #f0f0f0;
+      color: #054634;
+    }
+    
+    /* Responsive design for header nav */
+    @media (max-width: 768px) {
+      .header-nav {
+        display: none; /* Hide on mobile, can be toggled via menu icon */
+      }
     }
   </style>
 
