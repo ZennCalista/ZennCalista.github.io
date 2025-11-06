@@ -3,42 +3,50 @@ const departments = [
   {
     id: 1,
     name: 'Department of Biological and Physical Sciences',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    logo: '../images/LOGOS/dp1.png'
   },
   {
     id: 2,
     name: 'Department of Computer Studies',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp2.png'
   },
   {
     id: 3,
     name: 'Department of Hospitality Management',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp3.png'
   },
   {
     id: 4,
     name: 'Department of Languages and Mass Communication',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp4.png'
   },
   {
     id: 5,
     name: 'Department of Management',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp5.png'
   },
   {
     id: 6,
     name: 'Department of Physical Education',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp6.png'
   },
   {
     id: 7,
     name: 'Department of Social Sciences and Humanities',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp7.png'
   },
   {
     id: 8,
     name: 'Teacher Education Department',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod'
+    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    logo: '../images/LOGOS/dp8.png'
   }
 ];
 
@@ -210,6 +218,13 @@ function loadDepartment(deptId) {
   // Update department header
   document.getElementById('dept-name').textContent = dept.name;
   document.getElementById('dept-description').textContent = dept.description;
+  
+  // Update department logo
+  const logoElement = document.getElementById('dept-logo');
+  if (logoElement && dept.logo) {
+    logoElement.src = dept.logo;
+    logoElement.alt = dept.name + ' Logo';
+  }
   
   // Update active sidebar card
   document.querySelectorAll('.sidebar-card').forEach(card => {
