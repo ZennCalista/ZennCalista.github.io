@@ -69,10 +69,15 @@ try {
                 
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
+                        // Use relative path that works on both local and hosted
+                        $base_path = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/Etracker/') !== false 
+                            ? '/Etracker/portal/home/backend/get_image.php' 
+                            : 'get_image.php';
+                        
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => '/Etracker/portal/home/backend/get_image.php?image_id=' . $image_id
+                            'image_url' => $base_path . '?image_id=' . $image_id
                         ];
                     }
                 }

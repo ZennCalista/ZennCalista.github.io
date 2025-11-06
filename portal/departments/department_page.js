@@ -47,11 +47,13 @@ let currentDepartmentId = null;
 let currentDeptIndex = 0;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   loadSession();
   setupSidebar();
   setupCarousel();
-  loadAllPrograms();
+  
+  // Load programs first, THEN check URL params and display
+  await loadAllPrograms();
   checkURLParams();
 });
 
@@ -188,8 +190,10 @@ async function loadAllPrograms() {
     }
     
     allPrograms = Array.isArray(programs) ? programs : [];
+    console.log('Programs loaded:', allPrograms.length, 'programs');
   } catch (error) {
     console.error('Error loading programs:', error);
+    allPrograms = [];
   }
 }
 
@@ -228,11 +232,24 @@ function displayDepartmentPrograms(deptId) {
   const container = document.getElementById('articles-container');
   const dept = departments.find(d => d.id === deptId);
   
+  if (!dept) {
+    container.innerHTML = '<div class="no-programs">Department not found.</div>';
+    return;
+  }
+  
+  // Check if programs are loaded yet
+  if (allPrograms.length === 0) {
+    container.innerHTML = '<div class="loading-message">Loading programs...</div>';
+    return;
+  }
+  
   // Filter programs by department
   const deptPrograms = allPrograms.filter(program => {
     // Check if program.department matches the department name
     return program.department === dept.name;
   });
+  
+  console.log('Displaying', deptPrograms.length, 'programs for', dept.name);
   
   if (deptPrograms.length === 0) {
     container.innerHTML = '<div class="no-programs">No programs available for this department yet.</div>';
