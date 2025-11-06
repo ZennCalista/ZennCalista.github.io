@@ -1,0 +1,2 @@
+﻿# Deny direct access to cache files
+Deny from all
