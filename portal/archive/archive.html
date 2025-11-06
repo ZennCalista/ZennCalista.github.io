@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Archived Programs - CvSU Extension Services</title>
-  <link rel="stylesheet" href="archive.css?v=1.2">
+  <link rel="stylesheet" href="archive.css?v=1.3">
 </head>
 <body>
 
@@ -258,12 +258,12 @@
           const dateRange = `${formatDate(program.start_date)} - ${formatDate(program.end_date)}`;
           
           row.innerHTML = `
-            <td><strong>${program.program_name}</strong></td>
-            <td>${program.department || '-'}</td>
-            <td>${program.location || '-'}</td>
-            <td>${dateRange}</td>
-            <td><span class="status-badge ${statusClass}">${program.status}</span></td>
-            <td><button class="view-details-btn" data-program-id="${program.id}">View Details</button></td>
+            <td data-label="Program Name"><strong>${program.program_name}</strong></td>
+            <td data-label="Department">${program.department || '-'}</td>
+            <td data-label="Location">${program.location || '-'}</td>
+            <td data-label="Date Range">${dateRange}</td>
+            <td data-label="Status"><span class="status-badge ${statusClass}">${program.status}</span></td>
+            <td data-label="Action"><button class="view-details-btn" data-program-id="${program.id}">View Details</button></td>
           `;
           
           tbody.appendChild(row);

@@ -734,3 +734,140 @@ body.blurred > :not(.fullscreen-image-overlay):not(.program-modal):not(.program-
   background-color: #c82333;
 }
 
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Tablet and smaller (768px and below) */
+@media (max-width: 768px) {
+  /* Header adjustments */
+  .header {
+    padding: 8px 15px;
+  }
+  
+  .logo-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .logo, .logo2 {
+    width: 60px;
+  }
+  
+  .title h1 {
+    font-size: 20px;
+  }
+  
+  .title h2 {
+    font-size: 20px;
+  }
+  
+  .title p {
+    font-size: 14px;
+  }
+  
+  /* Stack main layout to single column */
+  .main-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  /* Carousel takes full width */
+  .carousel {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  
+  .carousel-box {
+    height: 250px;
+  }
+  
+  /* Sidebar moves below carousel */
+  .sidebar {
+    grid-column: 1;
+    grid-row: auto;
+    border-left: none;
+    border-top: 2px solid #054634;
+    padding-left: 0;
+    padding-top: 20px;
+    position: static;
+  }
+  
+  .sidebar h3 {
+    font-size: 20px;
+  }
+  
+  .sidebar p {
+    font-size: 14px;
+  }
+  
+  /* Content section */
+  .content {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  
+  .content h2 {
+    font-size: 20px;
+  }
+  
+  .content p {
+    font-size: 14px;
+  }
+  
+  /* Article cards stack on mobile */
+  .articles {
+    grid-column: 1;
+    grid-row: auto;
+    flex-direction: column;
+  }
+  
+  .article-card {
+    flex: 1 1 100%;
+  }
+  
+  /* Increase touch targets */
+  .nav-link {
+    padding: 16px 22px;
+    font-size: 16px;
+  }
+  
+  .nav-icon {
+    font-size: 22px;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  /* Even smaller fonts */
+  .title h1, .title h2 {
+    font-size: 18px;
+  }
+  
+  .title p {
+    font-size: 12px;
+  }
+  
+  .logo, .logo2 {
+    width: 50px;
+  }
+  
+  .carousel-box {
+    height: 200px;
+  }
+  
+  .sidebar h3 {
+    font-size: 18px;
+  }
+  
+  .sidebar p, .content p {
+    font-size: 13px;
+  }
+  
+  .main-layout {
+    padding: 10px;
+  }
+}
+

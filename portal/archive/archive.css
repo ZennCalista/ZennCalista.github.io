@@ -385,3 +385,213 @@ body.page-exit {
 .info-value {
   color: #555;
 }
+
+/* Admin actions in modal */
+.admin-actions {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.restore-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.restore-btn:hover {
+  background-color: #218838;
+}
+
+/* ========================================
+   MOBILE RESPONSIVE STYLES - ARCHIVE PAGE
+   ======================================== */
+
+/* Tablet and below (768px) */
+@media (max-width: 768px) {
+  /* Archive container */
+  .archive-container {
+    padding: 0 10px;
+    margin: 15px auto;
+  }
+  
+  .archive-header {
+    padding: 20px 15px;
+  }
+  
+  .archive-header h1 {
+    font-size: 22px;
+  }
+  
+  .archive-header p {
+    font-size: 14px;
+  }
+  
+  /* Transform table into card layout for mobile */
+  .table-container {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .archive-table {
+    display: block;
+    overflow-x: visible;
+    white-space: normal;
+  }
+  
+  .archive-table thead {
+    display: none; /* Hide table header on mobile */
+  }
+  
+  .archive-table tbody {
+    display: block;
+  }
+  
+  .archive-table tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: default;
+  }
+  
+  .archive-table tbody tr:hover {
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .archive-table td {
+    display: block;
+    text-align: left;
+    padding: 8px 0;
+    border: none;
+    font-size: 14px;
+  }
+  
+  /* Add labels before each cell */
+  .archive-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #054634;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  
+  /* Program name should be prominent */
+  .archive-table td:first-child {
+    font-size: 18px;
+    font-weight: bold;
+    color: #054634;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  
+  .archive-table td:first-child::before {
+    display: none; /* Don't show label for program name */
+  }
+  
+  /* Last cell (Action button) */
+  .archive-table td:last-child {
+    padding-top: 15px;
+    text-align: center;
+  }
+  
+  .view-details-btn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  
+  /* Modal adjustments for mobile */
+  .program-modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+  
+  .program-modal {
+    max-height: calc(100vh - 40px);
+    border-radius: 8px;
+  }
+  
+  .program-modal-header {
+    padding: 15px 20px;
+  }
+  
+  .program-modal-header h3 {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+  
+  .program-modal-content {
+    padding: 20px 15px;
+  }
+  
+  .modal-carousel-main {
+    height: 250px;
+  }
+  
+  .modal-carousel-arrow {
+    font-size: 20px;
+    padding: 8px 12px;
+  }
+  
+  .modal-thumbs img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .program-modal-body {
+    font-size: 14px;
+  }
+}
+
+/* Small mobile (480px and below) */
+@media (max-width: 480px) {
+  .archive-header h1 {
+    font-size: 20px;
+  }
+  
+  .archive-header p {
+    font-size: 13px;
+  }
+  
+  .archive-table tbody tr {
+    padding: 12px;
+  }
+  
+  .archive-table td {
+    font-size: 13px;
+  }
+  
+  .archive-table td:first-child {
+    font-size: 16px;
+  }
+  
+  .modal-carousel-main {
+    height: 200px;
+  }
+  
+  .modal-thumbs img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .program-modal-header h3 {
+    font-size: 16px;
+  }
+}
+
