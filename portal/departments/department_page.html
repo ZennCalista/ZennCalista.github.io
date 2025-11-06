@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Departments - Cavite State University Imus Campus</title>
+  <link rel="stylesheet" href="department_page.css?v=3.0">
+</head>
+<body>
+
+  <!-- Sidebar Menu -->
+  <nav class="app-sidebar" id="app-sidebar">
+    <div class="app-sidebar-header">
+      <div class="user-profile">
+        <img src="../images/placeholder.jpg" alt="User Avatar" class="user-avatar">
+        <div class="user-info">
+          <h3 id="user-name">Guest</h3>
+          <p class="status" id="user-role">Not signed in</p>
+        </div>
+      </div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="../home/home.html" class="nav-link">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Home</span>
+        </a>
+      </li>
+      <li class="nav-item auth-required" style="display: none;">
+        <a href="../archive/archive.html" class="nav-link">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Archive</span>
+        </a>
+      </li>
+      <li class="nav-item auth-required" style="display: none;">
+        <a href="../../register/entry.php" class="nav-link">
+          <span class="nav-icon">🚀</span>
+          <span class="nav-text">Tracker</span>
+        </a>
+      </li>
+      <li class="nav-divider auth-required" style="display: none;" aria-hidden="true"></li>
+      <li class="nav-item auth-required" style="display: none;">
+        <a href="#" class="nav-link">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Account Settings</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a id="auth-link" href="../../register/index.html" class="nav-link">
+          <span class="nav-icon">🔓</span>
+          <span class="nav-text" id="auth-link-text">Login</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Overlay to close menu when clicking outside -->
+  <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+  <!-- Menu Icon Bar -->
+  <div class="menu-bar">
+    <div class="menu-icon">&#9776;</div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <img src="../images/LOGOS/logo1.png" alt="CvSU Logo" class="logo">
+      <div class="title">
+        <h1>Cavite State University</h1>
+        <h2>Imus Campus</h2>
+        <p>Extension Services</p>
+        
+        <!-- Navigation Dropdown Menu -->
+        <nav class="header-nav">
+          <ul class="nav-dropdown-menu">
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">Departments ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="?dept=1">Department of Biological and Physical Sciences</a></li>
+                <li><a href="?dept=2">Department of Computer Studies</a></li>
+                <li><a href="?dept=3">Department of Hospitality Management</a></li>
+                <li><a href="?dept=4">Department of Languages and Mass Communication</a></li>
+                <li><a href="?dept=5">Department of Management</a></li>
+                <li><a href="?dept=6">Department of Physical Education</a></li>
+                <li><a href="?dept=7">Department of Social Sciences and Humanities</a></li>
+                <li><a href="?dept=8">Teacher Education Department</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown admin-only" style="display: none;">
+              <a href="#" class="nav-dropdown-toggle">Services ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="../../register/entry.php">eTracker</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">Coordinators ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="#coordinator-info">Coordinator Information</a></li>
+                <li><a href="#contact-coordinators">Contact Coordinators</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <img src="../images/LOGOS/logo2.png" alt="Extension Logo" class="logo2">
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-layout">
+    
+    <!-- Department Header with Carousel -->
+    <section class="department-header">
+      <button class="carousel-arrow left" id="dept-carousel-prev">&#10094;</button>
+      <div class="department-info">
+        <img id="dept-logo" src="../images/placeholder.jpg" alt="Department Logo" class="dept-logo">
+        <div class="dept-text">
+          <h2 id="dept-name">Department Of Biological And Physical Sciences</h2>
+          <p id="dept-description">Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div>
+      </div>
+      <button class="carousel-arrow right" id="dept-carousel-next">&#10095;</button>
+    </section>
+
+    <!-- Recent Articles Section -->
+    <section class="articles-section">
+      <h3>Recent Articles</h3>
+      <div class="articles-container" id="articles-container">
+        <div class="loading-message">Loading programs...</div>
+      </div>
+    </section>
+
+    <!-- Department List Sidebar -->
+    <aside class="departments-sidebar">
+      <div class="sidebar-card" data-dept="2">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Department Of Computer Studies</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+      <div class="sidebar-card" data-dept="3">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Department Of Hospitality Management</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+      <div class="sidebar-card" data-dept="4">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Department Of Languages And Mass Communication</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+      <div class="sidebar-card" data-dept="5">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Department Of Management</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+      <div class="sidebar-card" data-dept="6">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Department Of Physical Education</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+      <div class="sidebar-card" data-dept="7">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Department Of Social Sciences and Humanities</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+      <div class="sidebar-card" data-dept="8">
+        <img src="../images/placeholder.jpg" alt="Dept Icon" class="dept-icon">
+        <div class="dept-info">
+          <h4>Teacher Education Department</h4>
+          <p>Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <img src="../images/placeholder.jpg" alt="CvSU Footer Logo">
+      <p>Cavite State University<br>Extension Services</p>
+    </div>
+    <div class="footer-right">
+      <p><strong>Contact Information</strong><br>
+        Cavite Civic Center, Palico IV, Imus City, Cavite 4103<br>
+        (046) 471-6607<br>
+        cvis@cvsu.edu.ph
+      </p>
+    </div>
+  </footer>
+
+  <!-- Program Modal -->
+  <div class="program-modal-overlay" id="program-modal-overlay"></div>
+  <div class="program-modal" id="program-modal">
+    <div class="program-modal-header">
+      <h3 id="program-modal-title">Program Title</h3>
+      <button class="program-modal-close" id="program-modal-close">✕</button>
+    </div>
+    <div class="program-modal-content">
+      <div class="modal-carousel">
+        <div class="modal-carousel-main">
+          <button class="modal-carousel-arrow left" id="modal-prev">❮</button>
+          <img id="modal-main-img" src="../images/placeholder.jpg" alt="Program image">
+          <button class="modal-carousel-arrow right" id="modal-next">❯</button>
+        </div>
+        <div class="modal-thumbs" id="modal-thumbs"></div>
+      </div>
+      <div class="program-modal-body" id="program-modal-body">
+        <p id="program-modal-description">Description goes here...</p>
+        <p style="margin-top:8px; font-size:14px; color:#555;">
+          <strong>Department:</strong> <span id="program-modal-dept"></span><br>
+          <strong>Location:</strong> <span id="program-modal-loc"></span><br>
+          <strong>Status:</strong> <span id="program-modal-status"></span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="department_page.js?v=2.0"></script>
+
+</body>
+</html>
