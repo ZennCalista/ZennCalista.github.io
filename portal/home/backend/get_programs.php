@@ -62,10 +62,11 @@ try {
                         if ($image_result) {
                             while($image_row = $image_result->fetch_assoc()) {
                                 // Store image metadata and create URL to serve the image
+                                // Use absolute path from site root for cross-page compatibility
                                 $images[] = [
                                     'image_id' => $image_row['image_id'],
                                     'image_desc' => $image_row['image_desc'] ?: 'Program image',
-                                    'image_url' => 'backend/get_image.php?image_id=' . $image_row['image_id']
+                                    'image_url' => '/Etracker/portal/home/backend/get_image.php?image_id=' . $image_row['image_id']
                                 ];
                             }
                         }

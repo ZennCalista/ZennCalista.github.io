@@ -68,7 +68,7 @@ try {
                                 $images[] = [
                                     'image_id' => $image_row['archive_image_id'],
                                     'image_desc' => $image_row['image_desc'] ?: 'Program image',
-                                    'image_url' => '../home/backend/get_archived_image.php?image_id=' . $image_row['archive_image_id']
+                                    'image_url' => '/Etracker/portal/home/backend/get_archived_image.php?image_id=' . $image_row['archive_image_id']
                                 ];
                             }
                         }
@@ -93,7 +93,7 @@ try {
                                 $images[] = [
                                     'image_id' => $image_row['image_id'],
                                     'image_desc' => $image_row['image_desc'] ?: 'Program image',
-                                    'image_url' => '../home/backend/get_image.php?image_id=' . $image_row['image_id']
+                                    'image_url' => '/Etracker/portal/home/backend/get_image.php?image_id=' . $image_row['image_id']
                                 ];
                             }
                         }
