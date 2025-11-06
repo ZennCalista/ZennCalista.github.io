@@ -19,11 +19,14 @@ try {
         exit();
     }
 
-    // Query to get archived programs
+    // Query to get archived programs with department name from departments table
     // Include original_program_id so we can fallback to original program images when needed
-    $sql = "SELECT id, original_program_id, program_name, project_titles, department, location, start_date, end_date, status, max_students, description, sdg_goals, created_at, updated_at 
-        FROM programs_archive 
-        ORDER BY updated_at DESC";
+    $sql = "SELECT pa.id, pa.original_program_id, pa.program_name, pa.project_titles, d.department_name as department, 
+            pa.location, pa.start_date, pa.end_date, pa.status, pa.max_students, pa.description, pa.sdg_goals, 
+            pa.created_at, pa.updated_at 
+        FROM programs_archive pa
+        LEFT JOIN departments d ON pa.department_id = d.department_id
+        ORDER BY pa.updated_at DESC";
 
     $result = $conn->query($sql);
 

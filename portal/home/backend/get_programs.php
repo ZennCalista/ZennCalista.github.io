@@ -14,12 +14,14 @@ try {
         exit();
     }
 
-    // Query to get programs
+    // Query to get programs with department name from departments table
     // Exclude programs that have been soft-archived (is_archived = 1)
-    $sql = "SELECT id, program_name, project_titles, department, location, start_date, end_date, status, max_students, description, sdg_goals 
-        FROM programs 
-        WHERE (is_archived = 0 OR is_archived IS NULL)
-        ORDER BY id DESC";
+    $sql = "SELECT p.id, p.program_name, p.project_titles, d.department_name as department, p.location, 
+            p.start_date, p.end_date, p.status, p.max_students, p.description, p.sdg_goals 
+        FROM programs p
+        LEFT JOIN departments d ON p.department_id = d.department_id
+        WHERE (p.is_archived = 0 OR p.is_archived IS NULL)
+        ORDER BY p.id DESC";
 
     $result = $conn->query($sql);
 
