@@ -69,15 +69,15 @@ try {
                 
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
-                        // Use relative path that works on both local and hosted
-                        $base_path = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/Etracker/') !== false 
-                            ? '/Etracker/portal/home/backend/get_image.php' 
-                            : 'get_image.php';
+                        // Detect if local (has /Etracker in path) or hosted (no /Etracker)
+                        // Check SCRIPT_NAME which is more reliable than REQUEST_URI
+                        $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
+                        $base_url = $is_local ? '/Etracker' : '';
                         
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => $base_path . '?image_id=' . $image_id
+                            'image_url' => $base_url . '/portal/home/backend/get_image.php?image_id=' . $image_id
                         ];
                     }
                 }

@@ -74,17 +74,16 @@ try {
                 $image_ids = explode('||', $row['archive_image_ids']);
                 $image_descs = explode('||', $row['archive_image_descs']);
                 
+                // Detect if local (has /Etracker in path) or hosted (no /Etracker)
+                $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
+                $base_url = $is_local ? '/Etracker' : '';
+                
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
-                        // Use path that works on both local and hosted
-                        $archived_image_path = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/Etracker/') !== false 
-                            ? '/Etracker/portal/home/backend/get_archived_image.php' 
-                            : '../../home/backend/get_archived_image.php';
-                        
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => $archived_image_path . '?image_id=' . $image_id
+                            'image_url' => $base_url . '/portal/home/backend/get_archived_image.php?image_id=' . $image_id
                         ];
                     }
                 }
@@ -95,17 +94,16 @@ try {
                 $image_ids = explode('||', $row['fallback_image_ids']);
                 $image_descs = explode('||', $row['fallback_image_descs']);
                 
-                // Use path that works on both local and hosted
-                $image_path = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/Etracker/') !== false 
-                    ? '/Etracker/portal/home/backend/get_image.php' 
-                    : '../../home/backend/get_image.php';
+                // Use same base URL detection
+                $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
+                $base_url = $is_local ? '/Etracker' : '';
                 
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => $image_path . '?image_id=' . $image_id
+                            'image_url' => $base_url . '/portal/home/backend/get_image.php?image_id=' . $image_id
                         ];
                     }
                 }
