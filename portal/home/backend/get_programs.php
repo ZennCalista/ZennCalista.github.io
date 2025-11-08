@@ -9,7 +9,8 @@ try {
     $cache = new SimpleCache();
     
     // Check cache first (5 minute TTL)
-    $cache_key = 'programs_list_v2'; // v2 for optimized query
+    // v3: Fixed image path detection for hosted environment
+    $cache_key = 'programs_list_v3'; 
     $cached_data = $cache->get($cache_key);
     
     if ($cached_data !== null) {
@@ -69,8 +70,9 @@ try {
                 
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
-                        // Detect if local (has /Etracker in path) or hosted (no /Etracker)
-                        // Check SCRIPT_NAME which is more reliable than REQUEST_URI
+                        // Detect environment: Local vs Hosted
+                        // Local SCRIPT_NAME: /Etracker/portal/home/backend/get_programs.php
+                        // Hosted SCRIPT_NAME: /portal/home/backend/get_programs.php
                         $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
                         $base_url = $is_local ? '/Etracker' : '';
                         

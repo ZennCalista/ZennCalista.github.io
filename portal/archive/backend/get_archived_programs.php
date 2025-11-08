@@ -4,7 +4,8 @@ include __DIR__ . '/../../home/backend/cache_helper.php';
 $cache = new SimpleCache(__DIR__ . '/../../home/backend/cache');
 
 // Check cache first (5 minute TTL)
-$cache_key = 'archived_programs_list_v2'; // v2 for optimized query
+// v3: Fixed image path detection for hosted environment
+$cache_key = 'archived_programs_list_v3';
 $cached_data = $cache->get($cache_key);
 
 if ($cached_data !== null) {
