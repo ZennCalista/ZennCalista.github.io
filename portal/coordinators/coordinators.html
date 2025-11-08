@@ -121,13 +121,13 @@
         <span class="btn-icon">✏️</span> Edit Coordinators
       </button>
       <button class="add-coordinator-btn" id="add-coordinator-btn">
-        <span class="btn-icon">➕</span> Add Coordinator
+        Add Coordinator
       </button>
     </div>
 
     <!-- Edit Actions -->
     <div class="edit-actions" id="edit-actions">
-      <button class="save-btn" id="save-btn">💾 Save Changes</button>
+      <button class="save-btn" id="save-btn">Save Changes</button>
       <button class="cancel-btn" id="cancel-btn">✖ Cancel</button>
     </div>
 
@@ -174,7 +174,6 @@
             <div class="image-upload-area" id="image-upload-area">
               <input type="file" id="coordinator-image" accept="image/*" style="display: none;">
               <div class="upload-placeholder" id="upload-placeholder">
-                <span class="upload-icon">📷</span>
                 <p>Click to select or drag and drop an image</p>
                 <small>JPEG, PNG, GIF, WebP (Max 5MB)</small>
               </div>
@@ -734,7 +733,7 @@
                 <button class="delete-coordinator-btn" onclick="deleteCoordinator(${coordinator.id}, '${coordinator.name.replace(/'/g, "\\'")}')">×</button>
                 <div class="coordinator-image">
                   <img src="${imageUrl}" alt="${coordinator.name}" onerror="this.src='../images/placeholder.jpg'">
-                  <button class="upload-image-btn" onclick="uploadImage(${coordinator.id})">📷 Upload</button>
+                  <button class="upload-image-btn" onclick="uploadImage(${coordinator.id})">Upload</button>
                 </div>
                 <div class="coordinator-info">
                   <h3 class="coordinator-name">${coordinator.name}</h3>
