@@ -24,6 +24,9 @@ body {
   padding: 12px 20px;
   display: flex;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
 }
 
 .menu-icon {
@@ -45,11 +48,12 @@ body {
   background: #054634;
   color: white;
   padding: 10px 20px;
+  padding-bottom: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
-  top: 0;
+  top: 44px;
   z-index: 998;
 }
 
@@ -96,6 +100,12 @@ body {
   align-items: center;
   justify-content: center;
   margin-top: 8px;
+  background: white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 20px;
 }
 
 .nav-dropdown-menu {
@@ -114,7 +124,7 @@ body {
 .nav-dropdown-toggle {
   display: block;
   padding: 8px 16px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #054634;
   text-decoration: none;
   font-weight: 500;
   font-size: 14px;
@@ -124,8 +134,8 @@ body {
 }
 
 .nav-dropdown-toggle:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background-color: rgba(5, 70, 52, 0.1);
+  color: #054634;
 }
 
 .nav-dropdown-content {
@@ -140,7 +150,7 @@ body {
   list-style: none;
   margin: 0;
   padding: 8px 0;
-  z-index: 1000;
+  z-index: 1001;
 }
 
 .nav-dropdown:hover .nav-dropdown-content {
@@ -193,6 +203,32 @@ body {
 .app-sidebar-header {
   padding: 30px 20px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.15);
+  position: relative;
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  line-height: 1;
+  font-weight: bold;
+  letter-spacing: -2px;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .user-profile { 

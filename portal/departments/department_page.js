@@ -129,6 +129,7 @@ function setupSidebar() {
   const menuIcon = document.querySelector('.menu-icon');
   const sidebar = document.getElementById('app-sidebar');
   const overlay = document.getElementById('app-sidebar-overlay');
+  const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
   
   function toggleSidebar() {
     sidebar.classList.toggle('open');
@@ -138,6 +139,11 @@ function setupSidebar() {
   
   menuIcon.addEventListener('click', toggleSidebar);
   overlay.addEventListener('click', toggleSidebar);
+  
+  // Add click handler for sidebar close button
+  if (sidebarCloseBtn) {
+    sidebarCloseBtn.addEventListener('click', toggleSidebar);
+  }
   
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && sidebar.classList.contains('open')) {
