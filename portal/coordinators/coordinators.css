@@ -1,0 +1,650 @@
+/* Import home.css for consistent styling */
+@import url('../home/home.css');
+
+/* Coordinators Page Specific Styles */
+body {
+  background: #f5f5f5;
+}
+
+.coordinators-container {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 50px;
+  padding: 40px 20px 30px;
+  border-bottom: 3px solid #054634;
+}
+
+.page-header h1 {
+  font-size: 42px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #000;
+}
+
+.page-header p {
+  font-size: 18px;
+  color: #000;
+}
+
+/* Admin Controls */
+.admin-controls {
+  max-width: 1400px;
+  margin: 0 auto 30px;
+  padding: 0 20px;
+  text-align: right;
+}
+
+.edit-mode-btn {
+  padding: 12px 24px;
+  background: #054634;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(5, 70, 52, 0.2);
+}
+
+.edit-mode-btn:hover {
+  background: #076d4f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 70, 52, 0.3);
+}
+
+.edit-mode-btn.active {
+  background: #f57c00;
+}
+
+.edit-mode-btn.active:hover {
+  background: #ef6c00;
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
+/* Coordinators Grid */
+.coordinators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+/* Coordinator Card */
+.coordinator-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.coordinator-card.editable {
+  cursor: pointer;
+}
+
+.coordinator-card.editable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.coordinator-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #054634, #076d4f);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.coordinator-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.coordinator-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Coordinator Image */
+.coordinator-image {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #f0f0f0;
+  transition: all 0.3s ease;
+  background: #f5f5f5;
+  position: relative;
+}
+
+.coordinator-card:hover .coordinator-image {
+  border-color: #054634;
+  transform: scale(1.05);
+}
+
+.coordinator-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Coordinator Info */
+.coordinator-info {
+  padding-top: 10px;
+}
+
+.coordinator-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #054634;
+  margin-bottom: 8px;
+  transition: color 0.3s ease;
+}
+
+.coordinator-card:hover .coordinator-name {
+  color: #076d4f;
+}
+
+.coordinator-department {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Editable Fields */
+.coordinator-name[contenteditable="true"],
+.coordinator-department[contenteditable="true"] {
+  background: #fff3cd;
+  padding: 8px;
+  border-radius: 4px;
+  border: 2px solid #ffc107;
+  outline: none;
+  cursor: text;
+  display: inline-block;
+  min-width: 150px;
+}
+
+.coordinator-name[contenteditable="true"]:focus,
+.coordinator-department[contenteditable="true"]:focus {
+  background: #fffbf0;
+  border-color: #f57c00;
+}
+
+/* Save/Cancel Buttons */
+.edit-actions {
+  margin-top: 20px;
+  display: none;
+  gap: 10px;
+  justify-content: center;
+}
+
+.edit-actions.active {
+  display: flex;
+}
+
+.save-btn, .cancel-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn {
+  background: #054634;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #076d4f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 70, 52, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .coordinators-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+  }
+  
+  .page-header h1 {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .coordinators-container {
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+  
+  .page-header {
+    padding: 30px 20px;
+    margin-bottom: 30px;
+  }
+  
+  .page-header h1 {
+    font-size: 28px;
+  }
+  
+  .page-header p {
+    font-size: 16px;
+  }
+  
+  .coordinators-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .coordinator-card {
+    padding: 25px 15px;
+  }
+  
+  .coordinator-image {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .coordinator-name {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coordinators-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .coordinator-card {
+    max-width: 350px;
+    margin: 0 auto;
+  }
+  
+  .search-input {
+    font-size: 14px;
+    padding: 14px 18px;
+  }
+}
+
+/* Add Coordinator Button */
+.add-coordinator-btn {
+  padding: 12px 24px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
+}
+
+.add-coordinator-btn:hover {
+  background: #388e3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+/* Drag and Drop Styles */
+.coordinator-card.dragging {
+  opacity: 0.5;
+  cursor: move;
+}
+
+.coordinator-card.drag-over {
+  border: 2px dashed #054634;
+  background: #f0f7f4;
+}
+
+.coordinator-card.draggable {
+  cursor: move;
+}
+
+.drag-handle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #999;
+  cursor: move;
+  font-size: 20px;
+  display: none;
+}
+
+.coordinator-card.editable .drag-handle {
+  display: block;
+}
+
+/* Delete Button */
+.delete-coordinator-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.coordinator-card.editable .delete-coordinator-btn {
+  display: flex;
+}
+
+.delete-coordinator-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+/* Upload Image Button */
+.upload-image-btn {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #054634;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(5, 70, 52, 0.3);
+  z-index: 5;
+}
+
+.coordinator-card.editable .upload-image-btn {
+  display: block;
+}
+
+.upload-image-btn:hover {
+  background: #076d4f;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 10px rgba(5, 70, 52, 0.4);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #054634;
+  font-size: 24px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #054634;
+}
+
+.form-group.required label::after {
+  content: ' *';
+  color: #dc3545;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #054634;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #076d4f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(5, 70, 52, 0.3);
+}
+
+.btn-secondary {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #d0d0d0;
+}
+
+/* Image Upload Area */
+.image-upload-area {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #054634;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.image-upload-area:hover {
+  border-color: #2e7d32;
+  background: #f5f5f5;
+}
+
+.image-upload-area.dragover {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  border-style: solid;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  height: 200px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.upload-placeholder p {
+  margin: 10px 0 5px;
+  color: #333;
+  font-weight: 500;
+}
+
+.upload-placeholder small {
+  color: #666;
+  font-size: 12px;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #dc3545;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.remove-image-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
