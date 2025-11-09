@@ -355,15 +355,14 @@ body {
   grid-column: 1 / -1;
   background: linear-gradient(135deg, #054634 0%, #076d4f 100%);
   border-radius: 8px;
-  padding: 30px 40px;
+  padding: 0;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
-  align-items: center;
-  gap: 20px;
+  align-items: stretch;
   position: relative;
   overflow: hidden;
-  min-height: 250px;
+  min-height: 280px;
 }
 
 .carousel-background {
@@ -389,56 +388,80 @@ body {
   z-index: 1;
 }
 
+/* Carousel Control Areas */
+.carousel-control-area {
+  width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.carousel-control-area:hover {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
 .carousel-arrow {
-  background: rgba(255, 255, 255, 0.25);
+  background: none;
   border: none;
   color: white;
-  font-size: 28px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
+  font-size: 48px;
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  z-index: 2;
-  position: relative;
+  opacity: 0;
+  transform: scale(0.8);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-control-area:hover .carousel-arrow {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .carousel-arrow:hover {
-  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.2);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
 }
 
 .department-info {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 30px;
   flex: 1;
   z-index: 2;
   position: relative;
+  padding: 40px 30px;
 }
 
 .dept-logo {
-  width: 100px;
-  height: 100px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid white;
+  border: 4px solid white;
   background: white;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .dept-text h2 {
-  font-size: 26px;
-  margin-bottom: 8px;
+  font-size: 28px;
+  margin-bottom: 10px;
   font-weight: 600;
   color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .dept-text p {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   opacity: 0.95;
   color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Articles Section - Left Side */
@@ -842,23 +865,41 @@ body {
 
   .department-header {
     flex-direction: column;
-    padding: 20px;
+    min-height: 200px;
+  }
+
+  .carousel-control-area {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+  }
+
+  .carousel-control-area.left {
+    order: -1;
+  }
+
+  .carousel-control-area.right {
+    order: 1;
   }
 
   .carousel-arrow {
-    width: 38px;
-    height: 38px;
-    font-size: 22px;
+    width: 45px;
+    height: 45px;
+    font-size: 28px;
+    opacity: 1;
+    transform: scale(1);
   }
 
   .department-info {
     flex-direction: column;
     text-align: center;
+    padding: 30px 20px;
+    order: 0;
   }
 
   .dept-logo {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
   }
 
   .dept-text h2 {
