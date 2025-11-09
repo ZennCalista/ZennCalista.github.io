@@ -165,25 +165,23 @@ function setupCarousel() {
   const prevBtn = document.getElementById('dept-carousel-prev');
   const nextBtn = document.getElementById('dept-carousel-next');
   
-  prevBtn.addEventListener('click', () => {
-    currentDeptIndex = (currentDeptIndex - 1 + departments.length) % departments.length;
-    const deptId = departments[currentDeptIndex].id;
-    loadDepartment(deptId);
-  });
-  
-  nextBtn.addEventListener('click', () => {
-    currentDeptIndex = (currentDeptIndex + 1) % departments.length;
-    const deptId = departments[currentDeptIndex].id;
-    loadDepartment(deptId);
-  });
-  
-  // Sidebar card clicks
-  document.querySelectorAll('.sidebar-card').forEach(card => {
-    card.addEventListener('click', function() {
-      const deptId = parseInt(this.getAttribute('data-dept'));
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      currentDeptIndex = (currentDeptIndex - 1 + departments.length) % departments.length;
+      const deptId = departments[currentDeptIndex].id;
       loadDepartment(deptId);
     });
-  });
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      currentDeptIndex = (currentDeptIndex + 1) % departments.length;
+      const deptId = departments[currentDeptIndex].id;
+      loadDepartment(deptId);
+    });
+  }
+  
+  // Note: Sidebar card clicks are now handled in renderSidebar()
 }
 
 // Check URL parameters
@@ -246,13 +244,8 @@ function loadDepartment(deptId) {
     backgroundElement.style.backgroundImage = `url('${dept.backgroundImage}')`;
   }
   
-  // Update active sidebar card
-  document.querySelectorAll('.sidebar-card').forEach(card => {
-    card.classList.remove('active');
-    if (parseInt(card.getAttribute('data-dept')) === deptId) {
-      card.classList.add('active');
-    }
-  });
+  // Update sidebar to show other departments (excluding current)
+  renderSidebar(deptId);
   
   // Filter and display programs
   displayDepartmentPrograms(deptId);
@@ -260,6 +253,36 @@ function loadDepartment(deptId) {
   // Update URL without reload
   const newUrl = `${window.location.pathname}?dept=${deptId}`;
   window.history.pushState({ deptId }, '', newUrl);
+}
+
+// Render sidebar with departments excluding the current one
+function renderSidebar(currentDeptId) {
+  const sidebar = document.querySelector('.departments-sidebar');
+  if (!sidebar) return;
+  
+  // Get all departments except the current one
+  const otherDepartments = departments.filter(d => d.id !== currentDeptId);
+  
+  // Generate HTML for sidebar cards
+  const html = otherDepartments.map(dept => `
+    <div class="sidebar-card" data-dept="${dept.id}">
+      <img src="${dept.logo}" alt="Dept Icon" class="dept-icon">
+      <div class="dept-info">
+        <h4>${dept.name}</h4>
+        <p>${dept.description}</p>
+      </div>
+    </div>
+  `).join('');
+  
+  sidebar.innerHTML = html;
+  
+  // Reattach click handlers to new cards
+  sidebar.querySelectorAll('.sidebar-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const deptId = parseInt(this.getAttribute('data-dept'));
+      loadDepartment(deptId);
+    });
+  });
 }
 
 // Display programs for a department
