@@ -478,6 +478,8 @@
       const dept = document.getElementById('program-modal-dept');
       const loc = document.getElementById('program-modal-loc');
       const status = document.getElementById('program-modal-status');
+      const dates = document.getElementById('program-modal-dates');
+      const uploadedBy = document.getElementById('program-modal-uploaded-by');
       const mainImg = document.getElementById('modal-main-img');
       const thumbs = document.getElementById('modal-thumbs');
 
@@ -486,6 +488,20 @@
       dept.textContent = program.department || '—';
       loc.textContent = program.location || '—';
       status.textContent = program.status || '—';
+      
+      // Format date range
+      const startDate = program.start_date ? new Date(program.start_date).toLocaleDateString() : '';
+      const endDate = program.end_date ? new Date(program.end_date).toLocaleDateString() : '';
+      if (startDate && endDate) {
+        dates.textContent = `${startDate} - ${endDate}`;
+      } else if (startDate) {
+        dates.textContent = startDate;
+      } else {
+        dates.textContent = '—';
+      }
+      
+      // Set uploaded by
+      uploadedBy.textContent = program.uploaded_by || '—';
 
       // Use program images if available, otherwise use placeholder
       if (program.images && program.images.length > 0) {
@@ -857,7 +873,9 @@
         <p style="margin-top:8px; font-size:14px; color:#555;">
           <strong>Department:</strong> <span id="program-modal-dept"></span><br>
           <strong>Location:</strong> <span id="program-modal-loc"></span><br>
-          <strong>Status:</strong> <span id="program-modal-status"></span>
+          <strong>Date Range:</strong> <span id="program-modal-dates"></span><br>
+          <strong>Status:</strong> <span id="program-modal-status"></span><br>
+          <strong>Uploaded by:</strong> <span id="program-modal-uploaded-by"></span>
         </p>
       </div>
     </div>

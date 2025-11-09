@@ -364,6 +364,8 @@ function openProgramModal(program) {
   const dept = document.getElementById('program-modal-dept');
   const loc = document.getElementById('program-modal-loc');
   const status = document.getElementById('program-modal-status');
+  const dates = document.getElementById('program-modal-dates');
+  const uploadedBy = document.getElementById('program-modal-uploaded-by');
   const mainImg = document.getElementById('modal-main-img');
   const thumbs = document.getElementById('modal-thumbs');
 
@@ -372,6 +374,20 @@ function openProgramModal(program) {
   dept.textContent = program.department || '—';
   loc.textContent = program.location || '—';
   status.textContent = program.status || '—';
+  
+  // Format date range
+  const startDate = program.start_date ? new Date(program.start_date).toLocaleDateString() : '';
+  const endDate = program.end_date ? new Date(program.end_date).toLocaleDateString() : '';
+  if (startDate && endDate) {
+    dates.textContent = `${startDate} - ${endDate}`;
+  } else if (startDate) {
+    dates.textContent = startDate;
+  } else {
+    dates.textContent = '—';
+  }
+  
+  // Set uploaded by
+  uploadedBy.textContent = program.uploaded_by || '—';
 
   // Setup images
   if (program.images && program.images.length > 0) {
