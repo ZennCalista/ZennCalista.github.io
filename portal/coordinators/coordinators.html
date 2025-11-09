@@ -208,6 +208,33 @@
   </footer>
 
   <script>
+    // Notification System
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10001;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+        max-width: 400px;
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
     // Load session
     async function loadSession() {
       try {
@@ -441,16 +468,16 @@
           const result = await response.json();
           
           if (result.success) {
-            alert('✅ Changes saved successfully!');
+            showNotification('Changes saved successfully!', 'success');
             isEditMode = false;
             toggleEditMode();
             loadCoordinators(); // Reload to get fresh data
           } else {
-            alert('❌ Error saving changes: ' + (result.message || 'Unknown error'));
+            showNotification('Error saving changes: ' + (result.message || 'Unknown error'), 'error');
           }
         } catch (error) {
           console.error('Save error:', error);
-          alert('❌ Error saving changes. Please try again.');
+          showNotification('Error saving changes. Please try again.', 'error');
         }
       });
 
@@ -522,7 +549,7 @@
           if (file.type.startsWith('image/')) {
             handleImageFile(file);
           } else {
-            alert('Please drop an image file');
+            showNotification('Please drop an image file', 'warning');
           }
         }
       });
@@ -531,14 +558,14 @@
       function handleImageFile(file) {
         // Validate file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
-          alert('Image size must be less than 5MB');
+          showNotification('Image size must be less than 5MB', 'warning');
           return;
         }
 
         // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!validTypes.includes(file.type)) {
-          alert('Please select a valid image file (JPEG, PNG, GIF, WebP)');
+          showNotification('Please select a valid image file (JPEG, PNG, GIF, WebP)', 'warning');
           return;
         }
 
@@ -595,14 +622,14 @@
         if (department === 'Others') {
           const otherDept = document.getElementById('other-department-input').value.trim();
           if (!otherDept) {
-            alert('Please specify the department name');
+            showNotification('Please specify the department name', 'warning');
             return;
           }
           department = otherDept;
         }
 
         if (!name || !department) {
-          alert('Please fill in all required fields');
+          showNotification('Please fill in all required fields', 'warning');
           return;
         }
 
@@ -635,15 +662,15 @@
               }
             }
 
-            alert('✅ Coordinator added successfully!');
+            showNotification('Coordinator added successfully!', 'success');
             addModal.classList.remove('active');
             loadCoordinators();
           } else {
-            alert('❌ Error: ' + (result.message || 'Unknown error'));
+            showNotification('Error: ' + (result.message || 'Unknown error'), 'error');
           }
         } catch (error) {
           console.error('Add coordinator error:', error);
-          alert('❌ Error adding coordinator. Please try again.');
+          showNotification('Error adding coordinator. Please try again.', 'error');
         }
       });
 
@@ -661,14 +688,14 @@
           const result = await response.json();
           
           if (result.success) {
-            alert('✅ Coordinator deleted successfully!');
+            showNotification('Coordinator deleted successfully!', 'success');
             loadCoordinators();
           } else {
-            alert('❌ Error: ' + (result.message || 'Unknown error'));
+            showNotification('Error: ' + (result.message || 'Unknown error'), 'error');
           }
         } catch (error) {
           console.error('Delete error:', error);
-          alert('❌ Error deleting coordinator. Please try again.');
+          showNotification('Error deleting coordinator. Please try again.', 'error');
         }
       }
 
@@ -696,14 +723,21 @@
             const result = await response.json();
             
             if (result.success) {
-              alert('✅ Image uploaded successfully!');
-              loadCoordinators();
+              showNotification('Image uploaded successfully!', 'success');
+              // Preserve edit mode state before reloading
+              const wasInEditMode = isEditMode;
+              await loadCoordinators();
+              if (wasInEditMode) {
+                // Re-enable edit mode after reload
+                isEditMode = false;
+                toggleEditMode();
+              }
             } else {
-              alert('❌ Error: ' + (result.message || 'Unknown error'));
+              showNotification('Error: ' + (result.message || 'Unknown error'), 'error');
             }
           } catch (error) {
             console.error('Upload error:', error);
-            alert('❌ Error uploading image. Please try again.');
+            showNotification('Error uploading image. Please try again.', 'error');
           }
         };
 
@@ -733,8 +767,8 @@
                 <button class="delete-coordinator-btn" onclick="deleteCoordinator(${coordinator.id}, '${coordinator.name.replace(/'/g, "\\'")}')">×</button>
                 <div class="coordinator-image">
                   <img src="${imageUrl}" alt="${coordinator.name}" onerror="this.src='../images/placeholder.jpg'">
-                  <button class="upload-image-btn" onclick="uploadImage(${coordinator.id})">Upload</button>
                 </div>
+                <button class="upload-image-btn" onclick="uploadImage(${coordinator.id})">Upload</button>
                 <div class="coordinator-info">
                   <h3 class="coordinator-name">${coordinator.name}</h3>
                   <p class="coordinator-department">${coordinator.dept}</p>

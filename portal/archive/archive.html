@@ -172,6 +172,33 @@
     let archivedPrograms = [];
     let modalState = { images: [], index: 0 };
 
+    // Notification System
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10001;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+        max-width: 400px;
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
     // Load session
     async function loadSession() {
       try {
@@ -434,7 +461,10 @@
       document.addEventListener('click', function(e) {
         if (e.target && e.target.id === 'restore-program-btn') {
           const archiveId = modalState.archiveId;
-          if (!archiveId) return alert('Archive id missing');
+          if (!archiveId) {
+            showNotification('Archive ID missing', 'error');
+            return;
+          }
           if (!confirm('Are you sure you want to restore this program back to active programs?')) return;
           fetch(`backend/restore_program.php?id=${archiveId}`)
             .then(res => res.json())
@@ -444,13 +474,13 @@
                 const row = document.querySelector(`tr[data-program-id="${archiveId}"]`);
                 if (row) row.remove();
                 closeModal();
-                alert('Program restored successfully');
+                showNotification('Program restored successfully', 'success');
               } else {
-                alert('Restore failed: ' + (data.error || 'Unknown error'));
+                showNotification('Restore failed: ' + (data.error || 'Unknown error'), 'error');
               }
             }).catch(err => {
               console.error('Restore error:', err);
-              alert('Restore request failed');
+              showNotification('Restore request failed', 'error');
             });
         }
       });

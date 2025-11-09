@@ -385,22 +385,20 @@ body {
 
 /* Upload Image Button */
 .upload-image-btn {
-  position: absolute;
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 100%;
   background: #054634;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   display: none;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(5, 70, 52, 0.3);
-  z-index: 5;
+  margin-top: 12px;
+  margin-bottom: 8px;
 }
 
 .coordinator-card.editable .upload-image-btn {
@@ -409,7 +407,7 @@ body {
 
 .upload-image-btn:hover {
   background: #076d4f;
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(5, 70, 52, 0.4);
 }
 
@@ -647,4 +645,27 @@ body {
 .remove-image-btn:hover {
   background: #c82333;
   transform: scale(1.1);
+}
+
+/* Notification Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
 }
