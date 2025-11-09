@@ -4,49 +4,57 @@ const departments = [
     id: 1,
     name: 'Department of Biological and Physical Sciences',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    logo: '../images/LOGOS/dp1.png'
+    logo: '../images/LOGOS/dp1.png',
+    backgroundImage: '../images/download.jpg'
   },
   {
     id: 2,
     name: 'Department of Computer Studies',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp2.png'
+    logo: '../images/LOGOS/dp2.png',
+    backgroundImage: '../images/download1.jpg'
   },
   {
     id: 3,
     name: 'Department of Hospitality Management',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp3.png'
+    logo: '../images/LOGOS/dp3.png',
+    backgroundImage: '../images/download2.jpg'
   },
   {
     id: 4,
     name: 'Department of Languages and Mass Communication',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp4.png'
+    logo: '../images/LOGOS/dp4.png',
+    backgroundImage: '../images/download.jpg'
   },
   {
     id: 5,
     name: 'Department of Management',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp5.png'
+    logo: '../images/LOGOS/dp5.png',
+    backgroundImage: '../images/download1.jpg'
   },
   {
     id: 6,
     name: 'Department of Physical Education',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp6.png'
+    logo: '../images/LOGOS/dp6.png',
+    backgroundImage: '../images/download2.jpg'
   },
   {
     id: 7,
     name: 'Department of Social Sciences and Humanities',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp7.png'
+    logo: '../images/LOGOS/dp7.png',
+    backgroundImage: '../images/download.jpg'
   },
   {
     id: 8,
     name: 'Teacher Education Department',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp8.png'
+    logo: '../images/LOGOS/dp8.png',
+    backgroundImage: '../images/download1.jpg'
   }
 ];
 
@@ -230,6 +238,12 @@ function loadDepartment(deptId) {
   if (logoElement && dept.logo) {
     logoElement.src = dept.logo;
     logoElement.alt = dept.name + ' Logo';
+  }
+  
+  // Update carousel background image
+  const backgroundElement = document.getElementById('carousel-background');
+  if (backgroundElement && dept.backgroundImage) {
+    backgroundElement.style.backgroundImage = `url('${dept.backgroundImage}')`;
   }
   
   // Update active sidebar card

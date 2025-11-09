@@ -362,6 +362,31 @@ body {
   align-items: center;
   gap: 20px;
   position: relative;
+  overflow: hidden;
+  min-height: 250px;
+}
+
+.carousel-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 0;
+}
+
+.carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1;
 }
 
 .carousel-arrow {
@@ -375,6 +400,8 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
+  z-index: 2;
+  position: relative;
 }
 
 .carousel-arrow:hover {
@@ -386,6 +413,8 @@ body {
   align-items: center;
   gap: 25px;
   flex: 1;
+  z-index: 2;
+  position: relative;
 }
 
 .dept-logo {
