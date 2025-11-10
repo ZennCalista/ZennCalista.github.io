@@ -463,6 +463,20 @@
       function closeModal() {
         uploadModal.classList.remove('active');
         document.body.style.overflow = '';
+        
+        // Reset form and edit mode
+        form.reset();
+        selectedFiles = [];
+        imageDescriptions = {};
+        imagePreviewContainer.innerHTML = '';
+        
+        // Clear edit mode
+        if (window.editMode) {
+          window.editMode = null;
+        }
+        
+        // Reset submit button text
+        submitBtn.textContent = 'Upload Program';
       }
 
       closeButton.addEventListener('click', closeModal);
@@ -614,11 +628,23 @@
           return;
         }
 
+        // Check if we're in edit mode
+        const isEditMode = window.editMode && window.editMode.programId;
+        
         isSubmitting = true;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Uploading...';
+        submitBtn.textContent = isEditMode ? 'Updating...' : 'Uploading...';
 
         const formData = new FormData();
+        
+        if (isEditMode) {
+          formData.append('program_id', window.editMode.programId);
+          
+          // Add images to remove
+          if (window.editMode.imagesToRemove && window.editMode.imagesToRemove.length > 0) {
+            formData.append('images_to_remove', JSON.stringify(window.editMode.imagesToRemove));
+          }
+        }
         
         const formElements = form.elements;
         for (let element of formElements) {
@@ -633,7 +659,11 @@
         });
 
         try {
-          const endpoint = new URL('../home/backend/upload_program.php', window.location.href).href;
+          // Use update endpoint if in edit mode, otherwise use upload endpoint
+          const endpoint = isEditMode 
+            ? new URL('../home/backend/update_program.php', window.location.href).href
+            : new URL('../home/backend/upload_program.php', window.location.href).href;
+          
           const response = await fetch(endpoint, {
             method: 'POST',
             body: formData
@@ -652,11 +682,18 @@
           }
 
           if (result.success) {
-            showMessage('Program uploaded successfully!', 'success');
+            const successMsg = isEditMode ? 'Program updated successfully!' : 'Program uploaded successfully!';
+            showMessage(successMsg, 'success');
             form.reset();
             selectedFiles = [];
             imageDescriptions = {};
             imagePreviewContainer.innerHTML = '';
+            
+            // Clear edit mode
+            if (isEditMode) {
+              window.editMode = null;
+            }
+            
             setTimeout(function() {
               closeModal();
               window.location.reload();
@@ -670,7 +707,7 @@
         } finally {
           isSubmitting = false;
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Upload Program';
+          submitBtn.textContent = isEditMode ? 'Update Program' : 'Upload Program';
         }
       });
     }

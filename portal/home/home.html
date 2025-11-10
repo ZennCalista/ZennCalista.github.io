@@ -570,7 +570,10 @@
       if (window.userRole === 'admin') {
         const adminActions = document.createElement('div');
         adminActions.className = 'admin-actions';
-        adminActions.innerHTML = '<button id="delete-program-btn" class="delete-btn">Archive Program</button>';
+        adminActions.innerHTML = `
+          <button id="edit-program-btn" class="edit-btn">Edit Program</button>
+          <button id="delete-program-btn" class="delete-btn">Archive Program</button>
+        `;
         modalBody.appendChild(adminActions);
       }
     }
@@ -717,6 +720,88 @@
         );
       }
     });
+
+    // Event delegation for edit button
+    document.addEventListener('click', function(e){
+      if (e.target.id === 'edit-program-btn') {
+        // Get current program data from modal
+        const programId = modalState.programId;
+        const title = document.getElementById('program-modal-title').textContent;
+        const description = document.querySelector('#program-modal-body p:not(.read-more)')?.textContent || '';
+        
+        // Close the program modal
+        closeProgramModal();
+        
+        // Wait a bit for modal to close, then open upload form in edit mode
+        setTimeout(() => {
+          // Fetch full program data including department
+          fetch(`backend/get_program_details.php?id=${programId}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                const program = data.program;
+                
+                // Open the upload modal
+                const fabContent = document.querySelector('.fab-content');
+                if (fabContent) {
+                  fabContent.style.display = 'block';
+                  
+                  // Populate form fields
+                  document.getElementById('program-title').value = program.title;
+                  document.getElementById('program-description').value = program.description;
+                  document.getElementById('department').value = program.department_id;
+                  
+                  // Store edit mode data
+                  window.editMode = {
+                    programId: programId,
+                    existingImages: program.images || []
+                  };
+                  
+                  // Change submit button text
+                  const submitBtn = document.querySelector('.fab-content form button[type="submit"]');
+                  if (submitBtn) {
+                    submitBtn.textContent = 'Update Program';
+                  }
+                  
+                  // Show existing images
+                  const imagePreview = document.getElementById('image-preview');
+                  if (imagePreview && program.images) {
+                    imagePreview.innerHTML = program.images.map(img => `
+                      <div class="preview-item" data-image-id="${img.id}">
+                        <img src="../${img.path}" alt="Existing image">
+                        <button type="button" class="remove-preview" onclick="removeExistingImage(${img.id})">×</button>
+                      </div>
+                    `).join('');
+                  }
+                }
+              } else {
+                showNotification('Error loading program details: ' + data.error, 'error');
+              }
+            })
+            .catch(err => {
+              console.error('Error loading program details:', err);
+              showNotification('Error loading program details', 'error');
+            });
+        }, 300);
+      }
+    });
+
+    // Function to remove existing images during edit
+    function removeExistingImage(imageId) {
+      if (!window.editMode) return;
+      
+      // Add to removal list
+      if (!window.editMode.imagesToRemove) {
+        window.editMode.imagesToRemove = [];
+      }
+      window.editMode.imagesToRemove.push(imageId);
+      
+      // Remove from preview
+      const previewItem = document.querySelector(`.preview-item[data-image-id="${imageId}"]`);
+      if (previewItem) {
+        previewItem.remove();
+      }
+    }
 
     // Confirmation Modal Functions
     function showConfirmModal(title, message, onConfirm) {

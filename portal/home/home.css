@@ -791,6 +791,27 @@ body.blurred > :not(.fullscreen-image-overlay):not(.program-modal):not(.program-
 .admin-actions {
   margin-top: 15px;
   text-align: center;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.edit-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+.edit-btn:hover {
+  background-color: #0056b3;
+}
+.edit-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 .delete-btn {
   background-color: #dc3545;
