@@ -309,7 +309,6 @@
         }
         
         const programs = await response.json();
-        const tbody = document.getElementById('archive-tbody');
 
         if (programs.error) {
           tbody.innerHTML = `<tr><td colspan="6" class="error-message">Error: ${programs.error}</td></tr>`;
