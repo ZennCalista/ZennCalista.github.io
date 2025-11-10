@@ -295,7 +295,12 @@
 
     // Load archived programs
     async function loadArchivedPrograms() {
+      const tbody = document.getElementById('archive-tbody');
+      
       try {
+        // Show loading indicator
+        tbody.innerHTML = '<tr><td colspan="6" class="loading-message">Loading archived programs...</td></tr>';
+        
         // Add cache-busting timestamp to ensure fresh data
         const response = await fetch(`backend/get_archived_programs.php?_=${Date.now()}`);
         
@@ -536,16 +541,25 @@
                 .then(res => res.json())
                 .then(data => {
                   if (data.success) {
-                    // remove row from table
+                    // remove row from table with animation
                     const row = document.querySelector(`tr[data-program-id="${archiveId}"]`);
-                    if (row) row.remove();
+                    if (row) {
+                      row.style.opacity = '0';
+                      row.style.transform = 'scale(0.95)';
+                      row.style.transition = 'opacity 0.3s, transform 0.3s';
+                      setTimeout(() => {
+                        row.remove();
+                        // Update archivedPrograms array
+                        archivedPrograms = archivedPrograms.filter(p => p.id != archiveId);
+                        // Check if table is empty
+                        const tbody = document.getElementById('archive-tbody');
+                        if (tbody.children.length === 0) {
+                          tbody.innerHTML = '<tr><td colspan="6" class="no-records">No archived programs found.</td></tr>';
+                        }
+                      }, 300);
+                    }
                     closeModal();
                     showNotification('Program restored successfully', 'success');
-                    
-                    // Reload archived programs from server to get fresh data (bypasses cache)
-                    setTimeout(() => {
-                      loadArchivedPrograms();
-                    }, 500);
                   } else {
                     showNotification('Restore failed: ' + (data.error || 'Unknown error'), 'error');
                     // Re-enable button on error

@@ -405,7 +405,7 @@
         
         return `
           <div class="article-card is-entering">
-            <img src="${imageSource}" alt="${program.program_name}"> 
+            <img src="${imageSource}" alt="${program.program_name}" loading="lazy"> 
             <h4>${program.program_name}</h4>
             <p>${truncateText(program.description || 'No description available.', 120)}</p>
             <div class="program-details">
@@ -433,7 +433,13 @@
     }
 
     async function loadPrograms() {
+      const container = document.getElementById('programs-container');
+      const btn = document.getElementById('load-more-btn');
+      
       try {
+        // Show loading indicator
+        container.innerHTML = '<div class="loading-message">Loading programs...</div>';
+        
         // Add cache-busting timestamp to ensure fresh data
         const response = await fetch(`backend/get_programs.php?_=${Date.now()}`);
         
@@ -442,9 +448,6 @@
         }
         
         const programs = await response.json();
-
-        const container = document.getElementById('programs-container');
-        const btn = document.getElementById('load-more-btn');
 
         // Check if response contains an error
         if (programs.error) {
@@ -660,20 +663,23 @@
                   console.log('Parsed JSON:', data);
                   
                   if (data.success) {
-                    // Remove from DOM
+                    // Remove from DOM with smooth animation
                     const card = document.querySelector(`.read-more-btn[data-program-id="${programId}"]`)?.closest('.article-card');
                     if (card) {
                       card.style.opacity = '0';
                       card.style.transform = 'scale(0.9)';
-                      setTimeout(() => card.remove(), 300);
+                      setTimeout(() => {
+                        card.remove();
+                        // Update allPrograms array and renderedCount
+                        allPrograms = allPrograms.filter(p => p.id != programId);
+                        if (renderedCount > 0) renderedCount--;
+                        // Update load more button
+                        const btn = document.getElementById('load-more-btn');
+                        btn.style.display = renderedCount < allPrograms.length ? 'inline-block' : 'none';
+                      }, 300);
                     }
                     closeProgramModal();
                     showNotification(`Program "${programName}" has been archived successfully.`, 'success');
-                    
-                    // Reload programs from server to get fresh data (bypasses cache)
-                    setTimeout(() => {
-                      loadPrograms();
-                    }, 500);
                   } else {
                     showNotification('Error archiving program: ' + (data.error || 'Unknown error'), 'error');
                     // Re-enable button on error
