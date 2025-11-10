@@ -296,7 +296,8 @@
     // Load archived programs
     async function loadArchivedPrograms() {
       try {
-        const response = await fetch('backend/get_archived_programs.php');
+        // Add cache-busting timestamp to ensure fresh data
+        const response = await fetch(`backend/get_archived_programs.php?_=${Date.now()}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -540,6 +541,11 @@
                     if (row) row.remove();
                     closeModal();
                     showNotification('Program restored successfully', 'success');
+                    
+                    // Reload archived programs from server to get fresh data (bypasses cache)
+                    setTimeout(() => {
+                      loadArchivedPrograms();
+                    }, 500);
                   } else {
                     showNotification('Restore failed: ' + (data.error || 'Unknown error'), 'error');
                     // Re-enable button on error
