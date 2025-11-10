@@ -491,6 +491,9 @@
       document.getElementById('modal-prev').addEventListener('click', () => setModalImage(modalState.index - 1));
       document.getElementById('modal-next').addEventListener('click', () => setModalImage(modalState.index + 1));
 
+      // Track ongoing restore operations
+      let restoreInProgress = new Set();
+      
       // Event delegation for view details buttons
       document.addEventListener('click', function(e) {
         if (e.target.classList.contains('view-details-btn')) {
@@ -508,10 +511,26 @@
             return;
           }
           
+          // Prevent duplicate requests
+          if (restoreInProgress.has(archiveId)) {
+            showNotification('Restore already in progress, please wait...', 'warning');
+            return;
+          }
+          
           showConfirmModal(
             'Restore Program', 
             'Are you sure you want to restore this program back to active programs?',
             function() {
+              // Disable the button
+              const restoreBtn = document.getElementById('restore-program-btn');
+              if (restoreBtn) {
+                restoreBtn.disabled = true;
+                restoreBtn.textContent = 'Restoring...';
+              }
+              
+              // Mark as in progress
+              restoreInProgress.add(archiveId);
+              
               fetch(`backend/restore_program.php?id=${archiveId}`)
                 .then(res => res.json())
                 .then(data => {
@@ -523,10 +542,25 @@
                     showNotification('Program restored successfully', 'success');
                   } else {
                     showNotification('Restore failed: ' + (data.error || 'Unknown error'), 'error');
+                    // Re-enable button on error
+                    if (restoreBtn) {
+                      restoreBtn.disabled = false;
+                      restoreBtn.textContent = 'Restore Program';
+                    }
                   }
                 }).catch(err => {
                   console.error('Restore error:', err);
                   showNotification('Restore request failed', 'error');
+                  // Re-enable button on error
+                  const restoreBtn = document.getElementById('restore-program-btn');
+                  if (restoreBtn) {
+                    restoreBtn.disabled = false;
+                    restoreBtn.textContent = 'Restore Program';
+                  }
+                })
+                .finally(() => {
+                  // Remove from in-progress set
+                  restoreInProgress.delete(archiveId);
                 });
             }
           );

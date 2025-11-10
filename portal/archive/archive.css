@@ -405,11 +405,17 @@ body.page-exit {
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, opacity 0.2s;
 }
 
 .restore-btn:hover {
   background-color: #218838;
+}
+
+.restore-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* ========================================

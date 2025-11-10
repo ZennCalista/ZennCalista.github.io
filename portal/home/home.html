@@ -601,6 +601,9 @@
       if (program) openProgramModal(program);
     });
 
+    // Track ongoing archive operations
+    let archiveInProgress = new Set();
+    
     // Event delegation for delete button
     document.addEventListener('click', function(e){
       if (e.target.id === 'delete-program-btn') {
@@ -610,6 +613,22 @@
           function() {
             const programId = modalState.programId;
             const programName = document.getElementById('program-modal-title').textContent;
+            
+            // Prevent duplicate requests
+            if (archiveInProgress.has(programId)) {
+              showNotification('Archive already in progress, please wait...', 'warning');
+              return;
+            }
+            
+            // Disable the button
+            const archiveBtn = document.getElementById('delete-program-btn');
+            if (archiveBtn) {
+              archiveBtn.disabled = true;
+              archiveBtn.textContent = 'Archiving...';
+            }
+            
+            // Mark as in progress
+            archiveInProgress.add(programId);
             
             console.log('Attempting to archive program ID:', programId);
             
@@ -658,16 +677,36 @@
                     showNotification(`Program "${programName}" has been archived successfully.`, 'success');
                   } else {
                     showNotification('Error archiving program: ' + (data.error || 'Unknown error'), 'error');
+                    // Re-enable button on error
+                    if (archiveBtn) {
+                      archiveBtn.disabled = false;
+                      archiveBtn.textContent = 'Archive Program';
+                    }
                   }
                 } catch (jsonError) {
                   console.error('JSON parse error:', jsonError);
                   console.error('Response text:', text);
                   showNotification('Invalid response from server: ' + text.substring(0, 100), 'error');
+                  // Re-enable button on error
+                  if (archiveBtn) {
+                    archiveBtn.disabled = false;
+                    archiveBtn.textContent = 'Archive Program';
+                  }
                 }
               })
               .catch(err => {
                 console.error('Archive error:', err);
                 showNotification('Error: ' + err.message, 'error');
+                // Re-enable button on error
+                const archiveBtn = document.getElementById('delete-program-btn');
+                if (archiveBtn) {
+                  archiveBtn.disabled = false;
+                  archiveBtn.textContent = 'Archive Program';
+                }
+              })
+              .finally(() => {
+                // Remove from in-progress set
+                archiveInProgress.delete(programId);
               });
           }
         );

@@ -43,6 +43,34 @@ try {
         throw new Exception('Invalid program ID: ' . $id);
     }
     
+    // Check if program is already archived (prevent duplicates)
+    $check_stmt = $conn->prepare("SELECT id FROM programs WHERE id = ? AND is_archived = 1");
+    if ($check_stmt) {
+        $check_stmt->bind_param("i", $id);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+        if ($check_result->num_rows > 0) {
+            $check_stmt->close();
+            echo json_encode(['success' => true, 'message' => 'Program already archived']);
+            exit;
+        }
+        $check_stmt->close();
+    }
+    
+    // Check if there's already an archive entry for this program
+    $archive_check = $conn->prepare("SELECT id FROM programs_archive WHERE original_program_id = ?");
+    if ($archive_check) {
+        $archive_check->bind_param("i", $id);
+        $archive_check->execute();
+        $archive_result = $archive_check->get_result();
+        if ($archive_result->num_rows > 0) {
+            $archive_check->close();
+            echo json_encode(['success' => true, 'message' => 'Program already in archive']);
+            exit;
+        }
+        $archive_check->close();
+    }
+    
     // Get the program data
     $stmt = $conn->prepare("SELECT * FROM programs WHERE id = ?");
     if (!$stmt) {

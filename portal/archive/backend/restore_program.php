@@ -26,11 +26,35 @@ try {
     $archive = $res->fetch_assoc();
     $stmt->close();
 
-    if (!$archive) throw new Exception('Archive record not found');
+    if (!$archive) {
+        // Archive already deleted/restored - return success to avoid errors on duplicate clicks
+        $conn->rollback();
+        echo json_encode(['success' => true, 'message' => 'Program already restored']);
+        exit;
+    }
 
     $original_id = isset($archive['original_program_id']) ? (int)$archive['original_program_id'] : 0;
     if ($original_id <= 0) {
         throw new Exception('Cannot restore: original_program_id missing for archive id ' . $archive_id);
+    }
+    
+    // Check if the original program is already unarchived (prevent duplicate restore)
+    $check_stmt = $conn->prepare('SELECT is_archived FROM programs WHERE id = ?');
+    if ($check_stmt) {
+        $check_stmt->bind_param('i', $original_id);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+        if ($check_result->num_rows > 0) {
+            $row = $check_result->fetch_assoc();
+            if ($row['is_archived'] == 0) {
+                // Already restored
+                $check_stmt->close();
+                $conn->rollback();
+                echo json_encode(['success' => true, 'message' => 'Program already restored']);
+                exit;
+            }
+        }
+        $check_stmt->close();
     }
 
     // Unmark the original program as archived
