@@ -1,7 +1,8 @@
 <?php
-// Enable error reporting for debugging
+// Disable display_errors to prevent HTML output that breaks JSON
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 // Set content type to JSON
 header('Content-Type: application/json');

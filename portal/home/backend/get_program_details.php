@@ -1,8 +1,10 @@
 <?php
-// Enable error reporting for debugging
+// Disable display_errors to prevent HTML output that breaks JSON
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
+// Set JSON header first to ensure proper content type
 header('Content-Type: application/json');
 
 try {
@@ -10,8 +12,8 @@ try {
     include '../db.php';
 
     // Check database connection
-    if ($conn->connect_error) {
-        echo json_encode(['success' => false, 'error' => 'Database connection failed: ' . $conn->connect_error]);
+    if (!$conn || $conn->connect_error) {
+        echo json_encode(['success' => false, 'error' => 'Database connection failed']);
         exit();
     }
 
@@ -24,6 +26,7 @@ try {
     }
 
     // Query to get program details with images
+    // Fixed JOIN: images.program_id references programs.id
     $sql = "SELECT 
             p.id, p.program_name as title, p.description, p.department_id,
             p.project_titles, p.location, p.start_date, p.end_date, 
@@ -33,7 +36,7 @@ try {
             GROUP_CONCAT(COALESCE(i.image_desc, 'Program image') ORDER BY i.image_id ASC SEPARATOR '||') as image_descs
         FROM programs p
         LEFT JOIN departments d ON p.department_id = d.department_id
-        LEFT JOIN images i ON p.program_id = i.program_id
+        LEFT JOIN images i ON p.id = i.program_id
         WHERE p.id = ? AND (p.is_archived = 0 OR p.is_archived IS NULL)
         GROUP BY p.id, p.program_name, p.description, p.department_id,
                  p.project_titles, p.location, p.start_date, p.end_date, 
@@ -58,14 +61,16 @@ try {
         $image_descs = explode('||', $row['image_descs']);
         
         // Detect environment: Local vs Hosted
+        // For local XAMPP: Use relative path from portal/home/
+        // For production: Use root-relative path
         $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
-        $base_url = $is_local ? '/Etracker' : '';
+        $base_url = $is_local ? '../../uploads/' : '/uploads/';
         
         foreach ($image_ids as $idx => $image_id) {
             if (!empty($image_id)) {
                 $images[] = [
                     'id' => $image_id,
-                    'path' => $base_url . '/uploads/' . $image_id . '.jpg',
+                    'path' => $base_url . $image_id . '.jpg',
                     'description' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image'
                 ];
             }
