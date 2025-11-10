@@ -175,18 +175,34 @@
           role
         })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'success') {
-          userData = { user_id: data.user_id, role: data.role };
-          showRoleSpecificForm();
-        } else {
-          alert(data.message);
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+        return response.text(); // Get text first to handle empty responses
+      })
+      .then(text => {
+        try {
+          const data = JSON.parse(text);
+          if (data.status === 'success') {
+            userData = { user_id: data.user_id, role: data.role };
+            showRoleSpecificForm();
+          } else {
+            // Log full error details to console
+            console.error('Registration error:', data);
+            // Show detailed error if available
+            const errorMsg = data.message + (data.detail ? '\n\nDetails: ' + data.detail : '');
+            alert(errorMsg);
+          }
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          console.error('Response text:', text);
+          alert('Server returned invalid response. Please check console for details.');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred during registration.');
+        alert('An error occurred during registration: ' + error.message);
       });
     }
 
@@ -312,19 +328,35 @@
         },
         body: JSON.stringify(data)
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'success') {
-          alert(data.message);
-          // Optionally redirect or reset the form
-          window.location.reload();
-        } else {
-          alert(data.message);
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(text => {
+        try {
+          const data = JSON.parse(text);
+          if (data.status === 'success') {
+            alert(data.message);
+            // Optionally redirect or reset the form
+            window.location.reload();
+          } else {
+            // Log full error details to console
+            console.error('Registration error:', data);
+            // Show detailed error if available
+            const errorMsg = data.message + (data.detail ? '\n\nDetails: ' + data.detail : '');
+            alert(errorMsg);
+          }
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          console.error('Response text:', text);
+          alert('Server returned invalid response. Please check console for details.');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred during registration.');
+        alert('An error occurred during registration: ' + error.message);
       });
     }
   </script>

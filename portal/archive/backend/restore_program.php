@@ -8,20 +8,6 @@ try {
     $db_path = __DIR__ . '/../../home/db.php';
     if (!file_exists($db_path)) throw new Exception('Database config not found');
     include $db_path;
-    
-    // Include cache helper to invalidate cache after restoring
-    $cache_helper_path = __DIR__ . '/../../home/backend/cache_helper.php';
-    if (!file_exists($cache_helper_path)) {
-        error_log('Cache helper not found at: ' . $cache_helper_path);
-        throw new Exception('Cache helper file not found');
-    }
-    require_once $cache_helper_path;
-    
-    $cache_dir = __DIR__ . '/../../home/backend/cache';
-    if (!is_dir($cache_dir)) {
-        error_log('Cache directory not found at: ' . $cache_dir);
-    }
-    $cache = new SimpleCache($cache_dir);
 
     if ($conn->connect_error) throw new Exception('DB connection failed: ' . $conn->connect_error);
 
@@ -94,12 +80,6 @@ try {
     $d->close();
 
     $conn->commit();
-    
-    // Invalidate cache for both home page and archive page
-    error_log('Attempting to invalidate cache after restoring archive ID: ' . $archive_id);
-    $deleted1 = $cache->delete('programs_list_v3');
-    $deleted2 = $cache->delete('archived_programs_list_v3');
-    error_log('Cache invalidation result - programs_list_v3: ' . ($deleted1 ? 'success' : 'failed') . ', archived_programs_list_v3: ' . ($deleted2 ? 'success' : 'failed'));
 
     echo json_encode(['success' => true, 'message' => 'Program restored successfully']);
 

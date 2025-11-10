@@ -23,20 +23,6 @@ try {
     
     include $db_path;
     
-    // Include cache helper to invalidate cache after archiving
-    $cache_helper_path = __DIR__ . '/cache_helper.php';
-    if (!file_exists($cache_helper_path)) {
-        error_log('Cache helper not found at: ' . $cache_helper_path);
-        throw new Exception('Cache helper file not found');
-    }
-    require_once $cache_helper_path;
-    
-    $cache_dir = __DIR__ . '/cache';
-    if (!is_dir($cache_dir)) {
-        error_log('Cache directory not found at: ' . $cache_dir);
-    }
-    $cache = new SimpleCache($cache_dir);
-    
     // Check database connection
     if (!isset($conn) || $conn === null) {
         throw new Exception('Database connection is null');
@@ -235,12 +221,6 @@ try {
     if (!$conn->commit()) {
         throw new Exception('Failed to commit transaction: ' . $conn->error);
     }
-    
-    // Invalidate cache for both home page and archive page
-    error_log('Attempting to invalidate cache after archiving program ID: ' . $id);
-    $deleted1 = $cache->delete('programs_list_v3');
-    $deleted2 = $cache->delete('archived_programs_list_v3');
-    error_log('Cache invalidation result - programs_list_v3: ' . ($deleted1 ? 'success' : 'failed') . ', archived_programs_list_v3: ' . ($deleted2 ? 'success' : 'failed'));
     
     $response = ['success' => true, 'message' => 'Program archived successfully'];
     echo json_encode($response);

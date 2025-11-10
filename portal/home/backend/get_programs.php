@@ -4,23 +4,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 try {
-    // PERFORMANCE: Add caching support
-    include 'cache_helper.php';
-    $cache = new SimpleCache();
-    
-    // Check cache first (5 minute TTL)
-    // v3: Fixed image path detection for hosted environment
-    $cache_key = 'programs_list_v3'; 
-    $cached_data = $cache->get($cache_key);
-    
-    if ($cached_data !== null) {
-        // Serve from cache
-        header('Content-Type: application/json');
-        header('X-Cache: HIT');
-        echo $cached_data;
-        exit();
-    }
-    
     include 'no_cache.php';
     include '../db.php';
 
@@ -94,20 +77,12 @@ try {
             $programs[] = $row;
         }
         
-        // Return JSON and cache the response
-        $json_response = json_encode($programs);
-        $cache->set($cache_key, $json_response, 300); // Cache for 5 minutes
-        
+        // Return JSON
         header('Content-Type: application/json');
-        header('X-Cache: MISS');
-        echo $json_response;
+        echo json_encode($programs);
     } else {
-        $json_response = json_encode([]);
-        $cache->set($cache_key, $json_response, 300);
-        
         header('Content-Type: application/json');
-        header('X-Cache: MISS');
-        echo $json_response;
+        echo json_encode([]);
     }
 
     $conn->close();

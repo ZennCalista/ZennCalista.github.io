@@ -1,21 +1,4 @@
 <?php
-// PERFORMANCE: Add caching support
-include __DIR__ . '/../../home/backend/cache_helper.php';
-$cache = new SimpleCache(__DIR__ . '/../../home/backend/cache');
-
-// Check cache first (5 minute TTL)
-// v3: Fixed image path detection for hosted environment
-$cache_key = 'archived_programs_list_v3';
-$cached_data = $cache->get($cache_key);
-
-if ($cached_data !== null) {
-    // Serve from cache
-    header('Content-Type: application/json');
-    header('X-Cache: HIT');
-    echo $cached_data;
-    exit();
-}
-
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -121,18 +104,10 @@ try {
             $programs[] = $row;
         }
         
-        // Cache the response
-        $json_response = json_encode($programs);
-        $cache->set($cache_key, $json_response, 300); // Cache for 5 minutes
-        
-        header('X-Cache: MISS');
-        echo $json_response;
+        // Return JSON
+        echo json_encode($programs);
     } else {
-        $json_response = json_encode([]);
-        $cache->set($cache_key, $json_response, 300);
-        
-        header('X-Cache: MISS');
-        echo $json_response;
+        echo json_encode([]);
     }
 
     $conn->close();

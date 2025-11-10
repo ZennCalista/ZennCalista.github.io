@@ -55,7 +55,8 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
         echo json_encode(["status" => "success", "message" => "Initial registration successful", "user_id" => $stmt->insert_id, "role" => $role]);
     } else {
         error_log('register.php user insert failed: ' . $stmt->error);
-        echo json_encode(["status" => "error", "message" => "Failed to register user"]);
+        // Include error detail for debugging
+        echo json_encode(["status" => "error", "message" => "Failed to register user", "detail" => $stmt->error]);
     }
 
     $stmt->close();
@@ -93,7 +94,7 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
             echo json_encode(["status" => "success", "message" => "Student registration completed"]);
         } else {
             error_log('register.php student insert failed: ' . $stmt->error);
-            echo json_encode(["status" => "error", "message" => "Failed to register student details"]);
+            echo json_encode(["status" => "error", "message" => "Failed to register student details", "detail" => $stmt->error]);
         }
 
         $stmt->close();
@@ -177,7 +178,7 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
             ]);
         } else {
             error_log('register.php faculty insert failed: ' . $stmt->error);
-            echo json_encode(["status" => "error", "message" => "Failed to register faculty details"]);
+            echo json_encode(["status" => "error", "message" => "Failed to register faculty details", "detail" => $stmt->error]);
         }
 
         $stmt->close();
