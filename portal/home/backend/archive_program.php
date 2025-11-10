@@ -23,6 +23,10 @@ try {
     
     include $db_path;
     
+    // Include cache helper to invalidate cache after archiving
+    require_once __DIR__ . '/cache_helper.php';
+    $cache = new SimpleCache(__DIR__ . '/cache');
+    
     // Check database connection
     if (!isset($conn) || $conn === null) {
         throw new Exception('Database connection is null');
@@ -221,6 +225,10 @@ try {
     if (!$conn->commit()) {
         throw new Exception('Failed to commit transaction: ' . $conn->error);
     }
+    
+    // Invalidate cache for both home page and archive page
+    $cache->delete('programs_list_v3');
+    $cache->delete('archived_programs_list_v3');
     
     $response = ['success' => true, 'message' => 'Program archived successfully'];
     echo json_encode($response);

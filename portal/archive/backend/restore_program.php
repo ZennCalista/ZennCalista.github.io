@@ -8,6 +8,10 @@ try {
     $db_path = __DIR__ . '/../../home/db.php';
     if (!file_exists($db_path)) throw new Exception('Database config not found');
     include $db_path;
+    
+    // Include cache helper to invalidate cache after restoring
+    require_once __DIR__ . '/../../home/backend/cache_helper.php';
+    $cache = new SimpleCache(__DIR__ . '/../../home/backend/cache');
 
     if ($conn->connect_error) throw new Exception('DB connection failed: ' . $conn->connect_error);
 
@@ -80,6 +84,10 @@ try {
     $d->close();
 
     $conn->commit();
+    
+    // Invalidate cache for both home page and archive page
+    $cache->delete('programs_list_v3');
+    $cache->delete('archived_programs_list_v3');
 
     echo json_encode(['success' => true, 'message' => 'Program restored successfully']);
 
