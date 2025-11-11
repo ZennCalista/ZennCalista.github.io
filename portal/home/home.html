@@ -287,23 +287,69 @@
       });
     });
     
-    // Carousel functionality
-    const images = [
-      { src: "../images/download.jpg", caption: "Picture 1 description" },
-      { src: "../images/download1.jpg", caption: "Picture 2 description" },
-      { src: "../images/download2.jpg", caption: "Picture 3 description" }
-    ];
-
+    // Carousel functionality - Load images from database
+    let images = [];
     let currentIndex = 0;
     const imgElement = document.getElementById("carousel-img");
     const captionElement = document.getElementById("carousel-caption");
+    let carouselInterval = null;
+
+    async function loadCarouselImages() {
+      try {
+        const response = await fetch(`backend/get_carousel_images.php?_=${Date.now()}`);
+        const data = await response.json();
+        
+        if (data.success && data.images && data.images.length > 0) {
+          images = data.images;
+          console.log('Loaded', images.length, 'carousel images from database');
+        } else {
+          // Fallback to default images if none in database
+          images = [
+            { src: "../images/download.jpg", caption: "Welcome to CvSU Extension Services" },
+            { src: "../images/download1.jpg", caption: "Community Engagement Programs" },
+            { src: "../images/download2.jpg", caption: "Extension Activities" }
+          ];
+          console.log('Using default carousel images (no images in database)');
+        }
+        
+        // Initialize carousel after images are loaded
+        initializeCarousel();
+        
+      } catch (error) {
+        console.error('Error loading carousel images:', error);
+        // Fallback to default images on error
+        images = [
+          { src: "../images/download.jpg", caption: "Welcome to CvSU Extension Services" },
+          { src: "../images/download1.jpg", caption: "Community Engagement Programs" },
+          { src: "../images/download2.jpg", caption: "Extension Activities" }
+        ];
+        initializeCarousel();
+      }
+    }
 
     function showSlide(index) {
+      if (images.length === 0) return;
       currentIndex = (index + images.length) % images.length;
       imgElement.src = images[currentIndex].src;
       captionElement.textContent = images[currentIndex].caption;
     }
 
+    function initializeCarousel() {
+      // Show first image
+      showSlide(0);
+      
+      // Clear any existing interval
+      if (carouselInterval) {
+        clearInterval(carouselInterval);
+      }
+      
+      // Auto slide every 5 seconds
+      carouselInterval = setInterval(() => {
+        showSlide(currentIndex + 1);
+      }, 5000);
+    }
+
+    // Event listeners for carousel navigation
     document.getElementById("prev").addEventListener("click", () => {
       showSlide(currentIndex - 1);
     });
@@ -312,13 +358,8 @@
       showSlide(currentIndex + 1);
     });
 
-    // Initialize first image immediately
-    showSlide(0);
-
-    // Auto slide every 5 seconds
-    setInterval(() => {
-      showSlide(currentIndex + 1);
-    }, 5000);
+    // Load carousel images when page loads
+    loadCarouselImages();
 
     // Auth/session display
     async function loadSession() {
