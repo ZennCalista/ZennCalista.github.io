@@ -195,6 +195,45 @@
     </div>
   </div>
 
+  <!-- Load Floating Action Button (Upload) -->
+  <div id="fab-container"></div>
+  <script>
+    (async function() {
+      try {
+        const response = await fetch('../shared/fab_upload.html');
+        const html = await response.text();
+        
+        // Create a temporary container to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Extract and append non-script elements
+        const container = document.getElementById('fab-container');
+        Array.from(tempDiv.children).forEach(child => {
+          if (child.tagName !== 'SCRIPT') {
+            container.appendChild(child.cloneNode(true));
+          }
+        });
+        
+        // Extract and execute scripts
+        const scripts = tempDiv.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement('script');
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          document.body.appendChild(newScript);
+        });
+        
+        console.log('FAB loaded successfully');
+      } catch (error) {
+        console.error('Error loading FAB:', error);
+      }
+    })();
+  </script>
+
   <script src="department_page.js?v=2.0"></script>
 
 </body>

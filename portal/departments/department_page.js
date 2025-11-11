@@ -354,7 +354,7 @@ function truncateText(text, maxLength) {
 }
 
 // Modal functionality
-let modalState = { images: [], index: 0 };
+let modalState = { images: [], index: 0, programId: null };
 
 function openProgramModal(program) {
   const overlay = document.getElementById('program-modal-overlay');
@@ -368,6 +368,9 @@ function openProgramModal(program) {
   const uploadedBy = document.getElementById('program-modal-uploaded-by');
   const mainImg = document.getElementById('modal-main-img');
   const thumbs = document.getElementById('modal-thumbs');
+
+  // Store program ID for edit/delete functionality
+  modalState.programId = program.id;
 
   title.textContent = program.program_name;
   desc.textContent = program.description || 'No description available.';
@@ -423,6 +426,43 @@ function openProgramModal(program) {
     thumbs.appendChild(thumb);
   });
 
+  // Add admin actions if user is admin
+  if (window.userRole === 'admin') {
+    // Remove existing admin actions if any
+    const existingActions = document.querySelector('.admin-actions');
+    if (existingActions) existingActions.remove();
+    
+    // Create admin actions container
+    const adminActions = document.createElement('div');
+    adminActions.className = 'admin-actions';
+    adminActions.style.cssText = 'display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;';
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.id = 'edit-program-btn';
+    editBtn.className = 'edit-btn';
+    editBtn.textContent = 'Edit Program';
+    editBtn.style.cssText = 'flex: 1; padding: 10px 20px; background: #054634; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.3s;';
+    editBtn.onmouseover = () => editBtn.style.background = '#07624a';
+    editBtn.onmouseout = () => editBtn.style.background = '#054634';
+    
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.id = 'delete-program-btn';
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = 'Delete Program';
+    deleteBtn.style.cssText = 'flex: 1; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.3s;';
+    deleteBtn.onmouseover = () => deleteBtn.style.background = '#c82333';
+    deleteBtn.onmouseout = () => deleteBtn.style.background = '#dc3545';
+    
+    adminActions.appendChild(editBtn);
+    adminActions.appendChild(deleteBtn);
+    
+    // Append to modal body
+    const modalBody = document.getElementById('program-modal-body');
+    modalBody.appendChild(adminActions);
+  }
+
   overlay.classList.add('active');
   modal.classList.add('active');
 }
@@ -446,6 +486,9 @@ function setModalImage(idx) {
 function closeProgramModal() {
   document.getElementById('program-modal-overlay').classList.remove('active');
   document.getElementById('program-modal').classList.remove('active');
+  // Remove admin actions if present
+  const adminActions = document.querySelector('.admin-actions');
+  if (adminActions) adminActions.remove();
 }
 
 // Modal controls
@@ -474,3 +517,156 @@ window.addEventListener('popstate', function(e) {
     loadDepartment(e.state.deptId);
   }
 });
+
+// Event delegation for edit and delete buttons
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'edit-program-btn') {
+    // Get current program data from modal
+    const programId = modalState.programId;
+    
+    // Close the program modal
+    closeProgramModal();
+    
+    // Wait a bit for modal to close, then open upload form in edit mode
+    setTimeout(() => {
+      // Fetch full program data including department
+      fetch(`../home/backend/get_program_details.php?id=${programId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const program = data.program;
+            
+            // Open the upload modal
+            const uploadModal = document.getElementById('upload-modal');
+            if (uploadModal) {
+              uploadModal.classList.add('active');
+              document.body.style.overflow = 'hidden';
+              
+              // Populate form fields with correct IDs from fab_upload.html
+              document.getElementById('program_name').value = program.title;
+              document.getElementById('description').value = program.description;
+              document.getElementById('department').value = program.department_id;
+              document.getElementById('project_titles').value = program.project_titles || '';
+              document.getElementById('location').value = program.location || '';
+              document.getElementById('start_date').value = program.start_date || '';
+              document.getElementById('end_date').value = program.end_date || '';
+              document.getElementById('status').value = program.status || '';
+              document.getElementById('max_students').value = program.max_students || '';
+              document.getElementById('sdg_goals').value = program.sdg_goals || '';
+              
+              // Store edit mode data
+              window.editMode = {
+                programId: programId,
+                existingImages: program.images || [],
+                imagesToRemove: []
+              };
+              
+              // Change submit button text
+              const submitBtn = document.getElementById('submit-btn');
+              if (submitBtn) {
+                submitBtn.textContent = 'Update Program';
+              }
+              
+              // Change modal header
+              const modalHeader = document.querySelector('.upload-modal-header h2');
+              if (modalHeader) {
+                modalHeader.textContent = 'Edit Program';
+              }
+              
+              // Show existing images in the preview container
+              const imagePreviewContainer = document.getElementById('image-preview-container');
+              if (imagePreviewContainer && program.images && program.images.length > 0) {
+                const existingImagesHTML = program.images.map(img => `
+                  <div class="image-preview" data-image-id="${img.id}">
+                    <img src="${img.image_url}" alt="${img.image_desc || 'Program image'}">
+                    <button type="button" class="remove-btn" onclick="removeExistingImage(${img.id})">&times;</button>
+                    <input type="text" class="desc-input" placeholder="Image description" value="${img.image_desc || ''}" disabled>
+                  </div>
+                `).join('');
+                imagePreviewContainer.innerHTML = existingImagesHTML;
+              }
+            }
+          } else {
+            showNotification('Error loading program details: ' + data.error, 'error');
+          }
+        })
+        .catch(err => {
+          console.error('Error loading program details:', err);
+          showNotification('Error loading program details', 'error');
+        });
+    }, 300);
+  }
+  
+  if (e.target.id === 'delete-program-btn') {
+    const programId = modalState.programId;
+    
+    if (confirm('Are you sure you want to delete this program? This action cannot be undone.')) {
+      fetch(`../home/backend/delete_program.php?id=${programId}`, {
+        method: 'DELETE'
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showNotification('Program deleted successfully', 'success');
+            closeProgramModal();
+            // Reload the current department
+            const urlParams = new URLSearchParams(window.location.search);
+            const deptId = urlParams.get('dept');
+            if (deptId) {
+              loadDepartment(parseInt(deptId));
+            }
+          } else {
+            showNotification('Error deleting program: ' + data.error, 'error');
+          }
+        })
+        .catch(err => {
+          console.error('Error deleting program:', err);
+          showNotification('Error deleting program', 'error');
+        });
+    }
+  }
+});
+
+// Function to remove existing images during edit
+function removeExistingImage(imageId) {
+  if (!window.editMode) return;
+  
+  // Add to removal list
+  if (!window.editMode.imagesToRemove) {
+    window.editMode.imagesToRemove = [];
+  }
+  window.editMode.imagesToRemove.push(imageId);
+  
+  // Remove from preview
+  const previewItem = document.querySelector(`.image-preview[data-image-id="${imageId}"]`);
+  if (previewItem) {
+    previewItem.remove();
+  }
+}
+
+// Notification function (if not already defined)
+function showNotification(message, type) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    z-index: 10001;
+    animation: slideIn 0.3s ease-out;
+    ${type === 'success' ? 'background: #28a745;' : 'background: #dc3545;'}
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease-out';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
