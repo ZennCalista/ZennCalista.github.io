@@ -1,5 +1,18 @@
 <?php
 session_start();
+require_once '../FACULTY/db.php';
+require_once '../backend/token_utils.php';
+
+// Invalidate current device's token ONLY (not all devices)
+$token = getTokenFromCookie();
+if ($token) {
+    invalidateToken($conn, $token);
+    error_log("Token invalidated for current device");
+}
+
+// Clear the auth token cookie
+clearAuthCookie();
+
 // Unset all session variables
 $_SESSION = [];
 // Ensure session is cleared

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../FACULTY/db.php';
+require_once '../backend/token_utils.php';
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -60,7 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Successful login: create session values compatible with both systems
+    // Successful login: create TOKEN for multi-device support
+    // Also maintain session for backward compatibility
     session_regenerate_id(true);
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['role'] = $user['role'];
@@ -72,7 +74,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'role' => $user['role']
     ];
 
-    error_log("Login successful: user_id={$user['id']}, role={$user['role']}");
+    // Generate authentication token (30 days expiry)
+    $token = createAuthToken($conn, $user['id'], 30);
+    
+    if ($token) {
+        // Set token in httpOnly cookie (secure=false for development without HTTPS)
+        setAuthCookie($token, 30, false);
+        error_log("Login successful with token: user_id={$user['id']}, role={$user['role']}");
+    } else {
+        error_log("Token creation failed, using session only: user_id={$user['id']}");
+    }
+
     // All users redirect to the portal home page (new landing page)
     $redirect_url = '../portal/home/home.html';
     echo json_encode(['status' => 'success', 'redirect_url' => $redirect_url]);

@@ -1,10 +1,42 @@
 <?php
 // Returns JSON of the current logged-in user or 401
+// Supports both TOKEN and SESSION authentication
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
+
+// Include required files
+require_once __DIR__ . '/../../../backend/db.php';
+require_once __DIR__ . '/../../../backend/token_utils.php';
+
 session_start();
 
+// Priority 1: Check for token authentication (multi-device support)
+$token = getTokenFromCookie();
+$tokenUser = null;
+
+if ($token) {
+	$tokenUser = validateToken($conn, $token);
+	if ($tokenUser) {
+		// Token is valid - use token authentication
+		$_SESSION['user'] = [
+			'id' => (int)$tokenUser['id'],
+			'firstname' => $tokenUser['firstname'] ?? '',
+			'lastname' => $tokenUser['lastname'] ?? '',
+			'email' => $tokenUser['email'] ?? '',
+			'role' => $tokenUser['role']
+		];
+		$_SESSION['user_id'] = $tokenUser['id'];
+		$_SESSION['role'] = $tokenUser['role'];
+		error_log("User authenticated via token: user_id={$tokenUser['id']}");
+	} else {
+		// Token is invalid or expired - clear it
+		clearAuthCookie();
+		error_log("Invalid or expired token, cleared cookie");
+	}
+}
+
+// Priority 2: Fall back to session authentication (backward compatibility)
 if (!isset($_SESSION['user'])) {
 	http_response_code(401);
 	echo json_encode(['authenticated' => false]);
