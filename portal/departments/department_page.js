@@ -446,17 +446,17 @@ function openProgramModal(program) {
     editBtn.onmouseover = () => editBtn.style.background = '#07624a';
     editBtn.onmouseout = () => editBtn.style.background = '#054634';
     
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.id = 'delete-program-btn';
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.textContent = 'Delete Program';
-    deleteBtn.style.cssText = 'flex: 1; padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.3s;';
-    deleteBtn.onmouseover = () => deleteBtn.style.background = '#c82333';
-    deleteBtn.onmouseout = () => deleteBtn.style.background = '#dc3545';
+    // Archive button
+    const archiveBtn = document.createElement('button');
+    archiveBtn.id = 'archive-program-btn';
+    archiveBtn.className = 'archive-btn';
+    archiveBtn.textContent = 'Archive Program';
+    archiveBtn.style.cssText = 'flex: 1; padding: 10px 20px; background: #ffc107; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.3s;';
+    archiveBtn.onmouseover = () => archiveBtn.style.background = '#e0a800';
+    archiveBtn.onmouseout = () => archiveBtn.style.background = '#ffc107';
     
     adminActions.appendChild(editBtn);
-    adminActions.appendChild(deleteBtn);
+    adminActions.appendChild(archiveBtn);
     
     // Append to modal body
     const modalBody = document.getElementById('program-modal-body');
@@ -597,17 +597,21 @@ document.addEventListener('click', function(e) {
     }, 300);
   }
   
-  if (e.target.id === 'delete-program-btn') {
+  if (e.target.id === 'archive-program-btn') {
     const programId = modalState.programId;
     
-    if (confirm('Are you sure you want to delete this program? This action cannot be undone.')) {
-      fetch(`../home/backend/delete_program.php?id=${programId}`, {
-        method: 'DELETE'
+    if (confirm('Are you sure you want to archive this program? It will be moved to the archive and hidden from public view.')) {
+      fetch(`../../backend/archive_program.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ program_id: programId })
       })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            showNotification('Program deleted successfully', 'success');
+            showNotification('Program archived successfully', 'success');
             closeProgramModal();
             // Reload the current department
             const urlParams = new URLSearchParams(window.location.search);
@@ -616,12 +620,12 @@ document.addEventListener('click', function(e) {
               loadDepartment(parseInt(deptId));
             }
           } else {
-            showNotification('Error deleting program: ' + data.error, 'error');
+            showNotification('Error archiving program: ' + (data.message || data.error), 'error');
           }
         })
         .catch(err => {
-          console.error('Error deleting program:', err);
-          showNotification('Error deleting program', 'error');
+          console.error('Error archiving program:', err);
+          showNotification('Error archiving program', 'error');
         });
     }
   }
