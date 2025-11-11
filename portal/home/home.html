@@ -783,9 +783,9 @@
                   if (imagePreviewContainer && program.images && program.images.length > 0) {
                     const existingImagesHTML = program.images.map(img => `
                       <div class="image-preview" data-image-id="${img.id}">
-                        <img src="${img.path}" alt="${img.description || 'Program image'}">
+                        <img src="${img.image_url}" alt="${img.image_desc || 'Program image'}">
                         <button type="button" class="remove-btn" onclick="removeExistingImage(${img.id})">&times;</button>
-                        <input type="text" class="desc-input" placeholder="Image description" value="${img.description || ''}" disabled>
+                        <input type="text" class="desc-input" placeholder="Image description" value="${img.image_desc || ''}" disabled>
                       </div>
                     `).join('');
                     imagePreviewContainer.innerHTML = existingImagesHTML;
