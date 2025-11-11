@@ -89,7 +89,7 @@
                 <li><a href="?dept=8">Teacher Education Department</a></li>
               </ul>
             </li>
-            <li class="nav-dropdown admin-only" style="display: none;">
+            <li class="nav-dropdown auth-required" style="display: none;">
               <a href="#" class="nav-dropdown-toggle">Services ▾</a>
               <ul class="nav-dropdown-content">
                 <li><a href="../../register/entry.php">eTracker</a></li>
@@ -195,19 +195,20 @@
     </div>
   </div>
 
-  <!-- Load Floating Action Button (Upload) - Admin Only -->
+  <!-- Load Floating Action Button (Upload) - Admin & Faculty Only -->
   <div id="fab-container"></div>
   <script>
     (async function() {
       try {
-        // Check if user is admin before loading FAB
+        // Check if user is admin or faculty before loading FAB
         const sessionRes = await fetch('../home/backend/session_user.php', { credentials: 'include' });
         
         if (sessionRes.ok) {
           const sessionData = await sessionRes.json();
           
-          // Only load FAB if user is authenticated and is an admin
-          if (sessionData.authenticated && sessionData.user && sessionData.user.role === 'admin') {
+          // Only load FAB if user is authenticated and is admin or faculty
+          if (sessionData.authenticated && sessionData.user && 
+              (sessionData.user.role === 'admin' || sessionData.user.role === 'faculty')) {
             const response = await fetch('../shared/fab_upload.html');
             const html = await response.text();
             
@@ -235,9 +236,9 @@
               document.body.appendChild(newScript);
             });
             
-            console.log('FAB loaded successfully for admin user');
+            console.log('FAB loaded successfully for admin/faculty user');
           } else {
-            console.log('FAB not loaded: User is not an admin');
+            console.log('FAB not loaded: User is not admin or faculty');
           }
         }
       } catch (error) {

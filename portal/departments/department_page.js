@@ -426,8 +426,8 @@ function openProgramModal(program) {
     thumbs.appendChild(thumb);
   });
 
-  // Add admin actions if user is admin
-  if (window.userRole === 'admin') {
+  // Add admin actions if user is admin or faculty
+  if (window.userRole === 'admin' || window.userRole === 'faculty') {
     // Remove existing admin actions if any
     const existingActions = document.querySelector('.admin-actions');
     if (existingActions) existingActions.remove();
