@@ -5,7 +5,7 @@ const departments = [
     name: 'Department of Biological and Physical Sciences',
     description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     logo: '../images/LOGOS/dp1.png',
-    backgroundImage: '../images/download.jpg'
+    backgroundImage: '../images/download.jpg' // fallback
   },
   {
     id: 2,
@@ -61,6 +61,7 @@ const departments = [
 let allPrograms = [];
 let currentDepartmentId = null;
 let currentDeptIndex = 0;
+let carouselImages = []; // Store images from database
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
@@ -68,10 +69,37 @@ document.addEventListener('DOMContentLoaded', async function() {
   setupSidebar();
   setupCarousel();
   
+  // Load carousel images from database
+  await loadCarouselImages();
+  
   // Load programs first, THEN check URL params and display
   await loadAllPrograms();
   checkURLParams();
 });
+
+// Load carousel images from database
+async function loadCarouselImages() {
+  try {
+    const response = await fetch(`../home/backend/get_dept_carousel_images.php?_=${Date.now()}`);
+    const data = await response.json();
+    
+    if (data.success && data.images && data.images.length > 0) {
+      carouselImages = data.images;
+      console.log('Loaded', carouselImages.length, 'carousel images from database');
+      
+      // Assign images to departments (cycle through available images)
+      departments.forEach((dept, index) => {
+        const imageIndex = index % carouselImages.length;
+        dept.backgroundImage = carouselImages[imageIndex].src;
+      });
+    } else {
+      console.log('Using default carousel images (no images in database)');
+    }
+  } catch (error) {
+    console.error('Error loading carousel images:', error);
+    // Keep fallback images already defined in departments array
+  }
+}
 
 // Load session info
 async function loadSession() {
