@@ -148,6 +148,22 @@
             <strong>⚠️ Admin Access Only:</strong> This page should only be accessed by system administrators. 
             Make sure to protect this file or remove it after setup.
         </div>
+        
+        <div style="background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+            <strong>🔍 Debug Tool:</strong> 
+            Having issues with migration? 
+            <a href="debug_migration.php" target="_blank" style="color: #0c5460; text-decoration: underline; font-weight: bold;">
+                Open detailed migration debugger →
+            </a>
+        </div>
+
+        <!-- Step 0: Database Diagnostic -->
+        <div class="section">
+            <h2>Step 0: Database Diagnostic</h2>
+            <p>Check database connection and table status (useful for AWS RDS troubleshooting).</p>
+            <button onclick="checkDatabase()" id="diagnosticBtn">Check Database</button>
+            <div id="diagnosticResult" class="result"></div>
+        </div>
 
         <!-- Step 1: Database Migration -->
         <div class="section">
@@ -189,6 +205,47 @@
     </div>
 
     <script>
+        async function checkDatabase() {
+            const btn = document.getElementById('diagnosticBtn');
+            const result = document.getElementById('diagnosticResult');
+            
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+            result.className = 'result info';
+            result.textContent = 'Connecting to database...';
+            
+            try {
+                const response = await fetch('check_database.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const info = data.data;
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✓ Database Connection OK</strong><br>
+                        <strong>Current Database:</strong> ${info.current_database}<br>
+                        <strong>Total Tables:</strong> ${info.total_tables}<br>
+                        <strong>user_tokens Table:</strong> ${info.user_tokens_table.exists ? '✓ EXISTS' : '✗ NOT FOUND'}<br>
+                        ${info.user_tokens_table.actual_name ? '<strong>Actual Name:</strong> ' + info.user_tokens_table.actual_name + '<br>' : ''}
+                        ${info.row_count !== undefined ? '<strong>Tokens in DB:</strong> ' + info.row_count + '<br>' : ''}
+                        <details style="margin-top:10px;">
+                            <summary style="cursor:pointer;color:#667eea;">View Full Details</summary>
+                            <pre>${JSON.stringify(info, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    result.className = 'result error';
+                    result.textContent = `Error: ${data.error}`;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `Error: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Check Database';
+            }
+        }
+
         async function runMigration() {
             const btn = document.getElementById('migrationBtn');
             const result = document.getElementById('migrationResult');
@@ -207,14 +264,24 @@
                     result.innerHTML = `
                         <strong>✓ Migration Successful!</strong><br>
                         Statements executed: ${data.statements_executed}<br>
-                        <small>The user_tokens table has been created.</small>
+                        Database: ${data.database || 'N/A'}<br>
+                        Table exists: ${data.table_exists ? '✓ YES' : '✗ NO'}<br>
+                        <details style="margin-top:10px;">
+                            <summary style="cursor:pointer;color:#155724;">View Details</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
                     `;
                 } else {
                     result.className = 'result error';
                     result.innerHTML = `
                         <strong>✗ Migration Failed</strong><br>
                         ${data.message || data.error}<br>
-                        ${data.errors ? '<pre>' + JSON.stringify(data.errors, null, 2) + '</pre>' : ''}
+                        Database: ${data.database || 'N/A'}<br>
+                        Table exists: ${data.table_exists ? '✓ YES' : '✗ NO'}<br>
+                        <details style="margin-top:10px;">
+                            <summary style="cursor:pointer;color:#721c24;">View Error Details</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
                     `;
                 }
             } catch (error) {
