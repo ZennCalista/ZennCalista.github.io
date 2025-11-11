@@ -30,7 +30,7 @@ try {
     while ($row = $result->fetch_assoc()) {
         $images[] = [
             'id' => $row['image_id'],
-            'src' => 'backend/get_image.php?image_id=' . $row['image_id'],
+            'src' => '../home/backend/get_image.php?image_id=' . $row['image_id'],
             'caption' => $row['image_desc'] ?: 'Image ' . $row['image_id']
         ];
     }
