@@ -3,14 +3,14 @@ const departments = [
   {
     id: 1,
     name: 'Department of Biological and Physical Sciences',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    description: 'The Department of Biological and Physical Sciences aims to equip students with foundational concepts and principles in Mathematics and the Sciences to support the various academic programs of the University. It seeks to develop students’ abilities to apply these concepts through hands-on laboratory experiments and science-based exercises.',
     logo: '../images/LOGOS/dp1.png',
     backgroundImage: '../images/download.jpg' // fallback
   },
   {
     id: 2,
     name: 'Department of Computer Studies',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    description: 'Department of Computer Studies offers Bachelor of Science in Computer Science (BSCS), Bachelor of Science in Information Technology (BSIT) which features a CHED-based curriculum, competent faculty, and involved students in learning development programs. Our faculty work keenly to provide advanced knowledge and relevant education to produce skilled graduates who are ready to meet industry demands.',
     logo: '../images/LOGOS/dp2.png',
     backgroundImage: '../images/download1.jpg'
   },
@@ -24,7 +24,7 @@ const departments = [
   {
     id: 4,
     name: 'Department of Languages and Mass Communication',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    description: 'The Department Languages and Mass Communication of the Cavite State University – Imus Campus seeks to improve students and faculty language and skills and abilities through competent and skillful members. It also seeks to be the catalyst of professional advancement of its Mass Communication graduates in the field of Journalism.',
     logo: '../images/LOGOS/dp4.png',
     backgroundImage: '../images/download.jpg'
   },
@@ -38,21 +38,21 @@ const departments = [
   {
     id: 6,
     name: 'Department of Physical Education',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    description: 'Department of Physical Education will provide learning in various activities that will motivate the students and increase participation in sports, recreation and dance.',
     logo: '../images/LOGOS/dp6.png',
     backgroundImage: '../images/download2.jpg'
   },
   {
     id: 7,
     name: 'Department of Social Sciences and Humanities',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    description: 'The Social Sciences and Humanities Department aims to produce effective institutional leaders and responsible individuals who actively participate in social awareness within the community. It seeks to equip students with the necessary knowledge, skills, attitudes, and values to become efficient social advocates in an ever-changing society.',
     logo: '../images/LOGOS/dp7.png',
     backgroundImage: '../images/download.jpg'
   },
   {
     id: 8,
     name: 'Teacher Education Department',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    description: 'The Department of Teacher Education works in conformance with and anchors its philosophy on the provisions of Article IV Section 6 of CHED Memo No. 30, Series 2004. ',
     logo: '../images/LOGOS/dp8.png',
     backgroundImage: '../images/download1.jpg'
   }

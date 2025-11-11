@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMD - Cavite State University Imus Campus</title>
+  <link rel="stylesheet" href="fmd.css?v=6.0">
+</head>
+<body>
+
+  <!-- Sidebar Menu -->
+  <nav class="app-sidebar" id="app-sidebar">
+    <div class="app-sidebar-header">
+      <button class="sidebar-close-btn" id="sidebar-close-btn">&#9776;</button>
+      <div class="user-profile">
+        <img src="../images/placeholder.jpg" alt="User Avatar" class="user-avatar">
+        <div class="user-info">
+          <h3 id="user-name">Guest</h3>
+          <p class="status" id="user-role">Not signed in</p>
+        </div>
+      </div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="../home/home.html" class="nav-link">
+          <span class="nav-icon"></span>
+          <span class="nav-text">Home</span>
+        </a>
+      </li>
+      <li class="nav-item auth-required" style="display: none;">
+        <a href="../archive/archive.html" class="nav-link">
+          <span class="nav-icon"></span>
+          <span class="nav-text">Archive</span>
+        </a>
+      </li>
+      <li class="nav-item auth-required" style="display: none;">
+        <a href="../../register/entry.php" class="nav-link">
+          <span class="nav-icon"></span>
+          <span class="nav-text">Tracker</span>
+        </a>
+      </li>
+      <li class="nav-divider auth-required" style="display: none;" aria-hidden="true"></li>
+      <li class="nav-item auth-required" style="display: none;">
+        <a href="#" class="nav-link">
+          <span class="nav-icon"></span>
+          <span class="nav-text">Account Settings</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a id="auth-link" href="../../register/index.html" class="nav-link">
+          <span class="nav-icon"></span>
+          <span class="nav-text" id="auth-link-text">Login</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Overlay to close menu when clicking outside -->
+  <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+  <!-- Menu Icon Bar -->
+  <div class="menu-bar">
+    <div class="menu-icon">&#9776;</div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section" style="cursor: pointer;" onclick="window.location.href='../home/home.html'">
+      <img src="../images/LOGOS/logo1.png" alt="CvSU Logo" class="logo">
+      <div class="title">
+        <h1>Cavite State University</h1>
+        <h2>Imus Campus</h2>
+        <p>Extension Services</p>
+        
+        <!-- Navigation Dropdown Menu -->
+        <nav class="header-nav">
+          <ul class="nav-dropdown-menu">
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">About ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="uae.html">University Extension Agenda</a></li>
+                <li><a href="fmd.html">Functions of the Major Divisions</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">Departments ▾</a>
+              <ul class="nav-dropdown-content">
+                <li><a href="../departments/department_page.html?dept=1">Department of Biological and Physical Sciences</a></li>
+                <li><a href="../departments/department_page.html?dept=2">Department of Computer Studies</a></li>
+                <li><a href="../departments/department_page.html?dept=3">Department of Hospitality Management</a></li>
+                <li><a href="../departments/department_page.html?dept=4">Department of Languages and Mass Communication</a></li>
+                <li><a href="../departments/department_page.html?dept=5">Department of Management</a></li>
+                <li><a href="../departments/department_page.html?dept=6">Department of Physical Education</a></li>
+                <li><a href="../departments/department_page.html?dept=7">Department of Social Sciences and Humanities</a></li>
+                <li><a href="../departments/department_page.html?dept=8">Teacher Education Department</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown auth-required" style="display: none;">
+              <a href="#" class="nav-dropdown-toggle">Services </a>
+              <ul class="nav-dropdown-content">
+                <li><a href="../../register/entry.php">eTracker</a></li>
+              </ul>
+            </li>
+            <li class="nav-dropdown">
+              <a href="#" class="nav-dropdown-toggle">Coordinators </a>
+              <ul class="nav-dropdown-content">
+                <li><a href="../coordinators/coordinators.html">Extension Coordinators</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <img src="../images/LOGOS/logo2.png" alt="Extension Logo" class="logo2">
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-layout">
+    
+    <!-- Category Header with Carousel -->
+    <section class="category-header">
+      <div class="carousel-background" id="carousel-background"></div>
+      <div class="carousel-overlay"></div>
+      
+      <!-- Left Control Area -->
+      <div class="carousel-control-area left">
+        <button class="carousel-arrow left" id="category-carousel-prev">&#10094;</button>
+      </div>
+      
+      <!-- Center Content - Static Title + Category Info -->
+      <div class="category-info">
+        <div class="static-title">
+          <h2>University Extension Agenda:</h2>
+        </div>
+        <!-- <div class="category-details">
+          <h3 id="category-name">Agri-Fisheries and Food Security</h3>
+          <p id="category-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        </div> -->
+      </div>
+      
+      <!-- Right Control Area -->
+      <div class="carousel-control-area right">
+        <button class="carousel-arrow right" id="category-carousel-next">&#10095;</button>
+      </div>
+    </section>
+
+    <!-- Content Section - Full Width -->
+    <section class="content-section-full">
+      <h3>About This</h3>
+      <div class="content-container" id="content-container">
+        <div class="loading-message">Loading content...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <img src="../images/placeholder.jpg" alt="CvSU Footer Logo">
+      <p>Cavite State University<br>Extension Services</p>
+    </div>
+    <div class="footer-right">
+      <p><strong>Contact Information</strong><br>
+        Cavite Civic Center, Palico IV, Imus City, Cavite 4103<br>
+        (046) 471-6607<br>
+        cvis@cvsu.edu.ph
+      </p>
+    </div>
+  </footer>
+
+  <script src="uae.js?v=6.0"></script>
+
+</body>
+</html>
