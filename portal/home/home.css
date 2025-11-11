@@ -287,6 +287,7 @@ body {
   height: 100%;
   object-fit: cover; /* fills space neatly */
   display: block;
+  transition: opacity 0.3s ease;
 }
 
 /* Arrows */
@@ -299,14 +300,24 @@ body {
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
-  padding: 0;            /* remove extra spacing */
-  background: none;      /* no background */
-  border-radius: 0;      /* no rounded shape */
-  transition: color 0.3s ease;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .arrow:hover {
-  color: #054634; /* highlight on hover (gold-ish) */
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.6);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.arrow:active {
+  transform: translateY(-50%) scale(0.95);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .arrow.left { left: 20px; }

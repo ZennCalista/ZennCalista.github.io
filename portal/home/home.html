@@ -330,8 +330,17 @@
     function showSlide(index) {
       if (images.length === 0) return;
       currentIndex = (index + images.length) % images.length;
+      
+      // Add loading class to prevent multiple rapid clicks
+      imgElement.style.opacity = '0.7';
+      
       imgElement.src = images[currentIndex].src;
       captionElement.textContent = images[currentIndex].caption;
+      
+      // Reset opacity after image loads
+      imgElement.onload = function() {
+        imgElement.style.opacity = '1';
+      };
     }
 
     function initializeCarousel() {
@@ -343,23 +352,67 @@
         clearInterval(carouselInterval);
       }
       
+      // Setup navigation button handlers
+      const prevBtn = document.getElementById("prev");
+      const nextBtn = document.getElementById("next");
+      
+      // Remove any existing listeners by cloning and replacing
+      const newPrevBtn = prevBtn.cloneNode(true);
+      const newNextBtn = nextBtn.cloneNode(true);
+      prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+      nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+      
+      // Add click handlers with debouncing
+      let isNavigating = false;
+      
+      newPrevBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (isNavigating) return;
+        isNavigating = true;
+        
+        showSlide(currentIndex - 1);
+        
+        // Reset auto-slide timer when manually navigating
+        if (carouselInterval) {
+          clearInterval(carouselInterval);
+          carouselInterval = setInterval(() => {
+            showSlide(currentIndex + 1);
+          }, 5000);
+        }
+        
+        setTimeout(() => { isNavigating = false; }, 300);
+      });
+
+      newNextBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (isNavigating) return;
+        isNavigating = true;
+        
+        showSlide(currentIndex + 1);
+        
+        // Reset auto-slide timer when manually navigating
+        if (carouselInterval) {
+          clearInterval(carouselInterval);
+          carouselInterval = setInterval(() => {
+            showSlide(currentIndex + 1);
+          }, 5000);
+        }
+        
+        setTimeout(() => { isNavigating = false; }, 300);
+      });
+      
       // Auto slide every 5 seconds
       carouselInterval = setInterval(() => {
         showSlide(currentIndex + 1);
       }, 5000);
     }
 
-    // Event listeners for carousel navigation
-    document.getElementById("prev").addEventListener("click", () => {
-      showSlide(currentIndex - 1);
-    });
-
-    document.getElementById("next").addEventListener("click", () => {
-      showSlide(currentIndex + 1);
-    });
-
-    // Load carousel images when page loads
-    loadCarouselImages();
+    // Load carousel images when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadCarouselImages);
+    } else {
+      loadCarouselImages();
+    }
 
     // Auth/session display
     async function loadSession() {
