@@ -290,40 +290,48 @@ body {
   transition: opacity 0.3s ease;
 }
 
-/* Arrows */
+/* Arrows - Full height click areas that fade out unless hovered */
 .arrow {
   font-size: 48px;
   cursor: pointer;
-  color: white;
+  color: rgba(255, 255, 255, 0);
   user-select: none;
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
+  width: 80px;
   z-index: 5;
-  padding: 10px 15px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0);
   border: none;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+}
+
+.carousel-box:hover .arrow {
+  opacity: 1;
+  color: rgba(200, 200, 200, 0.8);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .arrow:hover {
-  color: #ffd700;
-  background: rgba(0, 0, 0, 0.6);
-  transform: translateY(-50%) scale(1.1);
+  color: rgba(255, 255, 255, 1);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .arrow:active {
-  transform: translateY(-50%) scale(0.95);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 1);
 }
 
-.arrow.left { left: 20px; }
-.arrow.right { right: 20px; }
+.arrow.left { left: 0; }
+.arrow.right { right: 0; }
 
-/* Caption */
+/* Caption - Fades with controls */
 .carousel-caption {
   position: absolute;
   bottom: 15px;
@@ -337,6 +345,12 @@ body {
   font-style: italic;
   max-width: 80%;
   text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.carousel-box:hover .carousel-caption {
+  opacity: 1;
 }
 
 /* Responsive */
@@ -345,8 +359,16 @@ body {
     height: 280px; /* smaller on mobile */
   }
   .arrow {
-    font-size: 28px;
-    padding: 8px;
+    font-size: 32px;
+    width: 60px;
+  }
+  /* On mobile, show arrows with slight visibility by default */
+  .carousel-box .arrow {
+    opacity: 0.5;
+  }
+  .carousel-box:hover .arrow,
+  .carousel-box:active .arrow {
+    opacity: 1;
   }
   .carousel-caption {
     font-size: 12px;
