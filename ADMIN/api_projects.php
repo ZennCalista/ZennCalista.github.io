@@ -48,6 +48,7 @@ function getProjectsForEvaluation() {
     global $conn;
     
     $items = [];
+    $standaloneResult = null; // Initialize to avoid undefined variable error
     
     try {
         // Get all programs with their basic info
