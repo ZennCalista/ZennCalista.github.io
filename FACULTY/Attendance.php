@@ -48,7 +48,10 @@ if (!$faculty_id) {
     $notifications = [];
     $summary = [];
     $enrolled_students = [];
+    error_log("Faculty ID not found for user_id: " . $user_id);
 } else {
+    $show_error = false;
+    error_log("Faculty ID found: " . $faculty_id . " for user_id: " . $user_id);
     $show_error = false;
 
 $program_query = "SELECT id, program_name, start_date 
@@ -72,7 +75,7 @@ $selected_program_id = isset($_GET['program_id']) && $_GET['program_id'] != 'all
 $attendance_records = [];
 if ($selected_program_id == 'all') {
     // Show all attendance for all programs under this faculty
-    $attendance_query = "SELECT a.student_name, a.status, a.time_in, a.time_out, a.date, p.program_name 
+    $attendance_query = "SELECT a.student_name, a.status, a.time_in, a.date, p.program_name 
                          FROM attendance a 
                          JOIN programs p ON a.program_id = p.id
                          WHERE p.faculty_id = ?
@@ -89,7 +92,7 @@ if ($selected_program_id == 'all') {
     }
 } else {
     // Show attendance for the selected program only
-    $attendance_query = "SELECT a.student_name, a.status, a.time_in, a.time_out, a.date, p.program_name 
+    $attendance_query = "SELECT a.student_name, a.status, a.time_in, a.date, p.program_name 
                          FROM attendance a 
                          JOIN programs p ON a.program_id = p.id
                          WHERE a.program_id = ?
@@ -112,13 +115,12 @@ if (isset($_POST['submit_manual_attendance'])) {
     $student_name = $_POST['student_name'];
     $status = $_POST['status'];
     $time_in = !empty($_POST['time_in']) ? $_POST['time_in'] : NULL;
-    $time_out = !empty($_POST['time_out']) ? $_POST['time_out'] : NULL;
     $date = $_POST['date'];
 
-    $insert_query = "INSERT INTO attendance (student_name, program_id, status, time_in, time_out, date) 
-                     VALUES (?, ?, ?, ?, ?, ?)";
+    $insert_query = "INSERT INTO attendance (student_name, program_id, status, time_in, date) 
+                     VALUES (?, ?, ?, ?, ?)";
     $insert_stmt = $conn->prepare($insert_query);
-    $insert_stmt->bind_param("sissss", $student_name, $program_id, $status, $time_in, $time_out, $date);
+    $insert_stmt->bind_param("sisss", $student_name, $program_id, $status, $time_in, $date);
     $insert_stmt->execute();
     $insert_stmt->close();
 
@@ -394,11 +396,7 @@ if ($selected_program_id != 'all') {
         </div>
         <div class="form-group">
           <label for="time_in">Time-In</label>
-          <input type="time" id="time_in" name="time_in" value="<?php echo date('H:i'); ?>">
-        </div>
-        <div class="form-group">
-          <label for="time_out">Time-Out</label>
-          <input type="time" id="time_out" name="time_out">
+          <input type="time" id="time_in" name="time_in" value="<?php echo date('H:i'); ?>" required>
         </div>
         <div class="form-group">
           <label for="date">Date</label>
