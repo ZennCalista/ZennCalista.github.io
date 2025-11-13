@@ -16,6 +16,17 @@ $stmt->bind_result($faculty_id);
 $stmt->fetch();
 $stmt->close();
 
+// Check if faculty_id is found
+if (!$faculty_id) {
+    // Instead of dying, show a user-friendly message
+    $error_message = "Faculty record not found. Please contact your administrator to set up your faculty profile.";
+    $show_error = true;
+    $programs = [];
+    $certificates = [];
+    $notifications = [];
+} else {
+    $show_error = false;
+
 // Fetch user info for display (top right)
 $user_fullname = 'Unknown User';
 $user_email = 'unknown@cvsu.edu.ph';
@@ -29,9 +40,9 @@ if ($stmt->fetch()) {
 }
 $stmt->close();
 
-// Fetch only programs managed by this faculty, including certificate info
+// Fetch only programs managed by this faculty
 $programs = [];
-$program_query = "SELECT id, program_name, start_date, faculty_certificate_issued, faculty_certificate_file, faculty_certificate_issued_on
+$program_query = "SELECT id, program_name, start_date
                   FROM programs
                   WHERE faculty_id = ?
                   ORDER BY start_date";
@@ -53,11 +64,11 @@ if (!empty($programs)) {
     $program_ids = array_column($programs, 'id');
     if ($selected_program_id != 'all' && in_array($selected_program_id, $program_ids)) {
         // Filter by selected program
-        $certificate_query = "SELECT c.student_name, c.certificate_date, c.status, p.program_name 
-                              FROM certificates c 
+        $certificate_query = "SELECT c.student_name, c.issue_date, c.certificate_file, p.program_name
+                              FROM certificates c
                               JOIN programs p ON c.program_id = p.id
                               WHERE c.program_id = ?
-                              ORDER BY c.certificate_date DESC";
+                              ORDER BY c.issue_date DESC";
         $stmt = $conn->prepare($certificate_query);
         $stmt->bind_param("i", $selected_program_id);
         $stmt->execute();
@@ -66,11 +77,11 @@ if (!empty($programs)) {
         // Show all certificates for all programs managed by this faculty
         $in = implode(',', array_fill(0, count($program_ids), '?'));
         $types = str_repeat('i', count($program_ids));
-        $certificate_query = "SELECT c.student_name, c.certificate_date, c.status, p.program_name 
-                              FROM certificates c 
+        $certificate_query = "SELECT c.student_name, c.issue_date, c.certificate_file, p.program_name
+                              FROM certificates c
                               JOIN programs p ON c.program_id = p.id
                               WHERE c.program_id IN ($in)
-                              ORDER BY c.certificate_date DESC";
+                              ORDER BY c.issue_date DESC";
         $stmt = $conn->prepare($certificate_query);
         $stmt->bind_param($types, ...$program_ids);
         $stmt->execute();
@@ -96,6 +107,7 @@ if ($notifications_result) {
     }
     $notifications_result->free();
 }
+} // End of else block
 ?>
 
 <!DOCTYPE html>
@@ -143,6 +155,13 @@ if ($notifications_result) {
           <div class="last-login">Last login: <?php echo date('m-d-y H:i:s'); ?></div>
         </header>
 
+        <?php if ($show_error): ?>
+          <div class="error-message" style="background: #ffeaea; border: 1px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            <h3>⚠️ <?php echo htmlspecialchars($error_message); ?></h3>
+            <p>Please contact your system administrator to complete your faculty profile setup.</p>
+          </div>
+        <?php else: ?>
+
         <!-- Program Selection -->
         <div class="program-selection">
           <label for="program-select">Select Program</label>
@@ -160,27 +179,25 @@ if ($notifications_result) {
         <table class="certificate-table">
           <thead>
             <tr>
+              <th>Student Name</th>
               <th>Program</th>
-              <th>Issued On</th>
-              <th>Status</th>
+              <th>Issue Date</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <?php if (empty($programs)): ?>
-              <tr><td colspan="4">No programs found.</td></tr>
+            <?php if (empty($certificates)): ?>
+              <tr><td colspan="4">No certificates found.</td></tr>
             <?php else: ?>
-              <?php foreach ($programs as $program): ?>
+              <?php foreach ($certificates as $certificate): ?>
                 <tr>
-                  <td><?php echo htmlspecialchars($program['program_name']); ?></td>
-                  <td><?php echo $program['faculty_certificate_issued_on'] ? date('m-d-Y', strtotime($program['faculty_certificate_issued_on'])) : '-'; ?></td>
-                  <td class="<?php echo $program['faculty_certificate_issued'] ? 'status-generated' : 'status-pending'; ?>">
-                    <?php echo $program['faculty_certificate_issued'] ? 'Issued' : 'Pending'; ?>
-                  </td>
+                  <td><?php echo htmlspecialchars($certificate['student_name']); ?></td>
+                  <td><?php echo htmlspecialchars($certificate['program_name']); ?></td>
+                  <td><?php echo htmlspecialchars(date('m-d-Y', strtotime($certificate['issue_date']))); ?></td>
                   <td>
-                    <?php if ($program['faculty_certificate_issued'] && !empty($program['faculty_certificate_file'])): ?>
-                      <a href="/<?php echo htmlspecialchars($program['faculty_certificate_file']); ?>" class="btn" target="_blank">View</a>
-                      <a href="/<?php echo htmlspecialchars($program['faculty_certificate_file']); ?>" class="btn" download>Download</a>
+                    <?php if (!empty($certificate['certificate_file'])): ?>
+                      <a href="/<?php echo htmlspecialchars($certificate['certificate_file']); ?>" class="btn" target="_blank">View</a>
+                      <a href="/<?php echo htmlspecialchars($certificate['certificate_file']); ?>" class="btn" download>Download</a>
                     <?php else: ?>
                       <span>Not available</span>
                     <?php endif; ?>
@@ -190,6 +207,7 @@ if ($notifications_result) {
             <?php endif; ?>
           </tbody>
         </table>
+        <?php endif; // End of error check ?>
       </div>
 
       <!-- Right Side -->
