@@ -102,68 +102,91 @@
 
   <script>
 async function loadDashboardStats() {
-  const res = await fetch('/backend/dashboard_stats.php');
-  const stats = await res.json();
+  try {
+    const res = await fetch('../backend/dashboard_stats.php');
+    if (!res.ok) {
+      throw new Error('Failed to fetch stats');
+    }
+    const stats = await res.json();
 
-  document.getElementById('stat-students').innerText = stats.students;
-  document.getElementById('stat-faculty').innerText = stats.faculty;
-  document.getElementById('stat-programs').innerText = stats.programs;
-  document.getElementById('stat-certificates').innerText = stats.certificates;
+    document.getElementById('stat-students').innerText = stats.students || 0;
+    document.getElementById('stat-faculty').innerText = stats.faculty || 0;
+    document.getElementById('stat-programs').innerText = stats.programs || 0;
+    document.getElementById('stat-certificates').innerText = stats.certificates || 0;
 
-  // Attendance Rate Chart
-  const ctxAttendance = document.getElementById('attendanceRateChart').getContext('2d');
-  document.getElementById('attendanceRateLabel').innerText = stats.attendanceRate + "%";
-  new Chart(ctxAttendance, {
-    type: 'doughnut',
-    data: {
-      labels: ['Present', 'Absent'],
-      datasets: [{
-        data: [stats.attendanceRate, 100 - stats.attendanceRate],
-        backgroundColor: ['#1B472B', '#e5e7eb'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      cutout: '75%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: false }
+    // Attendance Rate Chart
+    const ctxAttendance = document.getElementById('attendanceRateChart').getContext('2d');
+    document.getElementById('attendanceRateLabel').innerText = (stats.attendanceRate || 0) + "%";
+    new Chart(ctxAttendance, {
+      type: 'doughnut',
+      data: {
+        labels: ['Present', 'Absent'],
+        datasets: [{
+          data: [stats.attendanceRate || 0, 100 - (stats.attendanceRate || 0)],
+          backgroundColor: ['#1B472B', '#e5e7eb'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '75%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        }
       }
+    });
+
+    // Upcoming Sessions
+    const upcomingList = document.getElementById('upcomingSessionsList');
+    upcomingList.innerHTML = '';
+    (stats.upcomingSessions || []).forEach(s =>
+      upcomingList.innerHTML += `<li style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span>${new Date(s.date).toLocaleDateString()}</span>
+        <span>${s.program_name}</span>
+      </li>`
+    );
+
+    // Feedback Highlight (random)
+    document.getElementById('feedbackHighlight').innerText =
+      (stats.feedback && stats.feedback.length) ? stats.feedback[Math.floor(Math.random() * stats.feedback.length)] : 'No feedback yet.';
+
+    // Program Trends Chart
+    const ctxTrends = document.getElementById('programTrendsChart').getContext('2d');
+    const labels = stats.programTrends?.labels || [];
+    const data = stats.programTrends?.data || [];
+    const hasData = data.some(d => d > 0);
+    if (labels.length > 0 && data.length > 0 && hasData) {
+      new Chart(ctxTrends, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Enrollment',
+            data: data,
+            backgroundColor: '#1B472B'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    } else {
+      // If no data or all zero, show a message
+      const canvas = document.getElementById('programTrendsChart');
+      const ctx = canvas.getContext('2d');
+      ctx.font = '16px Arial';
+      ctx.fillText('No enrollment data available', 10, 50);
     }
-  });
-
-  // Upcoming Sessions
-  const upcomingList = document.getElementById('upcomingSessionsList');
-  upcomingList.innerHTML = '';
-  stats.upcomingSessions.forEach(s =>
-    upcomingList.innerHTML += `<li style="display:flex;justify-content:space-between;margin-bottom:8px;">
-      <span>${new Date(s.date).toLocaleDateString()}</span>
-      <span>${s.program_name}</span>
-    </li>`
-  );
-
-  // Feedback Highlight (random)
-  document.getElementById('feedbackHighlight').innerText =
-    stats.feedback.length ? stats.feedback[Math.floor(Math.random() * stats.feedback.length)] : 'No feedback yet.';
-
-  // Program Trends Chart
-  const ctxTrends = document.getElementById('programTrendsChart').getContext('2d');
-  new Chart(ctxTrends, {
-    type: 'bar',
-    data: {
-      labels: stats.programTrends.labels,
-      datasets: [{
-        label: 'Enrollment',
-        data: stats.programTrends.data,
-        backgroundColor: '#1B472B'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
+  } catch (error) {
+    console.error('Error loading dashboard stats:', error);
+    // Optionally show error in UI
+    document.getElementById('stat-students').innerText = 'Error';
+    document.getElementById('stat-faculty').innerText = 'Error';
+    document.getElementById('stat-programs').innerText = 'Error';
+    document.getElementById('stat-certificates').innerText = 'Error';
+  }
 }
 
 window.addEventListener('DOMContentLoaded', loadDashboardStats);

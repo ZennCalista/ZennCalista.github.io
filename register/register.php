@@ -118,31 +118,31 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
         if (!empty($data['department_id'])) {
             $department_id = intval($data['department_id']);
             // lookup name
-            $dept_stmt = $conn->prepare("SELECT name FROM departments WHERE id = ?");
+            $dept_stmt = $conn->prepare("SELECT department_name FROM departments WHERE department_id = ?");
             if ($dept_stmt) {
                 $dept_stmt->bind_param('i', $department_id);
                 $dept_stmt->execute();
                 $res = $dept_stmt->get_result();
-                if ($row = $res->fetch_assoc()) $dept_name = $row['name'];
+                if ($row = $res->fetch_assoc()) $dept_name = $row['department_name'];
                 $dept_stmt->close();
             }
         } elseif (!empty($data['department'])) {
             // department passed as name, try to find id
             $dept_name_in = $data['department'];
-            $dept_stmt = $conn->prepare("SELECT id FROM departments WHERE name = ? LIMIT 1");
+            $dept_stmt = $conn->prepare("SELECT department_id FROM departments WHERE department_name = ? LIMIT 1");
             if ($dept_stmt) {
                 $dept_stmt->bind_param('s', $dept_name_in);
                 $dept_stmt->execute();
                 $res = $dept_stmt->get_result();
                 if ($row = $res->fetch_assoc()) {
-                    $department_id = (int)$row['id'];
+                    $department_id = (int)$row['department_id'];
                     $dept_name = $dept_name_in;
                 }
                 $dept_stmt->close();
             }
             // If not found, insert new department
             if (empty($department_id)) {
-                $insd = $conn->prepare("INSERT INTO departments (name) VALUES (?)");
+                $insd = $conn->prepare("INSERT INTO departments (department_name) VALUES (?)");
                 if ($insd) {
                     $insd->bind_param('s', $dept_name_in);
                     if ($insd->execute()) {
@@ -159,7 +159,7 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
             $department_id = 0;
         }
 
-        $sql = "INSERT INTO faculty (user_id, faculty_name, faculty_id, department, department_id, position) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO faculty (user_id, department, position) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             error_log('register.php prepare failed (faculty): ' . $conn->error);
@@ -167,9 +167,17 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
             $conn->close();
             exit;
         }
-        $stmt->bind_param("isssis", $user_id, $faculty_name, $faculty_id, $dept_name, $department_id, $position);
+        $stmt->bind_param("iss", $user_id, $dept_name, $position);
 
         if ($stmt->execute()) {
+            // Update users table with department_id
+            $update_sql = "UPDATE users SET department_id = ? WHERE id = ?";
+            $update_stmt = $conn->prepare($update_sql);
+            if ($update_stmt) {
+                $update_stmt->bind_param("ii", $department_id, $user_id);
+                $update_stmt->execute();
+                $update_stmt->close();
+            }
             echo json_encode([
                 "status" => "success",
                 "message" => "Faculty registration completed",
