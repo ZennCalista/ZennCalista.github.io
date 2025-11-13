@@ -33,7 +33,6 @@ if (json_last_error() !== JSON_ERROR_NONE || $data === null) {
 if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['email']) && !empty($data['password'])) {
     $firstname = $data['firstname'];
     $lastname = $data['lastname'];
-    $mi = $data['mi'] ?? '';
     $email = $data['email'];
     $password = password_hash($data['password'], PASSWORD_DEFAULT); // Hash the password
     $role = $data['role'] ?? 'student';

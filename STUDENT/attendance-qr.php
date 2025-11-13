@@ -24,11 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<h2 style='color:red;'>You are not enrolled in this program.</h2>";
     } else {
         // Get student_name
-        $userq = $conn->prepare("SELECT firstname, lastname, mi FROM users WHERE id=?");
+        $userq = $conn->prepare("SELECT firstname, lastname FROM users WHERE id=?");
         $userq->bind_param('i', $user_id);
         $userq->execute();
         $user = $userq->get_result()->fetch_assoc();
-        $student_name = $user['firstname'] . ' ' . ($user['mi'] ? $user['mi'] . ' ' : '') . $user['lastname'];
+        $student_name = $user['firstname'] . ' ' . $user['lastname'];
 
         // Prevent duplicate
         $check = $conn->prepare("SELECT id FROM attendance WHERE student_name=? AND program_id=? AND date=?");

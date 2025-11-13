@@ -31,7 +31,7 @@ if (!$program_id || !$user_id) {
 }
 
 // Get user info
-$user_query = $conn->prepare("SELECT firstname, lastname, mi FROM users WHERE id = ?");
+$user_query = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
 if (!$user_query) {
     echo json_encode(['status' => 'error', 'message' => 'Prepare failed (users): ' . $conn->error]);
     exit;
@@ -44,7 +44,7 @@ if ($user_result->num_rows === 0) {
     exit;
 }
 $user = $user_result->fetch_assoc();
-$student_name = $user['firstname'] . ' ' . ($user['mi'] ? $user['mi'] . ' ' : '') . $user['lastname'];
+$student_name = $user['firstname'] . ' ' . $user['lastname'];
 
 // Prevent duplicate attendance for today
 $today = date('Y-m-d');

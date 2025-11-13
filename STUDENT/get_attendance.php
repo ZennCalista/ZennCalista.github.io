@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 // Get user's full name
-$user_query = $conn->prepare("SELECT firstname, lastname, mi FROM users WHERE id = ?");
+$user_query = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
 $user_query->bind_param('i', $user_id);
 $user_query->execute();
 $user_result = $user_query->get_result();
@@ -20,7 +20,7 @@ if ($user_result->num_rows === 0) {
     exit;
 }
 $user = $user_result->fetch_assoc();
-$student_name = $user['firstname'] . ' ' . ($user['mi'] ? $user['mi'] . ' ' : '') . $user['lastname'];
+$student_name = $user['firstname'] . ' ' . $user['lastname'];
 
 // Get attendance records for this student using student_name
 $sql = "SELECT a.date, a.time_in, a.status, p.program_name

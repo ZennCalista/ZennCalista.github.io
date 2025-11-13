@@ -11,12 +11,12 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 // Get student_name
-$user_query = $conn->prepare("SELECT firstname, lastname, mi FROM users WHERE id = ?");
+$user_query = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
 $user_query->bind_param('i', $user_id);
 $user_query->execute();
 $user_result = $user_query->get_result();
 $user = $user_result->fetch_assoc();
-$student_name = $user['firstname'] . ' ' . ($user['mi'] ? $user['mi'] . ' ' : '') . $user['lastname'];
+$student_name = $user['firstname'] . ' ' . $user['lastname'];
 
 // Get all programs the student is enrolled in
 $sql = "SELECT p.id as program_id, p.program_name, e.status

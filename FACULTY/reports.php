@@ -7,7 +7,7 @@ $user_id = $_SESSION['user_id'] ?? null;
 $user_fullname = 'Unknown User';
 $user_email = 'unknown@cvsu.edu.ph';
 if ($user_id) {
-    $user_sql = "SELECT firstname, lastname, mi, email FROM users WHERE id = ?";
+    $user_sql = "SELECT firstname, lastname, email FROM users WHERE id = ?";
     $user_stmt = $conn->prepare($user_sql);
     $user_stmt->bind_param("i", $user_id);
     $user_stmt->execute();
