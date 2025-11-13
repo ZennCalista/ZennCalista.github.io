@@ -22,33 +22,31 @@ $filter_program_id = isset($_GET['program_id']) ? (int)$_GET['program_id'] : nul
 $certificates = [];
 if ($user_id && $user) {
     // Get student_name from users table
-    $stmt = $conn->prepare("SELECT firstname, mi, lastname FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stmt->bind_result($fn, $mi, $ln);
+    $stmt->bind_result($fn, $ln);
     $stmt->fetch();
     $stmt->close();
-    $student_name = trim($fn . ' ' . ($mi ? $mi . '. ' : '') . $ln);
+    $student_name = trim($fn . ' ' . $ln);
 
-    // Query the participants table for certificates
-    $where_clause = "p.student_name = ? AND p.status = 'accepted'";
+    // Query the certificates table for certificates
+    $where_clause = "student_name = ?";
     $params = [$student_name];
     $param_types = "s";
     
     if ($filter_program_id) {
-        $where_clause .= " AND p.program_id = ?";
+        $where_clause .= " AND program_id = ?";
         $params[] = $filter_program_id;
         $param_types .= "i";
     }
     
     $stmt = $conn->prepare("
-        SELECT p.id, p.program_id, p.student_name, p.issued_on as certificate_date, 
-               CASE WHEN p.certificate_issued = 1 THEN 'generated' ELSE 'pending' END as status,
-               p.certificate_file, pr.program_name
-        FROM participants p
-        JOIN programs pr ON p.program_id = pr.id
+        SELECT id, program_id, program_name, issue_date as certificate_date, 
+               certificate_file
+        FROM certificates
         WHERE $where_clause
-        ORDER BY p.issued_on DESC
+        ORDER BY issue_date DESC
     ");
     if (!$stmt) {
         die("SQL error: " . $conn->error);
@@ -57,10 +55,8 @@ if ($user_id && $user) {
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        // Only show if certificate is issued or if there's a file
-        if ($row['status'] === 'generated' || !empty($row['certificate_file'])) {
-            $certificates[] = $row;
-        }
+        // All certificates in this table are generated
+        $certificates[] = array_merge($row, ['status' => 'generated']);
     }
     $stmt->close();
 }

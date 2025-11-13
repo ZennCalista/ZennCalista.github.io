@@ -5,30 +5,30 @@ require_once '../FACULTY/db.php';
 
 $user_id = $_SESSION['user_id'] ?? 0;
 
-// Get student email from users table
-$stmt = $conn->prepare("SELECT email FROM users WHERE id=?");
+// Get student_name from users table
+$stmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id=?");
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
-$stmt->bind_result($email);
+$stmt->bind_result($fn, $ln);
 $stmt->fetch();
 $stmt->close();
+$student_name = trim($fn . ' ' . $ln);
 
 $program_id = $_GET['program_id'] ?? '';
-$where = "p.student_email = ? AND p.certificate_issued = 1";
-$params = [$email];
+$where = "student_name = ?";
+$params = [$student_name];
 $types = 's';
 
 if ($program_id) {
-    $where .= " AND p.program_id = ?";
+    $where .= " AND program_id = ?";
     $params[] = $program_id;
     $types .= 'i';
 }
 
-$sql = "SELECT p.id, p.program_id, p.student_name, p.issued_on AS certificate_date, pr.program_name, p.certificate_file
-        FROM participants p
-        JOIN programs pr ON p.program_id = pr.id
+$sql = "SELECT id, program_id, program_name, issue_date, certificate_file
+        FROM certificates
         WHERE $where
-        ORDER BY p.issued_on DESC";
+        ORDER BY issue_date DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
@@ -38,7 +38,7 @@ $certificates = [];
 while ($row = $result->fetch_assoc()) {
     $certificates[] = [
         'program_name' => $row['program_name'],
-        'certificate_date' => $row['certificate_date'],
+        'certificate_date' => $row['issue_date'],
         'status' => 'Generated',
         'certificate_url' => $row['certificate_file'] ? $row['certificate_file'] : null
     ];

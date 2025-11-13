@@ -6,13 +6,13 @@ require_once '../FACULTY/db.php';
 $user_id = $_SESSION['user_id'] ?? 0;
 
 // Get student_name from users table
-$stmt = $conn->prepare("SELECT firstname, mi, lastname FROM users WHERE id=?");
+$stmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id=?");
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
-$stmt->bind_result($fn, $mi, $ln);
+$stmt->bind_result($fn, $ln);
 $stmt->fetch();
 $stmt->close();
-$student_name = trim($fn . ' ' . ($mi ? $mi . '. ' : '') . $ln);
+$student_name = trim($fn . ' ' . $ln);
 
 $program_id = $_GET['program_id'] ?? '';
 $where = "a.student_name = ?";
