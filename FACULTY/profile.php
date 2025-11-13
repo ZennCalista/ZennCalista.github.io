@@ -11,7 +11,7 @@ $attendance = [];
 if ($user_id) {
     // Get faculty profile
     $sql = "SELECT 
-                u.firstname, u.lastname, u.mi, u.email, u.phone, u.department AS user_department,
+                u.firstname, u.lastname, u.email, u.phone, u.department AS user_department,
                 f.faculty_name, f.faculty_id, f.department AS faculty_department, f.position
             FROM users u
             JOIN faculty f ON u.id = f.user_id
@@ -48,12 +48,11 @@ if ($user_id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $user_id) {
     $firstname = trim($_POST['firstname']);
     $lastname = trim($_POST['lastname']);
-    $mi = trim($_POST['mi']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
 
-    $stmt = $conn->prepare("UPDATE users SET firstname=?, lastname=?, mi=?, email=?, phone=? WHERE id=?");
-    $stmt->bind_param("sssssi", $firstname, $lastname, $mi, $email, $phone, $user_id);
+    $stmt = $conn->prepare("UPDATE users SET firstname=?, lastname=?, email=?, phone=? WHERE id=?");
+    $stmt->bind_param("ssssi", $firstname, $lastname, $email, $phone, $user_id);
     $stmt->execute();
     $stmt->close();
     header("Location: profile.php?updated=1");
@@ -125,7 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
             <div class="section-content">
               <div class="info-row"><span>First Name:</span> <?php echo htmlspecialchars($faculty_profile['firstname'] ?? ''); ?></div>
               <div class="info-row"><span>Last Name:</span> <?php echo htmlspecialchars($faculty_profile['lastname'] ?? ''); ?></div>
-              <div class="info-row"><span>M.I.:</span> <?php echo htmlspecialchars($faculty_profile['mi'] ?? ''); ?></div>
               <div class="info-row"><span>Email:</span> <?php echo htmlspecialchars($faculty_profile['email'] ?? ''); ?></div>
               <div class="info-row"><span>Phone:</span> <?php echo htmlspecialchars($faculty_profile['phone'] ?? ''); ?></div>
             </div>
@@ -213,10 +211,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
             <div class="modal-row">
               <label>Last Name</label>
               <input type="text" name="lastname" value="<?php echo htmlspecialchars($faculty_profile['lastname'] ?? ''); ?>" required>
-            </div>
-            <div class="modal-row">
-              <label>M.I.</label>
-              <input type="text" name="mi" value="<?php echo htmlspecialchars($faculty_profile['mi'] ?? ''); ?>">
             </div>
             <div class="modal-row">
               <label>Email</label>
