@@ -40,8 +40,14 @@ $faculty_stmt->close();
 
 // Check if faculty_id is found
 if (!$faculty_id) {
-    die("Error: Faculty record not found for this user. Please contact administrator.");
-}
+    // Instead of dying, show a user-friendly message
+    $error_message = "Faculty record not found. Please contact your administrator to set up your faculty profile.";
+    $show_error = true;
+    $active_programs = [];
+    $ended_programs = [];
+    $notifications = [];
+} else {
+    $show_error = false;
 
 // Search handling
 $search = isset($_GET['search']) ? '%' . $conn->real_escape_string(trim($_GET['search'])) . '%' : '%';
@@ -166,6 +172,7 @@ if ($notifications_result) {
     }
     $notifications_result->free();
 }
+} // End of else block
 ?>
 
 <!DOCTYPE html>
@@ -396,6 +403,14 @@ if ($notifications_result) {
             <div class="last-login">Last login: <?php echo date('m-d-y H:i:s'); ?></div>
           </div>
         </div>
+
+        <?php if ($show_error): ?>
+          <div class="error-message" style="background: #ffeaea; border: 1px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            <h3>⚠️ <?php echo htmlspecialchars($error_message); ?></h3>
+            <p>Please contact your system administrator to complete your faculty profile setup.</p>
+          </div>
+        <?php else: ?>
+
         <div class="create-search-container">
   <div class="search-container">
     <div class="search-wrapper">
@@ -512,6 +527,8 @@ if ($notifications_result) {
           </div>
         </div>
       </div>
+
+      <?php endif; // End of error check ?>
 
       <!-- Right Panel with Updated Notifications -->
       <div class="right-panel">
