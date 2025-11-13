@@ -40,9 +40,16 @@ $faculty_stmt->close();
 
 // Debug: Check if faculty_id is found
 if (!$faculty_id) {
-    error_log("Attendance.php: No faculty_id found for user_id: " . $user_id);
-    die("Error: Faculty record not found for this user. Please contact administrator.");
-}
+    // Instead of dying, show a user-friendly message
+    $error_message = "Faculty record not found. Please contact your administrator to set up your faculty profile.";
+    $show_error = true;
+    $programs = [];
+    $attendance_records = [];
+    $notifications = [];
+    $summary = [];
+    $enrolled_students = [];
+} else {
+    $show_error = false;
 
 $program_query = "SELECT id, program_name, start_date 
                   FROM programs 
@@ -185,6 +192,7 @@ if ($selected_program_id != 'all') {
     }
     $enrolled_stmt->close();
 }
+} // End of else block
 ?>
 
 <!DOCTYPE html>
@@ -229,6 +237,13 @@ if ($selected_program_id != 'all') {
           <div class="role-label">Faculty Attendance</div>
           <div class="last-login">Last login: <?php echo date('m-d-y H:i:s'); ?></div>
 </header>
+
+        <?php if ($show_error): ?>
+          <div class="error-message" style="background: #ffeaea; border: 1px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            <h3>⚠️ <?php echo htmlspecialchars($error_message); ?></h3>
+            <p>Please contact your system administrator to complete your faculty profile setup.</p>
+          </div>
+        <?php else: ?>
 
         <!-- Program Selection and Attendance Controls -->
         <div class="program-selection">
@@ -303,6 +318,7 @@ if ($selected_program_id != 'all') {
             </tbody>
           </table>
         <?php endif; ?>
+        <?php endif; // End of error check ?>
       </div>
 
       <!-- Right Side -->
@@ -348,6 +364,7 @@ if ($selected_program_id != 'all') {
   </div>
 
   <!-- Modal for Manual Attendance -->
+  <?php if (!$show_error): ?>
   <div id="manualAttendanceModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeManualAttendanceModal()">×</span>
@@ -391,6 +408,7 @@ if ($selected_program_id != 'all') {
       </form>
     </div>
   </div>
+  <?php endif; ?>
 
   <script>
     function openManualAttendanceModal() {
