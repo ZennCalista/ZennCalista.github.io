@@ -85,8 +85,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("Token creation failed, using session only: user_id={$user['id']}");
     }
 
-    // All users redirect to the portal home page (new landing page)
-    $redirect_url = '../portal/home/home.html';
+    // Redirect based on role
+    error_log("Login redirect: user_id={$user['id']}, role={$user['role']}, redirect_url=" . ($user['role'] === 'student' ? '../STUDENT/index.php' : '../portal/home/home.html'));
+    if ($user['role'] === 'student') {
+        $redirect_url = '../STUDENT/index.php';
+    } else {
+        // Faculty and admin go to portal home page
+        $redirect_url = '../portal/home/home.html';
+    }
     echo json_encode(['status' => 'success', 'redirect_url' => $redirect_url]);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);

@@ -2,6 +2,12 @@
 session_start();
 require 'db.php'; // your DB connection file
 
+// Check if user is logged in, if not redirect to login
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+    header('Location: ../register/index.html');
+    exit();
+}
+
 // Assuming you store user id in session after login
 $user_id = $_SESSION['user_id'] ?? null;
 $user = null;
@@ -15,6 +21,8 @@ if ($user_id) {
         $user = ['firstname' => $firstname, 'lastname' => $lastname];
     }
     $stmt->close();
+} else {
+    error_log("STUDENT DASHBOARD: No user_id in session");
 }
 ?>
 
@@ -86,18 +94,15 @@ if ($user_id) {
       $attended_sessions = 0;
       if ($user_id) {
           // Get student name in the exact format used in attendance table
-          $stmt = $conn->prepare("SELECT firstname, lastname, mi FROM users WHERE id = ?");
+          $stmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
           $stmt->bind_param("i", $user_id);
           $stmt->execute();
-          $stmt->bind_result($fn, $ln, $mi);
+          $stmt->bind_result($fn, $ln);
           $stmt->fetch();
           $stmt->close();
 
-          // Adjust this to match your DB format exactly!
-          $student_name = $fn;
-          if ($mi) $student_name .= ' ' . strtoupper(substr($mi,0,1)) . '.';
-          $student_name .= ' ' . $ln;
-          $student_name = trim($student_name);
+          // Build student name as firstname + space + lastname (matching attendance table format)
+          $student_name = trim($fn . ' ' . $ln);
 
           // Now use this for attendance queries
           $stmt = $conn->prepare("SELECT COUNT(*) FROM attendance WHERE student_name = ?");
@@ -131,7 +136,10 @@ if ($user_id) {
       // Certificates Earned
       $certificates_earned = 0;
       if ($user_id) {
-          $stmt = $conn->prepare("SELECT COUNT(*) FROM participants WHERE student_name = ? AND certificate_issued = 1");
+          // Use the same student name format as attendance
+          $student_name = trim($user['firstname'] . ' ' . $user['lastname']);
+
+          $stmt = $conn->prepare("SELECT COUNT(*) FROM certificates WHERE student_name = ?");
           $stmt->bind_param("s", $student_name);
           $stmt->execute();
           $stmt->bind_result($certificates_earned);
@@ -202,6 +210,13 @@ if ($user_id) {
           }
           $stmt->close();
       }
+      ?>
+
+      <?php
+      // Debug: Show session and user info
+      // echo "<!-- DEBUG INFO: Session user_id=" . ($_SESSION['user_id'] ?? 'NULL') . ", role=" . ($_SESSION['role'] ?? 'NULL') . " -->\n";
+      // echo "<!-- DEBUG INFO: User data: " . (isset($user) ? json_encode($user) : 'NULL') . " -->\n";
+      // echo "<!-- METRICS END: attendance_rate=$attendance_rate, active_programs=$active_programs, certificates_earned=$certificates_earned, pending_feedback=$pending_feedback -->";
       ?>
 
       <section class="student-progress" style="margin:30px 0; display:flex; gap:30px; flex-wrap:wrap;">
