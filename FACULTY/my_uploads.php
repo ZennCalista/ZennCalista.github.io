@@ -18,8 +18,12 @@ $stmt->fetch();
 $stmt->close();
 
 if (!$faculty_id) {
-    die('Faculty not found.');
-}
+    // Instead of dying, show a user-friendly message
+    $error_message = "Faculty record not found. Please contact your administrator to set up your faculty profile.";
+    $show_error = true;
+    $uploads = [];
+} else {
+    $show_error = false;
 
 // Fetch uploads for this faculty
 $sql = "SELECT du.*, p.program_name 
@@ -31,6 +35,7 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $faculty_id);
 $stmt->execute();
 $result = $stmt->get_result();
+}
 ?>
 
 <!DOCTYPE html>
@@ -57,6 +62,14 @@ $result = $stmt->get_result();
 </head>
 <body>
   <h2>My Uploaded Documents</h2>
+
+  <?php if ($show_error): ?>
+    <div style="background: #ffeaea; border: 1px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 5px; margin: 20px auto; max-width: 800px; text-align: center;">
+      <h3>⚠️ <?php echo htmlspecialchars($error_message); ?></h3>
+      <p>Please contact your system administrator to complete your faculty profile setup.</p>
+    </div>
+  <?php else: ?>
+
   <table class="uploads-table">
     <thead>
       <tr>
@@ -93,5 +106,8 @@ $result = $stmt->get_result();
       <?php endif; ?>
     </tbody>
   </table>
+
+  <?php endif; ?>
+
 </body>
 </html>
