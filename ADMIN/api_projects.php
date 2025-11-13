@@ -159,67 +159,73 @@ function getProjectsForEvaluation() {
         }
         
         // Also check if there are standalone projects in the projects table
-        $standaloneQuery = "
-            SELECT 
-                pr.id as project_id,
-                pr.project_title,
-                pr.project_description,
-                pr.status,
-                pr.start_date,
-                pr.end_date,
-                pr.program_id,
-                p.department,
-                p.location,
-                p.program_name,
-                f.faculty_name,
-                f.department as faculty_department,
-                u.firstname,
-                u.lastname
-            FROM projects pr
-            LEFT JOIN programs p ON pr.program_id = p.id
-            LEFT JOIN faculty f ON p.faculty_id = f.id
-            LEFT JOIN users u ON f.user_id = u.id
-            ORDER BY pr.id DESC
-        ";
+        // First check if the projects table exists
+        $tableCheckQuery = "SHOW TABLES LIKE 'projects'";
+        $tableCheckResult = mysqli_query($conn, $tableCheckQuery);
         
-        $standaloneResult = mysqli_query($conn, $standaloneQuery);
-        
-        if ($standaloneResult) {
-            while ($project = mysqli_fetch_assoc($standaloneResult)) {
-                $facultyName = $project['faculty_name'];
-                if (empty($facultyName) && !empty($project['firstname'])) {
-                    $facultyName = trim($project['firstname'] . ' ' . $project['lastname']);
+        if (mysqli_num_rows($tableCheckResult) > 0) {
+            $standaloneQuery = "
+                SELECT 
+                    pr.id as project_id,
+                    pr.project_title,
+                    pr.project_description,
+                    pr.status,
+                    pr.start_date,
+                    pr.end_date,
+                    pr.program_id,
+                    p.department,
+                    p.location,
+                    p.program_name,
+                    f.faculty_name,
+                    f.department as faculty_department,
+                    u.firstname,
+                    u.lastname
+                FROM projects pr
+                LEFT JOIN programs p ON pr.program_id = p.id
+                LEFT JOIN faculty f ON p.faculty_id = f.id
+                LEFT JOIN users u ON f.user_id = u.id
+                ORDER BY pr.id DESC
+            ";
+            
+            $standaloneResult = mysqli_query($conn, $standaloneQuery);
+            
+            if ($standaloneResult) {
+                while ($project = mysqli_fetch_assoc($standaloneResult)) {
+                    $facultyName = $project['faculty_name'];
+                    if (empty($facultyName) && !empty($project['firstname'])) {
+                        $facultyName = trim($project['firstname'] . ' ' . $project['lastname']);
+                    }
+                    
+                    $items[] = [
+                        'project_id' => 'sproj_' . $project['project_id'],
+                        'item_type' => 'standalone_project',
+                        'project_title' => '⚡ STANDALONE: ' . $project['project_title'],
+                        'project_description' => $project['project_description'] ?: 'Standalone Project',
+                        'project_status' => $project['status'] === 'completed' ? 'completed' : 'in_progress',
+                        'priority' => 'medium',
+                        'progress_percentage' => $project['status'] === 'completed' ? 100 : 80,
+                        'budget_allocated' => 0,
+                        'budget_spent' => 0,
+                        'project_start_date' => $project['start_date'],
+                        'project_end_date' => $project['end_date'],
+                        'program_id' => $project['program_id'],
+                        'program_name' => $project['program_name'] ?: 'Independent Project',
+                        'department' => $project['department'] ?: 'Unknown Department',
+                        'location' => $project['location'],
+                        'faculty_name' => $facultyName ?: 'Unknown Faculty',
+                        'faculty_department' => $project['faculty_department'] ?: $project['department'],
+                        'participants_count' => 0,
+                        'total_objectives' => 4,
+                        'completed_objectives' => $project['status'] === 'completed' ? 4 : 2,
+                        'objectives_completion_rate' => $project['status'] === 'completed' ? 100 : 50,
+                        'evaluation_id' => null,
+                        'evaluation_status' => null,
+                        'overall_rating' => null,
+                        'evaluation_date' => null,
+                        'needs_evaluation' => $project['status'] === 'completed',
+                        'evaluation_overdue' => false
+                    ];
                 }
-                
-                $items[] = [
-                    'project_id' => 'sproj_' . $project['project_id'],
-                    'item_type' => 'standalone_project',
-                    'project_title' => '⚡ STANDALONE: ' . $project['project_title'],
-                    'project_description' => $project['project_description'] ?: 'Standalone Project',
-                    'project_status' => $project['status'] === 'completed' ? 'completed' : 'in_progress',
-                    'priority' => 'medium',
-                    'progress_percentage' => $project['status'] === 'completed' ? 100 : 80,
-                    'budget_allocated' => 0,
-                    'budget_spent' => 0,
-                    'project_start_date' => $project['start_date'],
-                    'project_end_date' => $project['end_date'],
-                    'program_id' => $project['program_id'],
-                    'program_name' => $project['program_name'] ?: 'Independent Project',
-                    'department' => $project['department'] ?: 'Unknown Department',
-                    'location' => $project['location'],
-                    'faculty_name' => $facultyName ?: 'Unknown Faculty',
-                    'faculty_department' => $project['faculty_department'] ?: $project['department'],
-                    'participants_count' => 0,
-                    'total_objectives' => 4,
-                    'completed_objectives' => $project['status'] === 'completed' ? 4 : 2,
-                    'objectives_completion_rate' => $project['status'] === 'completed' ? 100 : 50,
-                    'evaluation_id' => null,
-                    'evaluation_status' => null,
-                    'overall_rating' => null,
-                    'evaluation_date' => null,
-                    'needs_evaluation' => $project['status'] === 'completed',
-                    'evaluation_overdue' => false
-                ];
             }
         }
         
