@@ -20,7 +20,7 @@ if (!$program_id || !$score) {
 
 // Get student_name
 $user_id = $_SESSION['user_id'];
-$user_query = $conn->prepare("SELECT firstname, lastname, mi FROM users WHERE id = ?");
+$user_query = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
 $user_query->bind_param('i', $user_id);
 $user_query->execute();
 $user_result = $user_query->get_result();
@@ -29,7 +29,7 @@ if ($user_result->num_rows === 0) {
     exit;
 }
 $user = $user_result->fetch_assoc();
-$student_name = $user['firstname'] . ' ' . ($user['mi'] ? $user['mi'] . ' ' : '') . $user['lastname'];
+$student_name = $user['firstname'] . ' ' . $user['lastname'];
 
 $eval_date = date('Y-m-d');
 $stmt = $conn->prepare("INSERT INTO evaluations (student_name, score, comments, eval_date, program_id) VALUES (?, ?, ?, ?, ?)");
