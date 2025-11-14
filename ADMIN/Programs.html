@@ -821,15 +821,17 @@ async function loadDepartmentList() {
       console.warn('No departments returned from API');
       // Fallback to static departments
       const fallbackDepts = [
-        {value: 1, text: 'Department of Hospitality Management'},
-        {value: 2, text: 'Department of Language and Mass Communication'},
-        {value: 3, text: 'Department of Physical Education'},
-        {value: 4, text: 'Department of Social Sciences and Humanities'},
-        {value: 5, text: 'Teacher Education Department'},
-        {value: 6, text: 'Department of Administration - ENTREP'},
-        {value: 7, text: 'Department of Administration - BSOA'},
-        {value: 8, text: 'Department of Administration - BM'},
-        {value: 9, text: 'Department of Computer Studies'}
+        {value: 1, text: 'Department of Biological and Physical Sciences'},
+        {value: 2, text: 'Department of Computer Studies'},
+        {value: 3, text: 'Department of Hospitality Management'},
+        {value: 4, text: 'Department of Languages and Mass Communication'},
+        {value: 5, text: 'Department of Management'},
+        {value: 6, text: 'Department of Physical Education'},
+        {value: 7, text: 'Department of Social Sciences and Humanities'},
+        {value: 8, text: 'Teacher Education Department'},
+        {value: 15, text: 'Department of Administration - ENTREP'},
+        {value: 16, text: 'Department of Administration - BSOA'},
+        {value: 17, text: 'Department of Administration - BM'}
       ];
       
       fallbackDepts.forEach(dept => {
@@ -857,15 +859,17 @@ async function loadDepartmentList() {
     if (departmentSelect) {
       departmentSelect.innerHTML = `
         <option value="">Select Department *</option>
-        <option value="1">Department of Hospitality Management</option>
-        <option value="2">Department of Language and Mass Communication</option>
-        <option value="3">Department of Physical Education</option>
-        <option value="4">Department of Social Sciences and Humanities</option>
-        <option value="5">Teacher Education Department</option>
-        <option value="6">Department of Administration - ENTREP</option>
-        <option value="7">Department of Administration - BSOA</option>
-        <option value="8">Department of Administration - BM</option>
-        <option value="9">Department of Computer Studies</option>
+        <option value="1">Department of Biological and Physical Sciences</option>
+        <option value="2">Department of Computer Studies</option>
+        <option value="3">Department of Hospitality Management</option>
+        <option value="4">Department of Languages and Mass Communication</option>
+        <option value="5">Department of Management</option>
+        <option value="6">Department of Physical Education</option>
+        <option value="7">Department of Social Sciences and Humanities</option>
+        <option value="8">Teacher Education Department</option>
+        <option value="15">Department of Administration - ENTREP</option>
+        <option value="16">Department of Administration - BSOA</option>
+        <option value="17">Department of Administration - BM</option>
       `;
       console.log('Used emergency fallback departments');
     }
