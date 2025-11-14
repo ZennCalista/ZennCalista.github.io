@@ -22,7 +22,7 @@ try {
         $data = $_POST;
     }
     
-    // Get form data
+    // Get form data - all fields from the modal
     $program_name = $data['program_name'] ?? '';
     $department = $data['department'] ?? '';
     $program_type = $data['program_type'] ?? '';
@@ -30,36 +30,49 @@ try {
     $location = $data['location'] ?? '';
     $target_audience = $data['target_audience'] ?? '';
     $start_date = $data['start_date'] ?? '';
+    $previous_date = $data['previous_date'] ?? null;
     $end_date = $data['end_date'] ?? '';
     $max_students = $data['max_students'] ?? 0;
-    $budget = $data['budget'] ?? 0;
+    $male_count = $data['male_count'] ?? 0;
+    $female_count = $data['female_count'] ?? 0;
     $requirements = $data['requirements'] ?? '';
+    $budget = $data['budget'] ?? 0;
     $status = 'planning'; // Default status
 
+    // Handle project titles
+    $project_titles = [];
+    if (!empty($data['project_title_1'])) $project_titles[] = $data['project_title_1'];
+    if (!empty($data['project_title_2'])) $project_titles[] = $data['project_title_2'];
+    if (!empty($data['project_title_3'])) $project_titles[] = $data['project_title_3'];
+    $project_titles_json = !empty($project_titles) ? json_encode($project_titles) : null;
+
+    // Handle SDG goals
+    $sdg_goals = $data['selected_sdgs'] ?? '[]';
+
     // Validate required fields
-    if (empty($program_name) || empty($department) || empty($program_type) || 
+    if (empty($program_name) || empty($department) || empty($program_type) ||
         empty($description) || empty($location) || empty($target_audience) ||
         empty($start_date) || empty($end_date) || empty($max_students)) {
         throw new Exception('Please fill in all required fields');
     }
 
-    // Insert program into database
+    // Insert program into database with all fields
     $sql = "INSERT INTO programs (
-        program_name, department, program_type, description, location, 
-        target_audience, start_date, end_date, max_students, budget, 
-        requirements, status, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        program_name, project_titles, department, program_type, description, location,
+        target_audience, start_date, previous_date, end_date, max_students, male_count,
+        female_count, requirements, budget, sdg_goals, status, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
     $stmt = $conn->prepare($sql);
-    
+
     if (!$stmt) {
         throw new Exception('Database prepare error: ' . $conn->error);
     }
-    
-    $stmt->bind_param("ssssssssidss", 
-        $program_name, $department, $program_type, $description, $location,
-        $target_audience, $start_date, $end_date, $max_students, $budget,
-        $requirements, $status
+
+    $stmt->bind_param("sssssssssiiiidsss",
+        $program_name, $project_titles_json, $department, $program_type, $description, $location,
+        $target_audience, $start_date, $previous_date, $end_date, $max_students, $male_count,
+        $female_count, $requirements, $budget, $sdg_goals, $status
     );
 
     if (!$stmt->execute()) {
@@ -74,17 +87,17 @@ try {
         $session_starts = $data['session_start'] ?? [];
         $session_ends = $data['session_end'] ?? [];
         $session_titles = $data['session_title'] ?? [];
-        
+
         if (is_array($session_dates)) {
             foreach ($session_dates as $index => $date) {
                 if (!empty($date)) {
                     $start_time = $session_starts[$index] ?? '';
                     $end_time = $session_ends[$index] ?? '';
                     $title = $session_titles[$index] ?? '';
-                    
-                    $session_sql = "INSERT INTO sessions (program_id, session_date, session_start, session_end, session_title, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+
+                    $session_sql = "INSERT INTO program_sessions (program_id, session_date, session_start, session_end, session_title, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
                     $session_stmt = $conn->prepare($session_sql);
-                    
+
                     if ($session_stmt) {
                         $session_stmt->bind_param("issss", $program_id, $date, $start_time, $end_time, $title);
                         $session_stmt->execute();

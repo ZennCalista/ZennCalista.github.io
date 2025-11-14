@@ -7,39 +7,56 @@ header('Content-Type: application/json');
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $action = $_GET['action'] ?? 'list';
-        
+
         switch ($action) {
             case 'list':
-                // Return hardcoded departments since we don't have a departments table
-                $departments = [
-                    ['id' => 1, 'name' => 'Department of Hospitality Management', 'code' => 'DHM', 'status' => 'active'],
-                    ['id' => 2, 'name' => 'Department of Language and Mass Communication', 'code' => 'DLMC', 'status' => 'active'],
-                    ['id' => 3, 'name' => 'Department of Physical Education', 'code' => 'DPE', 'status' => 'active'],
-                    ['id' => 4, 'name' => 'Department of Social Sciences and Humanities', 'code' => 'DSSH', 'status' => 'active'],
-                    ['id' => 5, 'name' => 'Teacher Education Department', 'code' => 'TED', 'status' => 'active'],
-                    ['id' => 6, 'name' => 'Department of Administration - ENTREP', 'code' => 'DA-E', 'status' => 'active'],
-                    ['id' => 7, 'name' => 'Department of Administration - BSOA', 'code' => 'DA-BSOA', 'status' => 'active'],
-                    ['id' => 8, 'name' => 'Department of Administration - BM', 'code' => 'DA-BM', 'status' => 'active'],
-                    ['id' => 9, 'name' => 'Department of Computer Studies', 'code' => 'DCS', 'status' => 'active']
-                ];
+                // Get departments from database
+                $sql = "SELECT department_id as id, department_name as name, department_name as text FROM departments ORDER BY department_name";
+                $result = $conn->query($sql);
+                $departments = [];
+                while ($row = $result->fetch_assoc()) {
+                    $departments[] = $row;
+                }
                 echo json_encode($departments);
                 break;
-                
+
             case 'options':
                 // Get departments for dropdown options
-                $options = [
-                    ['value' => 'Department of Hospitality Management', 'text' => 'Department of Hospitality Management', 'code' => 'DHM'],
-                    ['value' => 'Department of Language and Mass Communication', 'text' => 'Department of Language and Mass Communication', 'code' => 'DLMC'],
-                    ['value' => 'Department of Physical Education', 'text' => 'Department of Physical Education', 'code' => 'DPE'],
-                    ['value' => 'Department of Social Sciences and Humanities', 'text' => 'Department of Social Sciences and Humanities', 'code' => 'DSSH'],
-                    ['value' => 'Teacher Education Department', 'text' => 'Teacher Education Department', 'code' => 'TED'],
-                    ['value' => 'Department of Administration - ENTREP', 'text' => 'Department of Administration - ENTREP', 'code' => 'DA-E'],
-                    ['value' => 'Department of Administration - BSOA', 'text' => 'Department of Administration - BSOA', 'code' => 'DA-BSOA'],
-                    ['value' => 'Department of Administration - BM', 'text' => 'Department of Administration - BM', 'code' => 'DA-BM'],
-                    ['value' => 'Department of Computer Studies', 'text' => 'Department of Computer Studies', 'code' => 'DCS']
-                ];
+                $sql = "SELECT department_id as value, department_name as text, department_name as name FROM departments ORDER BY department_name";
+                $result = $conn->query($sql);
+                $options = [];
+                while ($row = $result->fetch_assoc()) {
+                    $options[] = $row;
+                }
+
+                // If no departments in database, return fallback
+                if (empty($options)) {
+                    $options = [
+                        ['value' => 'Department of Hospitality Management', 'text' => 'Department of Hospitality Management'],
+                        ['value' => 'Department of Language and Mass Communication', 'text' => 'Department of Language and Mass Communication'],
+                        ['value' => 'Department of Physical Education', 'text' => 'Department of Physical Education'],
+                        ['value' => 'Department of Social Sciences and Humanities', 'text' => 'Department of Social Sciences and Humanities'],
+                        ['value' => 'Teacher Education Department', 'text' => 'Teacher Education Department'],
+                        ['value' => 'Department of Administration - ENTREP', 'text' => 'Department of Administration - ENTREP'],
+                        ['value' => 'Department of Administration - BSOA', 'text' => 'Department of Administration - BSOA'],
+                        ['value' => 'Department of Administration - BM', 'text' => 'Department of Administration - BM'],
+                        ['value' => 'Department of Computer Studies', 'text' => 'Department of Computer Studies']
+                    ];
+                }
                 echo json_encode($options);
                 break;
+
+            default:
+                echo json_encode(['error' => 'Unknown action']);
+        }
+    }
+
+} catch (Exception $e) {
+    echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
+}
+
+$conn->close();
+?>
                 
             case 'stats':
                 if (isset($_GET['dept_id'])) {
