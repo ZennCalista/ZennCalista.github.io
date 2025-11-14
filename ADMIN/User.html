@@ -438,6 +438,14 @@ function createUserCard(user) {
         <button class="btn-edit" onclick="editUser(${user.id})" title="Edit User">
           <i class="fas fa-edit"></i>
         </button>
+        ${isVerified ? 
+          `<button class="btn-unverify" onclick="unverifyUser(${user.id})" title="Unverify User">
+            <i class="fas fa-user-times"></i>
+          </button>` :
+          `<button class="btn-verify" onclick="verifyUser(${user.id})" title="Verify User">
+            <i class="fas fa-user-check"></i>
+          </button>`
+        }
         <button class="btn-delete" onclick="deleteUser(${user.id})" title="Delete User">
           <i class="fas fa-trash"></i>
         </button>
@@ -741,6 +749,48 @@ function submitEditUser(e) {
       }
     });
   return false;
+}
+
+function verifyUser(id) {
+  if (confirm('Are you sure you want to verify this user?')) {
+    fetch('api_users.php', {
+      method: 'POST',
+      body: new URLSearchParams({
+        action: 'verify_user',
+        id: id
+      })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        loadStudents();
+        loadFaculty();
+      } else {
+        alert('Failed to verify user.');
+      }
+    });
+  }
+}
+
+function unverifyUser(id) {
+  if (confirm('Are you sure you want to unverify this user?')) {
+    fetch('api_users.php', {
+      method: 'POST',
+      body: new URLSearchParams({
+        action: 'unverify_user',
+        id: id
+      })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        loadStudents();
+        loadFaculty();
+      } else {
+        alert('Failed to unverify user.');
+      }
+    });
+  }
 }
 
 // Load initial data

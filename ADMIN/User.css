@@ -419,8 +419,23 @@ body {
   color: #dc2626;
 }
 
-.user-actions .btn-delete:hover {
-  background: #fee2e2;
+.user-actions .btn-verify {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.user-actions .btn-verify:hover {
+  background: #a7f3d0;
+  transform: scale(1.05);
+}
+
+.user-actions .btn-unverify {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.user-actions .btn-unverify:hover {
+  background: #fde68a;
   transform: scale(1.05);
 }
 

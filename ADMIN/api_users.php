@@ -264,3 +264,41 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_departments') {
     exit;
 }
 
+// Verify user
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'verify_user') {
+    $id = intval($_POST['id']);
+    
+    $stmt = $conn->prepare("UPDATE users SET verification_status = 'verified' WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => 'SQL Error: ' . $conn->error]);
+        exit;
+    }
+    $stmt->bind_param("i", $id);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Failed to verify user']);
+    }
+    exit;
+}
+
+// Unverify user
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'unverify_user') {
+    $id = intval($_POST['id']);
+    
+    $stmt = $conn->prepare("UPDATE users SET verification_status = 'unverified' WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => 'SQL Error: ' . $conn->error]);
+        exit;
+    }
+    $stmt->bind_param("i", $id);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Failed to unverify user']);
+    }
+    exit;
+}
+
