@@ -244,10 +244,11 @@
     <div class="modal-profile">
       <p><strong>Full Name:</strong> <span id="profile-name">Loading...</span></p>
       <p><strong>Role:</strong> <span id="profile-role">-</span></p>
-      <p><strong>ID/Faculty Code:</strong> <span id="profile-id">-</span></p>
+      <p id="profile-id-row" class="modal-profile-row"><strong id="profile-id-label">ID:</strong> <span id="profile-id">-</span></p>
       <p><strong>Course/Department:</strong> <span id="profile-dept">-</span></p>
       <p><strong>Email:</strong> <span id="profile-email">-</span></p>
       <p><strong>Phone:</strong> <span id="profile-phone">-</span></p>
+      <p><strong>Emergency Contact:</strong> <span id="profile-emergency">-</span></p>
       <p><strong>Status:</strong> <span id="profile-status">-</span></p>
     </div>
   </div>
@@ -269,16 +270,93 @@
     }
   
     function openViewProfile(user) {
-    // Set modal content dynamically
-    document.getElementById("profile-name").textContent = user.name;
-    document.getElementById("profile-role").textContent = user.role;
-    document.getElementById("profile-id").textContent = user.id;
-    document.getElementById("profile-dept").textContent = user.department;
-    document.getElementById("profile-email").textContent = user.email;
-    document.getElementById("profile-phone").textContent = user.phone || '-';
-    document.getElementById("profile-status").textContent = user.verification || '-';
+    console.log('Opening view profile for user:', user.id);
+    
+    // Fetch fresh user data to ensure we have complete information
+    fetch('api_users.php?id=' + user.id)
+      .then(res => {
+        console.log('API response status:', res.status);
+        console.log('API response headers:', res.headers.get('content-type'));
+        
+        if (!res.ok) {
+          throw new Error('HTTP error! status: ' + res.status);
+        }
+        
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return res.json();
+        } else {
+          // If not JSON, get as text and check if it's a redirect
+          return res.text().then(text => {
+            console.log('Non-JSON response:', text.substring(0, 200));
+            throw new Error('Server returned non-JSON response');
+          });
+        }
+      })
+      .then(data => {
+        console.log('API response data:', data);
+        if (data.success && data.data.length > 0) {
+          const freshUser = data.data[0];
+          
+          // Set modal content dynamically
+          document.getElementById("profile-name").textContent = freshUser.firstname + ' ' + freshUser.lastname;
+          document.getElementById("profile-role").textContent = freshUser.role;
+          
+          // Handle ID row based on role
+          const idRow = document.getElementById("profile-id-row");
+          const idLabel = document.getElementById("profile-id-label");
+          const idValue = document.getElementById("profile-id");
+          
+          if (freshUser.role === 'student') {
+            idLabel.textContent = 'Student ID:';
+            idValue.textContent = freshUser.student_id || freshUser.id;
+            idRow.classList.remove('hidden');
+          } else {
+            // Hide ID row for faculty
+            idRow.classList.add('hidden');
+          }
+          
+          document.getElementById("profile-dept").textContent = freshUser.role === 'student' ? (freshUser.course || 'Not specified') : (freshUser.department || 'Not specified');
+          document.getElementById("profile-email").textContent = freshUser.email;
+          document.getElementById("profile-phone").textContent = freshUser.role === 'student' ? (freshUser.contact_no || freshUser.phone || '-') : (freshUser.phone || '-');
+          document.getElementById("profile-emergency").textContent = freshUser.emergency_contact || '-';
+          document.getElementById("profile-status").textContent = freshUser.verification_status || '-';
 
-    openModal('view-profile-modal');
+          openModal('view-profile-modal');
+        } else {
+          console.error('API returned success but no data:', data);
+          alert('Failed to load user data. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+        // Fallback to passed data
+        document.getElementById("profile-name").textContent = user.name || 'Unknown User';
+        document.getElementById("profile-role").textContent = user.role || '-';
+        
+        // Handle ID row based on role
+        const idRow = document.getElementById("profile-id-row");
+        const idLabel = document.getElementById("profile-id-label");
+        const idValue = document.getElementById("profile-id");
+        
+        if (user.role === 'student') {
+          idLabel.textContent = 'Student ID:';
+          idValue.textContent = user.id || '-';
+          idRow.classList.remove('hidden');
+        } else {
+          // Hide ID row for faculty
+          idRow.classList.add('hidden');
+        }
+        
+        document.getElementById("profile-dept").textContent = user.department || 'Not specified';
+        document.getElementById("profile-email").textContent = user.email || '-';
+        document.getElementById("profile-phone").textContent = user.phone || '-';
+        document.getElementById("profile-emergency").textContent = user.emergency_contact || '-';
+        document.getElementById("profile-status").textContent = user.verification || '-';
+
+        openModal('view-profile-modal');
+        alert('Unable to load fresh user data. Showing cached information.');
+      });
   }
   
 
@@ -301,6 +379,7 @@ function loadStudents() {
         allUsers = allUsers.filter(u => u.role !== 'student').concat(studentUsers);
         displayUsers();
         updateStats();
+        updateDepartmentFilter();
       }
     });
 }
@@ -315,6 +394,7 @@ function loadFaculty() {
         allUsers = allUsers.filter(u => u.role !== 'faculty').concat(facultyUsers);
         displayUsers();
         updateStats();
+        updateDepartmentFilter();
       }
     });
 }
@@ -332,7 +412,7 @@ function createUserCard(user) {
       <div class="user-info">
         <h3>${user.firstname} ${user.lastname}</h3>
         <p class="user-id">${user.role === 'student' ? 'Student ID: ' + (user.student_id || user.id) : 'Faculty ID: ' + (user.faculty_id || user.id)}</p>
-        <p class="user-department">${user.department}</p>
+        <p class="user-department">${user.role === 'student' ? (user.course || 'Not specified') : (user.department || 'Not specified')}</p>
         <div class="user-contact">
           <span><i class="fas fa-envelope"></i> ${user.email}</span>
           ${user.phone ? `<span><i class="fas fa-phone"></i> ${user.phone}</span>` : ''}
@@ -344,14 +424,14 @@ function createUserCard(user) {
       </div>
       <div class="user-actions">
         <button class="btn-view" onclick='openViewProfile({
+          id: ${user.id},
           name: "${user.firstname} ${user.lastname}",
           role: "${user.role}",
-          id: "${user.id}",
-          department: "${user.department}",
+          department: "${user.role === 'student' ? (user.course || 'Not specified') : (user.department || 'Not specified')}",
           email: "${user.email}",
-          phone: "${user.phone}",
-          verification: "${user.verification_status}",
-          comm_preference: "${user.comm_preference}"
+          phone: "${user.role === 'student' ? (user.contact_no || user.phone || '-') : (user.phone || '-')}",
+          emergency_contact: "${user.emergency_contact || '-'}",
+          verification: "${user.verification_status}"
         })' title="View Details">
           <i class="fas fa-eye"></i>
         </button>
@@ -368,24 +448,39 @@ function createUserCard(user) {
 
 // Display users based on current filters
 function displayUsers() {
+  console.log('displayUsers called');
+  console.log('allUsers length:', allUsers.length);
+  console.log('allUsers:', allUsers);
+
+  // Don't display if data hasn't loaded yet
+  if (allUsers.length === 0) return;
+
   const searchTerm = document.getElementById('search-users').value.toLowerCase();
   const roleFilter = document.getElementById('role-filter').value;
   const departmentFilter = document.getElementById('department-filter').value;
   const statusFilter = document.getElementById('status-filter').value;
-  
+
+  console.log('Filters:', { searchTerm, roleFilter, departmentFilter, statusFilter });
+
   let filteredUsers = allUsers.filter(user => {
-    const matchesSearch = user.firstname.toLowerCase().includes(searchTerm) ||
+    const userDept = user.role === 'student' ? (user.course || '') : (user.department || '');
+    const matchesSearch = searchTerm === '' ||
+                         user.firstname.toLowerCase().includes(searchTerm) ||
                          user.lastname.toLowerCase().includes(searchTerm) ||
                          user.email.toLowerCase().includes(searchTerm) ||
-                         user.department.toLowerCase().includes(searchTerm) ||
-                         (user.id && user.id.toString().includes(searchTerm));
-    
+                         userDept.toLowerCase().includes(searchTerm) ||
+                         (user.id && user.id.toString().includes(searchTerm)) ||
+                         (user.student_id && user.student_id.toString().includes(searchTerm)) ||
+                         (user.faculty_id && user.faculty_id.toString().includes(searchTerm));
+
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesDepartment = departmentFilter === 'all' || user.department === departmentFilter;
+    const matchesDepartment = departmentFilter === 'all' || userDept === departmentFilter;
     const matchesStatus = statusFilter === 'all' || user.verification_status === statusFilter;
-    
+
     return matchesSearch && matchesRole && matchesDepartment && matchesStatus;
   });
+
+  console.log('Filtered users count:', filteredUsers.length);
 
   // Separate students and faculty
   const students = filteredUsers.filter(user => user.role === 'student');
@@ -393,21 +488,26 @@ function displayUsers() {
 
   // Display students
   const studentsGrid = document.getElementById('students-grid');
-  studentsGrid.innerHTML = students.length > 0 ? 
+  studentsGrid.innerHTML = students.length > 0 ?
     students.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-user-graduate"></i><p>No students found</p></div>';
 
   // Display faculty
   const facultyGrid = document.getElementById('faculty-grid');
-  facultyGrid.innerHTML = faculty.length > 0 ? 
+  facultyGrid.innerHTML = faculty.length > 0 ?
     faculty.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No faculty found</p></div>';
 
-  // Show/hide no results message
-  document.getElementById('no-results').classList.toggle('hidden', filteredUsers.length > 0);
-}
+  console.log('DOM updated - students shown:', students.length, 'faculty shown:', faculty.length);
 
-// Update statistics
+  // Show/hide no results message
+  const hasResults = (currentTab === 'students' && students.length > 0) ||
+                    (currentTab === 'faculty' && faculty.length > 0) ||
+                    (roleFilter !== 'all' && filteredUsers.length > 0);
+  document.getElementById('no-results').classList.toggle('hidden', hasResults);
+
+  console.log('displayUsers completed');
+}// Update statistics
 function updateStats() {
   const students = allUsers.filter(user => user.role === 'student');
   const faculty = allUsers.filter(user => user.role === 'faculty');
@@ -444,30 +544,101 @@ function exportUsers() {
 
 // Initialize search and filter functionality
 function initializeFilters() {
+  console.log('Initializing filters...');
+
   // Search functionality
-  document.getElementById('search-users').addEventListener('input', displayUsers);
-  document.getElementById('role-filter').addEventListener('change', displayUsers);
-  document.getElementById('department-filter').addEventListener('change', displayUsers);
-  document.getElementById('status-filter').addEventListener('change', displayUsers);
-  
-  // Populate department filter
-  const departments = [...new Set(allUsers.map(user => user.department))];
+  const searchInput = document.getElementById('search-users');
+  const roleFilter = document.getElementById('role-filter');
   const departmentFilter = document.getElementById('department-filter');
-  departments.forEach(dept => {
-    const option = document.createElement('option');
-    option.value = dept;
-    option.textContent = dept;
-    departmentFilter.appendChild(option);
+  const statusFilter = document.getElementById('status-filter');
+
+  console.log('Search input found:', !!searchInput);
+
+  // Add event listeners
+  searchInput.addEventListener('input', function() {
+    console.log('Search input event fired, value:', this.value);
+    console.log('allUsers at event time:', allUsers.length);
+    displayUsers();
   });
+  roleFilter.addEventListener('change', function() {
+    console.log('Role filter changed:', this.value);
+    displayUsers();
+  });
+  departmentFilter.addEventListener('change', function() {
+    console.log('Department filter changed:', this.value);
+    displayUsers();
+  });
+  statusFilter.addEventListener('change', function() {
+    console.log('Status filter changed:', this.value);
+    displayUsers();
+  });
+
+  console.log('Event listeners attached');
+
+  // Test if event listener is working
+  setTimeout(() => {
+    console.log('Testing event listener...');
+    searchInput.dispatchEvent(new Event('input'));
+  }, 1000);
+
+  // Populate department filter
+  updateDepartmentFilter();
+}
+
+// Update department filter options
+function updateDepartmentFilter() {
+  fetch('api_users.php?action=get_departments')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const departmentFilter = document.getElementById('department-filter');
+
+        // Clear existing options except "All Departments"
+        departmentFilter.innerHTML = '<option value="all">All Departments</option>';
+
+        // Add department options
+        data.data.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept;
+          option.textContent = dept;
+          departmentFilter.appendChild(option);
+        });
+
+        console.log('Department filter updated with departments:', data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error loading departments:', error);
+      // Fallback to hardcoded list if API fails
+      const departments = [
+        'Department of Hospitality Management',
+        'Department of Language and Mass Communication',
+        'Department of Physical Education',
+        'Department of Social Sciences and Humanities',
+        'Teacher Education Department',
+        'Department of Administration - ENTREP',
+        'Department of Administration - BSOA',
+        'Department of Administration - BM',
+        'Department of Computer Studies'
+      ];
+
+      const departmentFilter = document.getElementById('department-filter');
+      departmentFilter.innerHTML = '<option value="all">All Departments</option>';
+      departments.sort().forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        departmentFilter.appendChild(option);
+      });
+    });
 }
 
 // Call on page load
 window.onload = function() {
+  console.log('Page loaded, initializing...');
+  initializeFilters(); // Initialize filters first
   loadStudents();
   loadFaculty();
-  setTimeout(() => {
-    initializeFilters();
-  }, 1000); // Wait for data to load before initializing filters
 };
 
 // Add Student
@@ -573,8 +744,8 @@ function submitEditUser(e) {
 }
 
 // Load initial data
-loadStudents();
-loadFaculty();
+// loadStudents(); // Removed duplicate calls
+// loadFaculty();
   </script>
   
 </body>

@@ -8,7 +8,7 @@ if (isset($_GET['role'])) {
     
     if ($role === 'faculty') {
         // Fetch faculty with additional details
-        $sql = "SELECT u.*, f.faculty_id, f.faculty_name, f.position 
+        $sql = "SELECT u.*, f.faculty_id, f.faculty_name, f.position, f.department 
                 FROM users u 
                 LEFT JOIN faculty f ON u.id = f.user_id 
                 WHERE u.role = ?";
@@ -63,7 +63,7 @@ if (isset($_GET['id'])) {
     while ($row = $res->fetch_assoc()) {
         // Get additional details based on role
         if ($row['role'] === 'faculty') {
-            $stmt2 = $conn->prepare("SELECT * FROM faculty WHERE user_id = ?");
+            $stmt2 = $conn->prepare("SELECT faculty_id, faculty_name, position, department FROM faculty WHERE user_id = ?");
             if ($stmt2) {
                 $stmt2->bind_param("i", $row['id']);
                 $stmt2->execute();
@@ -73,7 +73,7 @@ if (isset($_GET['id'])) {
                 }
             }
         } else {
-            $stmt2 = $conn->prepare("SELECT * FROM students WHERE user_id = ?");
+            $stmt2 = $conn->prepare("SELECT student_id, course, contact_no, emergency_contact FROM students WHERE user_id = ?");
             if ($stmt2) {
                 $stmt2->bind_param("i", $row['id']);
                 $stmt2->execute();
@@ -247,27 +247,20 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_programs') {
     exit;
 }
 
-// Get user statistics
-if (isset($_GET['action']) && $_GET['action'] === 'get_stats') {
-    $stats = [];
-    
-    // Count total students
-    $result = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'student'");
-    $stats['total_students'] = $result->fetch_assoc()['count'];
-    
-    // Count total faculty
-    $result = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'faculty'");
-    $stats['total_faculty'] = $result->fetch_assoc()['count'];
-    
-    // Count verified users
-    $result = $conn->query("SELECT COUNT(*) as count FROM users WHERE verification_status = 'verified'");
-    $stats['verified_users'] = $result->fetch_assoc()['count'];
-    
-    // Count unverified users
-    $result = $conn->query("SELECT COUNT(*) as count FROM users WHERE verification_status = 'unverified'");
-    $stats['unverified_users'] = $result->fetch_assoc()['count'];
-    
-    echo json_encode(['success' => true, 'data' => $stats]);
+// Get departments
+if (isset($_GET['action']) && $_GET['action'] === 'get_departments') {
+    $stmt = $conn->prepare("SELECT department_name FROM departments ORDER BY department_name");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => 'SQL Error: ' . $conn->error]);
+        exit;
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $departments = [];
+    while ($row = $res->fetch_assoc()) {
+        $departments[] = $row['department_name'];
+    }
+    echo json_encode(['success' => true, 'data' => $departments]);
     exit;
 }
 

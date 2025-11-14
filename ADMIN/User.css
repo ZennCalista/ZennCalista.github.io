@@ -602,6 +602,11 @@ body {
   text-align: right;
 }
 
+/* Hidden row class for modal profile */
+.modal-profile-row.hidden {
+  display: none;
+}
+
 .btn-edit {
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;

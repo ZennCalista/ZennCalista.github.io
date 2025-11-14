@@ -39,7 +39,7 @@ try {
     }
 
     // Validate required fields
-    $required_fields = ['program_name', 'department', 'location', 'status', 'description'];
+    $required_fields = ['program_name', 'department', 'location', 'description'];
     foreach ($required_fields as $field) {
         if ($field === 'department') {
             // department may be submitted as department or department_hidden (when the visible select is disabled)
@@ -55,7 +55,19 @@ try {
 
     // Sanitize and prepare data
     $program_name = trim($_POST['program_name']);
-    $project_titles = !empty($_POST['project_titles']) ? trim($_POST['project_titles']) : null;
+    
+    // Handle project titles (can be individual fields or single field)
+    $project_titles = null;
+    if (!empty($_POST['project_title_1']) || !empty($_POST['project_title_2']) || !empty($_POST['project_title_3'])) {
+        $titles = [];
+        if (!empty($_POST['project_title_1'])) $titles[] = trim($_POST['project_title_1']);
+        if (!empty($_POST['project_title_2'])) $titles[] = trim($_POST['project_title_2']);
+        if (!empty($_POST['project_title_3'])) $titles[] = trim($_POST['project_title_3']);
+        $project_titles = json_encode($titles);
+    } elseif (!empty($_POST['project_titles'])) {
+        $project_titles = trim($_POST['project_titles']);
+    }
+    
     // department may be submitted as an ID (preferred) or a name (legacy). We'll resolve to department_id.
     // Accept department from the visible select ('department') or the hidden fallback ('department_hidden')
     if (isset($_POST['department'])) {
@@ -67,12 +79,27 @@ try {
     }
     $department_id = null;
     $location = trim($_POST['location']);
+    $program_type = !empty($_POST['program_type']) ? trim($_POST['program_type']) : null;
+    $target_audience = !empty($_POST['target_audience']) ? trim($_POST['target_audience']) : null;
     $start_date = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
+    $previous_date = !empty($_POST['previous_date']) ? $_POST['previous_date'] : null;
     $end_date = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
-    $status = trim($_POST['status']);
-    $max_students = !empty($_POST['max_students']) ? (int)$_POST['max_students'] : 0;
+    $status = !empty($_POST['status']) ? trim($_POST['status']) : 'planning'; // Default to planning if not set
+    $max_students = !empty($_POST['max_students']) ? (int)$_POST['max_students'] : null;
+    $male_count = !empty($_POST['male_count']) ? (int)$_POST['male_count'] : 0;
+    $female_count = !empty($_POST['female_count']) ? (int)$_POST['female_count'] : 0;
     $description = trim($_POST['description']);
-    $sdg_goals = !empty($_POST['sdg_goals']) ? trim($_POST['sdg_goals']) : null;
+    $requirements = !empty($_POST['requirements']) ? trim($_POST['requirements']) : null;
+    $budget = !empty($_POST['budget']) ? (float)$_POST['budget'] : null;
+    
+    // Handle SDG goals
+    $sdg_goals = null;
+    if (!empty($_POST['selected_sdgs'])) {
+        $sdg_goals = $_POST['selected_sdgs'];
+    } elseif (!empty($_POST['sdg_goals'])) {
+        $sdg_goals = trim($_POST['sdg_goals']);
+    }
+    
     // Prefer the authenticated user's id (renamed from faculty_id -> id). Fallback to POSTed faculty_id for compatibility.
     $faculty_id = null;
     if (!empty($_SESSION['user']['id'])) {
@@ -108,16 +135,23 @@ try {
     error_log("department_raw: " . ($department_raw ?? 'NULL'));
     error_log("department_id: " . ($department_id ?? 'NULL'));
     error_log("location: " . $location);
+    error_log("program_type: " . ($program_type ?? 'NULL'));
+    error_log("target_audience: " . ($target_audience ?? 'NULL'));
     error_log("start_date: " . ($start_date ?? 'NULL'));
+    error_log("previous_date: " . ($previous_date ?? 'NULL'));
     error_log("end_date: " . ($end_date ?? 'NULL'));
     error_log("status: " . $status);
-    error_log("max_students: " . $max_students);
+    error_log("max_students: " . ($max_students ?? 'NULL'));
+    error_log("male_count: " . $male_count);
+    error_log("female_count: " . $female_count);
     error_log("description: " . $description);
+    error_log("requirements: " . ($requirements ?? 'NULL'));
+    error_log("budget: " . ($budget ?? 'NULL'));
     error_log("sdg_goals: " . ($sdg_goals ?? 'NULL'));
     error_log("faculty_id: " . ($faculty_id ?? 'NULL'));
 
     // Validate status enum
-    $valid_statuses = ['planning', 'ongoing', 'ended', 'completed'];
+    $valid_statuses = ['planning', 'ongoing', 'ended', 'completed', 'cancelled'];
     if (!in_array($status, $valid_statuses)) {
         sendResponse(false, 'Invalid status value');
     }
@@ -137,10 +171,22 @@ try {
             throw new Exception('Unknown department: ' . $department_raw);
         }
 
-        $fields = ['program_name', 'department_id', 'location', 'status', 'description'];
-        $values = [$program_name, $department_id, $location, $status, $description];
-        // types: s = program_name, i = department_id, s = location, s = status, s = description
-        $types = 'sisss';
+        $fields = ['program_name', 'department_id', 'location', 'description'];
+        $values = [$program_name, $department_id, $location, $description];
+        // types: s = program_name, i = department_id, s = location, s = description
+        $types = 'siss';
+        
+        if ($program_type !== null) {
+            $fields[] = 'program_type';
+            $values[] = $program_type;
+            $types .= 's';
+        }
+        
+        if ($target_audience !== null) {
+            $fields[] = 'target_audience';
+            $values[] = $target_audience;
+            $types .= 's';
+        }
         
         if ($project_titles !== null) {
             $fields[] = 'project_titles';
@@ -154,16 +200,52 @@ try {
             $types .= 's';
         }
         
+        if ($previous_date !== null) {
+            $fields[] = 'previous_date';
+            $values[] = $previous_date;
+            $types .= 's';
+        }
+        
         if ($end_date !== null) {
             $fields[] = 'end_date';
             $values[] = $end_date;
             $types .= 's';
         }
         
-        if ($max_students > 0) {
+        if ($status !== null) {
+            $fields[] = 'status';
+            $values[] = $status;
+            $types .= 's';
+        }
+        
+        if ($max_students !== null) {
             $fields[] = 'max_students';
             $values[] = $max_students;
             $types .= 'i';
+        }
+        
+        if ($male_count > 0) {
+            $fields[] = 'male_count';
+            $values[] = $male_count;
+            $types .= 'i';
+        }
+        
+        if ($female_count > 0) {
+            $fields[] = 'female_count';
+            $values[] = $female_count;
+            $types .= 'i';
+        }
+        
+        if ($requirements !== null) {
+            $fields[] = 'requirements';
+            $values[] = $requirements;
+            $types .= 's';
+        }
+        
+        if ($budget !== null) {
+            $fields[] = 'budget';
+            $values[] = $budget;
+            $types .= 'd';
         }
         
         if ($sdg_goals !== null) {
@@ -312,12 +394,72 @@ try {
 
         error_log("Total images processed: " . count($uploaded_images));
         
+        // Handle program sessions
+        $created_sessions = [];
+        if (isset($_POST['sessions']) && !empty($_POST['sessions'])) {
+            $sessions = json_decode($_POST['sessions'], true);
+            if (is_array($sessions)) {
+                error_log("Processing " . count($sessions) . " sessions");
+                
+                // Create program_sessions table if it doesn't exist
+                $create_sessions_table = "CREATE TABLE IF NOT EXISTS program_sessions (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    program_id INT NOT NULL,
+                    session_title VARCHAR(255) NOT NULL,
+                    session_date DATE NOT NULL,
+                    session_start TIME NOT NULL,
+                    session_end TIME NOT NULL,
+                    location VARCHAR(255) NULL,
+                    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE CASCADE
+                )";
+                
+                if (!$conn->query($create_sessions_table)) {
+                    throw new Exception('Failed to create program_sessions table: ' . $conn->error);
+                }
+                
+                foreach ($sessions as $session) {
+                    if (!empty($session['title']) && !empty($session['date']) && !empty($session['start']) && !empty($session['end'])) {
+                        $session_sql = "INSERT INTO program_sessions (program_id, session_title, session_date, session_start, session_end, location) 
+                                       VALUES (?, ?, ?, ?, ?, ?)";
+                        $session_stmt = $conn->prepare($session_sql);
+                        
+                        if (!$session_stmt) {
+                            throw new Exception('Failed to prepare session statement: ' . $conn->error);
+                        }
+                        
+                        $session_location = !empty($session['location']) ? $session['location'] : null;
+                        $session_stmt->bind_param("isssss", $program_id, $session['title'], $session['date'], $session['start'], $session['end'], $session_location);
+                        
+                        if (!$session_stmt->execute()) {
+                            throw new Exception('Failed to insert session: ' . $session_stmt->error);
+                        }
+                        
+                        $session_id = $conn->insert_id;
+                        $created_sessions[] = [
+                            'session_id' => $session_id,
+                            'title' => $session['title'],
+                            'date' => $session['date'],
+                            'start' => $session['start'],
+                            'end' => $session['end'],
+                            'location' => $session_location
+                        ];
+                        
+                        $session_stmt->close();
+                        error_log("Session inserted successfully with ID: $session_id");
+                    }
+                }
+            }
+        }
+        
         // Commit transaction
         $conn->commit();
         
         sendResponse(true, 'Program uploaded successfully', [
             'program_id' => $program_id,
-            'uploaded_images' => $uploaded_images
+            'uploaded_images' => $uploaded_images,
+            'created_sessions' => $created_sessions
         ]);
 
     } catch (Exception $e) {

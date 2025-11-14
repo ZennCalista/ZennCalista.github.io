@@ -206,6 +206,30 @@
       });
     }
 
+    function loadDepartments() {
+      fetch('../ADMIN/api_users.php?action=get_departments')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const departmentSelect = document.getElementById('department');
+            departmentSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
+            data.data.forEach(dept => {
+              const option = document.createElement('option');
+              option.value = dept;
+              option.textContent = dept;
+              departmentSelect.appendChild(option);
+            });
+          } else {
+            console.error('Failed to load departments:', data.error);
+            alert('Failed to load departments. Please try again.');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading departments:', error);
+          alert('Error loading departments. Please check your connection.');
+        });
+    }
+
     function showRoleSpecificForm() {
       const rightPanel = document.getElementById('right-panel');
       const panelContent = rightPanel.querySelector('.panel-content');
@@ -235,19 +259,8 @@
           newContentHTML = `
             <div class="panel-content enter-start">
               <div class="form-title text-green-800">FACULTY</div>
-              <input type="text" id="faculty-name" placeholder="Faculty Name" class="form-input" />
-              <input type="text" id="faculty-id" placeholder="Faculty ID" class="form-input" />
               <select id="department" class="form-input">
-                <option value="" disabled selected>Select Department</option>
-                <option>Department of Hospitality Management</option>
-                <option>Department of Language and Mass Communication</option>
-                <option>Department of Physical Education</option>
-                <option>Department of Social Sciences and Humanities</option>
-                <option>Teacher Education Department</option>
-                <option>Department of Administration - ENTREP</option>
-                <option>Department of Administration - BSOA</option>
-                <option>Department of Administration - BM</option>
-                <option>Department of Computer Studies</option>
+                <option value="" disabled selected>Loading departments...</option>
               </select>
               <input type="text" id="position" placeholder="Position" class="form-input" />
               <div class="flex items-center my-4">
@@ -261,6 +274,11 @@
 
         // Replace the entire panel content
         rightPanel.innerHTML = newContentHTML;
+
+        // Load departments if faculty form
+        if (userData.role === 'faculty') {
+          loadDepartments();
+        }
 
         // Find the new panel content and apply the enter animation
         const newContent = rightPanel.querySelector('.panel-content');
@@ -297,14 +315,12 @@
         data.contact_no = contactNo;
         data.emergency_contact = emergencyContact;
       } else if (userData.role === 'faculty') {
-        const facultyName = document.getElementById('faculty-name').value;
-        const facultyId = document.getElementById('faculty-id').value;
         const department = document.getElementById('department').value;
         const position = document.getElementById('position').value;
         const termsChecked = document.getElementById('terms-faculty').checked;
 
         // Validate required fields
-        if (!facultyName || !facultyId || !department || !position) {
+        if (!department || !position) {
           alert("Please fill out all required fields.");
           return;
         }
@@ -314,8 +330,6 @@
           return;
         }
 
-        data.faculty_name = facultyName;
-        data.faculty_id = facultyId;
         data.department = department;
         data.position = position;
       }

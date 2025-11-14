@@ -16,101 +16,133 @@
       <div id="message-container"></div>
 
       <form id="program-upload-form" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="program_name">Program Name <span class="required">*</span></label>
-          <input type="text" id="program_name" name="program_name" required>
-        </div>
+        <!-- Basic Information -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Program Information</strong></legend>
+          <input type="text" id="program_name" name="program_name" placeholder="Program Name *" required style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
 
-        <div class="form-group">
-          <label for="project_titles">Project Titles</label>
-          <textarea id="project_titles" name="project_titles" placeholder="Enter project titles (optional)"></textarea>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="department">Department <span class="required">*</span></label>
-            <select id="department" name="department" required>
-              <option value="">Select Department</option>
-              <option value="1">Biological Sciences and Physical Sciences</option>
-              <option value="2">Computer Studies</option>
-              <option value="3">Hospitality Management</option>
-              <option value="4">Languages and Mass Communication</option>
-              <option value="5">Management</option>
-              <option value="6">Physical Education</option>
-              <option value="7">Social Sciences and Humanities</option>
-              <option value="8">Teacher Education</option>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <select id="department" name="department" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Select Department * (This will load faculty below)</option>
             </select>
-            <input type="hidden" id="department_hidden" name="department_hidden" />
-          </div>
 
-          <div class="form-group">
-            <label for="location">Location <span class="required">*</span></label>
-            <input type="text" id="location" name="location" required placeholder="e.g., Imus Campus, Community Center">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="start_date">Start Date</label>
-            <input type="date" id="start_date" name="start_date">
-          </div>
-
-          <div class="form-group">
-            <label for="end_date">End Date</label>
-            <input type="date" id="end_date" name="end_date">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="status">Status <span class="required">*</span></label>
-            <select id="status" name="status" required>
-              <option value="">Select Status</option>
-              <option value="planning">Planning</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="ended">Ended</option>
-              <option value="completed">Completed</option>
+            <select name="program_type" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option value="">Program Type *</option>
+              <option value="Extension Program">Extension Program</option>
+              <option value="Community Service">Community Service</option>
+              <option value="Training Workshop">Training Workshop</option>
+              <option value="Seminar">Seminar</option>
+              <option value="Outreach Program">Outreach Program</option>
+              <option value="Research Extension">Research Extension</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="max_students">Maximum Students</label>
-            <input type="number" id="max_students" name="max_students" min="0" placeholder="0">
+          <textarea id="description" name="description" placeholder="Program Description & Objectives *" required style="width: 100%; height: 100px; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="location" name="location" placeholder="Program Location *" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            <select name="target_audience" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option value="">Target Audience *</option>
+              <option value="Students">Students Only</option>
+              <option value="Faculty">Faculty Only</option>
+              <option value="Community">Community Members</option>
+              <option value="Students & Faculty">Students & Faculty</option>
+              <option value="Mixed Audience">Mixed Audience</option>
+            </select>
           </div>
-        </div>
+        </fieldset>
 
-        <div class="form-group">
-          <label for="description">Description <span class="required">*</span></label>
-          <textarea id="description" name="description" required placeholder="Provide a detailed description of the program"></textarea>
-        </div>
+        <!-- Dates -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Program Dates</strong></legend>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Start Date *</label>
+              <input type="date" id="start_date" name="start_date" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Previous Date</label>
+              <input type="date" id="previous_date" name="previous_date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">End Date *</label>
+              <input type="date" id="end_date" name="end_date" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+          </div>
+        </fieldset>
 
-        <div class="form-group">
-          <label for="sdg_goals">SDG Goals</label>
-          <textarea id="sdg_goals" name="sdg_goals" placeholder="List relevant Sustainable Development Goals"></textarea>
-        </div>
+        <!-- Program Capacity & Requirements -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Program Capacity & Requirements</strong></legend>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Maximum Participants (1-50) *</label>
+              <input type="number" id="max_students" name="max_students" min="1" max="50" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Target Male Count</label>
+              <input type="number" id="male_count" name="male_count" min="0" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Target Female Count</label>
+              <input type="number" id="female_count" name="female_count" min="0" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="faculty_id">Faculty ID</label>
-          <input type="number" id="faculty_id" name="faculty_id" placeholder="Enter faculty ID">
-        </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Prerequisites/Requirements</label>
+              <textarea id="requirements" name="requirements" placeholder="Enter any prerequisites or requirements for participants" style="width: 100%; height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Department Budget Allocation</label>
+              <input type="number" id="budget" name="budget" placeholder="Budget (if applicable)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" step="0.01" />
+            </div>
+          </div>
+        </fieldset>
 
-        <div class="form-group">
-          <label>Program Images</label>
+        <!-- Project Titles -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Project Titles</strong></legend>
+          <input type="text" id="project_title_1" name="project_title_1" placeholder="Project Title 1" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <input type="text" id="project_title_2" name="project_title_2" placeholder="Project Title 2" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <input type="text" id="project_title_3" name="project_title_3" placeholder="Project Title 3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+        </fieldset>
+
+        <!-- SDG Goals -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Sustainable Development Goals (SDGs)</strong></legend>
+          <div id="sdgContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            <!-- SDG checkboxes will be populated here -->
+          </div>
+          <input type="hidden" name="selected_sdgs" id="selectedSDGs" value="[]" />
+        </fieldset>
+
+        <!-- Program Photos Upload -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Program Photos</strong></legend>
           <div class="file-upload-area" id="file-upload-area">
-            <p>Drag and drop images here or</p>
+            <p>Drag and drop photos here or</p>
             <button type="button" class="file-upload-btn" onclick="document.getElementById('images').click()">
-              Choose Images
+              Choose Photos
             </button>
-            <input type="file" id="images" name="images[]" multiple accept="image/*" class="file-input">
+            <input type="file" id="images" name="images[]" multiple accept="image/*" style="display: none;">
             <p style="font-size: 12px; color: #666; margin-top: 10px;">
-              Supported formats: JPG, PNG, WEBP (Max 5MB each)
+              Supported formats: JPG, PNG, GIF, WebP (Max 5MB each)
             </p>
           </div>
           <div id="image-preview-container" class="image-preview-container"></div>
-        </div>
+        </fieldset>
+
+        <!-- Program Sessions -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+          <legend><strong>Program Sessions</strong></legend>
+          <div id="sessionsContainer"></div>
+          <button type="button" onclick="addSession()" style="margin-top: 10px; padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Session</button>
+        </fieldset>
 
         <button type="submit" class="submit-btn" id="submit-btn">
-          Upload Program
+          <span class="submit-text">Upload Program</span>
         </button>
       </form>
     </div>
@@ -396,6 +428,44 @@
     color: #e74c3c;
   }
 
+  /* SDG Checkbox Styles */
+  .sdg-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+  }
+
+  .sdg-checkbox-item input[type="checkbox"] {
+    margin: 0;
+  }
+
+  .sdg-checkbox-item label {
+    margin: 0;
+    font-size: 12px;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  /* Session Styles */
+  .session-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+  }
+
+  .session-item input {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
   @media (max-width: 768px) {
     .fab-button {
       bottom: 20px;
@@ -431,6 +501,27 @@
     let selectedFiles = [];
     let imageDescriptions = {};
 
+    // SDG Goals data
+    const sdgGoals = [
+      { id: 1, name: "No Poverty" },
+      { id: 2, name: "Zero Hunger" },
+      { id: 3, name: "Good Health and Well-being" },
+      { id: 4, name: "Quality Education" },
+      { id: 5, name: "Gender Equality" },
+      { id: 6, name: "Clean Water and Sanitation" },
+      { id: 7, name: "Affordable and Clean Energy" },
+      { id: 8, name: "Decent Work and Economic Growth" },
+      { id: 9, name: "Industry, Innovation and Infrastructure" },
+      { id: 10, name: "Reduced Inequality" },
+      { id: 11, name: "Sustainable Cities and Communities" },
+      { id: 12, name: "Responsible Consumption and Production" },
+      { id: 13, name: "Climate Action" },
+      { id: 14, name: "Life Below Water" },
+      { id: 15, name: "Life on Land" },
+      { id: 16, name: "Peace and Justice Strong Institutions" },
+      { id: 17, name: "Partnerships for the Goals" }
+    ];
+
     // Wait for DOM to be ready
     function init() {
       const fabButton = document.getElementById('fab-upload');
@@ -449,6 +540,12 @@
       }
 
       console.log('FAB initialized successfully');
+
+      // Initialize SDG checkboxes
+      initializeSDGCheckboxes();
+
+      // Load departments
+      loadDepartments();
 
       // Open modal
       fabButton.addEventListener('click', function(e) {
@@ -469,6 +566,7 @@
         selectedFiles = [];
         imageDescriptions = {};
         imagePreviewContainer.innerHTML = '';
+        document.getElementById('sessionsContainer').innerHTML = '';
         
         // Clear edit mode
         if (window.editMode) {
@@ -506,19 +604,11 @@
             const data = await res.json();
             if (data.authenticated && data.user) {
               const u = data.user;
-              const facultyInput = document.getElementById('faculty_id');
-              if (facultyInput && u.id) {
-                facultyInput.value = u.id;
-                facultyInput.readOnly = true;
-              }
-
+              // Auto-fill department if available
               if (u.department_id) {
                 const deptSelect = document.getElementById('department');
-                const deptHidden = document.getElementById('department_hidden');
                 if (deptSelect) {
                   deptSelect.value = String(u.department_id);
-                  if (deptHidden) deptHidden.value = String(u.department_id);
-                  deptSelect.disabled = true;
                 }
               }
             }
@@ -526,6 +616,44 @@
         } catch (err) {
           console.error('Error loading session:', err);
         }
+      }
+
+      // Load departments
+      async function loadDepartments() {
+        try {
+          const response = await fetch('../home/backend/get_departments.php');
+          const data = await response.json();
+          
+          if (data.success && data.departments) {
+            const deptSelect = document.getElementById('department');
+            deptSelect.innerHTML = '<option value="">Select Department * (This will load faculty below)</option>';
+            
+            data.departments.forEach(dept => {
+              const option = document.createElement('option');
+              option.value = dept.department_id;
+              option.textContent = dept.department_name;
+              deptSelect.appendChild(option);
+            });
+          }
+        } catch (error) {
+          console.error('Error loading departments:', error);
+        }
+      }
+
+      // Initialize SDG checkboxes
+      function initializeSDGCheckboxes() {
+        const sdgContainer = document.getElementById('sdgContainer');
+        sdgContainer.innerHTML = '';
+        
+        sdgGoals.forEach(goal => {
+          const checkboxDiv = document.createElement('div');
+          checkboxDiv.className = 'sdg-checkbox-item';
+          checkboxDiv.innerHTML = `
+            <input type="checkbox" id="sdg-${goal.id}" value="${goal.id}">
+            <label for="sdg-${goal.id}">${goal.id}. ${goal.name}</label>
+          `;
+          sdgContainer.appendChild(checkboxDiv);
+        });
       }
 
       // File handling
@@ -648,9 +776,36 @@
         
         const formElements = form.elements;
         for (let element of formElements) {
-          if (element.name && element.type !== 'file') {
+          if (element.name && element.type !== 'file' && element.type !== 'checkbox') {
             formData.append(element.name, element.value);
           }
+        }
+
+        // Collect session data
+        const sessions = [];
+        document.querySelectorAll('.session-item').forEach((item, index) => {
+          const inputs = item.querySelectorAll('input');
+          if (inputs.length >= 4) {
+            const title = inputs[3].value.trim(); // Session title is the 4th input
+            const date = inputs[0].value; // Date is the 1st input
+            const start = inputs[1].value; // Start time is the 2nd input
+            const end = inputs[2].value; // End time is the 3rd input
+            const location = inputs[4] ? inputs[4].value.trim() : '';
+            
+            if (title && date && start && end) {
+              sessions.push({
+                title: title,
+                date: date,
+                start: start,
+                end: end,
+                location: location
+              });
+            }
+          }
+        });
+        
+        if (sessions.length > 0) {
+          formData.append('sessions', JSON.stringify(sessions));
         }
 
         selectedFiles.forEach(function(file) {
@@ -688,6 +843,7 @@
             selectedFiles = [];
             imageDescriptions = {};
             imagePreviewContainer.innerHTML = '';
+            document.getElementById('sessionsContainer').innerHTML = '';
             
             // Clear edit mode
             if (isEditMode) {
@@ -711,6 +867,28 @@
         }
       });
     }
+
+    // Session management functions
+    window.addSession = function() {
+      const sessionDiv = document.createElement('div');
+      sessionDiv.className = 'session-item';
+      sessionDiv.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 2fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;">
+          <input type="date" required>
+          <input type="time" placeholder="Start Time *" required>
+          <input type="time" placeholder="End Time *" required>
+          <input type="text" placeholder="Session Title *" required>
+          <input type="text" placeholder="Location (optional)">
+          <button type="button" onclick="removeSession(this)" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Remove</button>
+        </div>
+      `;
+      document.getElementById('sessionsContainer').appendChild(sessionDiv);
+    };
+
+    window.removeSession = function(button) {
+      const sessionItem = button.closest('.session-item');
+      sessionItem.remove();
+    };
 
     // Initialize when content is loaded
     if (document.readyState === 'loading') {

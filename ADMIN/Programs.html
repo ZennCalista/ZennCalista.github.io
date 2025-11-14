@@ -1703,17 +1703,23 @@ async function loadDepartmentListForEdit(selectedDeptId) {
 
 // --- Initial Render ---
 document.addEventListener('DOMContentLoaded', function() {
-  // Show loading indicator
-  const tbody = document.querySelector('#programsTable tbody');
-  if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading programs...</td></tr>';
+  // Show loading indicator for both tables
+  const programsTbody = document.querySelector('#programsTable tbody');
+  const archivedTbody = document.querySelector('#archivedProgramsTable tbody');
+  
+  if (programsTbody) {
+    programsTbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading programs...</td></tr>';
+  }
+  
+  if (archivedTbody) {
+    archivedTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading archived programs...</td></tr>';
   }
   
   // Load programs table
   renderProgramsTable().catch(error => {
     console.error('Failed to load programs:', error);
-    if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc3545;padding:20px;">Failed to load programs. Please refresh the page.</td></tr>';
+    if (programsTbody) {
+      programsTbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc3545;padding:20px;">Failed to load programs. Please refresh the page.</td></tr>';
     }
   });
 });
