@@ -85,6 +85,7 @@
               <select id="role-filter">
                 <option value="all">All Roles</option>
                 <option value="student">Students</option>
+                <option value="non_acad">Non-Acad</option>
                 <option value="faculty">Faculty</option>
               </select>
               <select id="department-filter">
@@ -98,11 +99,8 @@
             </div>
           </div>
           <div class="action-buttons">
-            <button class="btn-primary" onclick="openModal('add-student-modal')">
-              <i class="fas fa-user-plus"></i> Add Student
-            </button>
-            <button class="btn-primary" onclick="openModal('add-faculty-modal')">
-              <i class="fas fa-user-tie"></i> Add Faculty
+            <button class="btn-primary" onclick="openModal('add-user-modal')">
+              <i class="fas fa-user-plus"></i> Add User
             </button>
             <button class="btn-secondary" onclick="exportUsers()">
               <i class="fas fa-download"></i> Export
@@ -117,6 +115,9 @@
             <button class="tab-btn active" onclick="switchTab('students')" id="students-tab">
               <i class="fas fa-user-graduate"></i> Students
             </button>
+            <button class="tab-btn" onclick="switchTab('non_acad')" id="non_acad-tab">
+              <i class="fas fa-users"></i> Non-Acad
+            </button>
             <button class="tab-btn" onclick="switchTab('faculty')" id="faculty-tab">
               <i class="fas fa-chalkboard-teacher"></i> Faculty
             </button>
@@ -126,6 +127,13 @@
           <div id="students-content" class="tab-content active">
             <div class="users-grid" id="students-grid">
               <!-- Students will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Non-Acad Section -->
+          <div id="non_acad-content" class="tab-content">
+            <div class="users-grid" id="non_acad-grid">
+              <!-- Non-Acad users will be loaded here -->
             </div>
           </div>
 
@@ -209,6 +217,42 @@
 </div>
   
 
+<!-- Add User Modal -->
+<div id="add-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Add User</h2>
+    <span class="close-modal" onclick="closeModal('add-user-modal')">&times;</span>
+  </div>
+  <form class="modal-form" id="add-user-form" onsubmit="return submitAddUser(event)">
+    <select name="role" id="add-role" required onchange="toggleRoleFields()">
+      <option value="" disabled selected>Select Role</option>
+      <option value="student">Student</option>
+      <option value="non_acad">Non-Acad</option>
+      <option value="faculty">Faculty</option>
+    </select>
+    <div id="common-fields">
+      <input type="text" name="firstname" placeholder="First Name" required autocomplete="given-name" />
+      <input type="text" name="lastname" placeholder="Last Name" required autocomplete="family-name" />
+      <input type="text" name="mi" placeholder="Middle Initial" autocomplete="additional-name" />
+      <input type="email" name="email" placeholder="Email" required autocomplete="username" />
+      <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
+      <input type="text" name="department" placeholder="Course/Department" required />
+      <input type="tel" name="phone" placeholder="Phone Number" />
+      <select name="comm_preference">
+        <option value="" disabled selected>Select Communication Preference</option>
+        <option value="email">Email</option>
+        <option value="sms">SMS</option>
+      </select>
+    </div>
+    <div id="faculty-fields" style="display: none;">
+      <input type="text" name="fullname" placeholder="Full Name" />
+      <input type="text" name="faculty_id" placeholder="Faculty ID" />
+      <input type="text" name="position" placeholder="Position" />
+    </div>
+    <button type="submit" class="btn-primary full">Add User</button>
+  </form>
+</div>
+
 <!-- Edit User Modal -->
 <div id="edit-user-modal" class="modal hidden">
   <div class="modal-header">
@@ -229,6 +273,7 @@
     </select>
     <select name="role" id="edit-role" required>
       <option value="student">Student</option>
+      <option value="non_acad">Non-Acad</option>
       <option value="faculty">Faculty</option>
     </select>
     <button type="submit" class="btn-edit full">Save Changes</button>
@@ -307,7 +352,7 @@
           const idLabel = document.getElementById("profile-id-label");
           const idValue = document.getElementById("profile-id");
           
-          if (freshUser.role === 'student') {
+          if (freshUser.role === 'student' || freshUser.role === 'non_acad') {
             idLabel.textContent = 'Student ID:';
             idValue.textContent = freshUser.student_id || freshUser.id;
             idRow.classList.remove('hidden');
@@ -339,7 +384,7 @@
         const idLabel = document.getElementById("profile-id-label");
         const idValue = document.getElementById("profile-id");
         
-        if (user.role === 'student') {
+        if (user.role === 'student' || user.role === 'non_acad') {
           idLabel.textContent = 'Student ID:';
           idValue.textContent = user.id || '-';
           idRow.classList.remove('hidden');
@@ -361,7 +406,7 @@
   
 
   document.getElementById('modal-overlay').addEventListener('click', function () {
-  ['add-student-modal', 'edit-user-modal', 'add-faculty-modal', 'view-profile-modal'].forEach(id => closeModal(id));
+  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal'].forEach(id => closeModal(id));
 });
 
 
@@ -377,6 +422,21 @@ function loadStudents() {
       if (data.success) {
         const studentUsers = data.data.map(user => ({...user, role: 'student'}));
         allUsers = allUsers.filter(u => u.role !== 'student').concat(studentUsers);
+        displayUsers();
+        updateStats();
+        updateDepartmentFilter();
+      }
+    });
+}
+
+// Fetch and display non_acad users
+function loadNonAcad() {
+  fetch('api_users.php?role=non_acad')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const nonAcadUsers = data.data.map(user => ({...user, role: 'non_acad'}));
+        allUsers = allUsers.filter(u => u.role !== 'non_acad').concat(nonAcadUsers);
         displayUsers();
         updateStats();
         updateDepartmentFilter();
@@ -411,8 +471,8 @@ function createUserCard(user) {
       </div>
       <div class="user-info">
         <h3>${user.firstname} ${user.lastname}</h3>
-        <p class="user-id">${user.role === 'student' ? 'Student ID: ' + (user.student_id || user.id) : 'Faculty ID: ' + (user.faculty_id || user.id)}</p>
-        <p class="user-department">${user.role === 'student' ? (user.course || 'Not specified') : (user.department || 'Not specified')}</p>
+        <p class="user-id">${user.role === 'student' || user.role === 'non_acad' ? 'Student ID: ' + (user.student_id || user.id) : 'Faculty ID: ' + (user.faculty_id || user.id)}</p>
+        <p class="user-department">${user.role === 'student' || user.role === 'non_acad' ? (user.course || 'Not specified') : (user.department || 'Not specified')}</p>
         <div class="user-contact">
           <span><i class="fas fa-envelope"></i> ${user.email}</span>
           ${user.phone ? `<span><i class="fas fa-phone"></i> ${user.phone}</span>` : ''}
@@ -429,7 +489,7 @@ function createUserCard(user) {
           role: "${user.role}",
           department: "${user.role === 'student' ? (user.course || 'Not specified') : (user.department || 'Not specified')}",
           email: "${user.email}",
-          phone: "${user.role === 'student' ? (user.contact_no || user.phone || '-') : (user.phone || '-')}",
+          phone: "${user.role === 'student' || user.role === 'non_acad' ? (user.contact_no || user.phone || '-') : (user.phone || '-')}",
           emergency_contact: "${user.emergency_contact || '-'}",
           verification: "${user.verification_status}"
         })' title="View Details">
@@ -490,8 +550,18 @@ function displayUsers() {
 
   console.log('Filtered users count:', filteredUsers.length);
 
-  // Separate students and faculty
+  // Apply tab-specific filtering
+  if (currentTab === 'students') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'student');
+  } else if (currentTab === 'non_acad') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'non_acad');
+  } else if (currentTab === 'faculty') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'faculty');
+  }
+
+  // Separate students, non_acad, and faculty for display
   const students = filteredUsers.filter(user => user.role === 'student');
+  const nonAcad = filteredUsers.filter(user => user.role === 'non_acad');
   const faculty = filteredUsers.filter(user => user.role === 'faculty');
 
   // Display students
@@ -500,24 +570,31 @@ function displayUsers() {
     students.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-user-graduate"></i><p>No students found</p></div>';
 
+  // Display non_acad
+  const nonAcadGrid = document.getElementById('non_acad-grid');
+  nonAcadGrid.innerHTML = nonAcad.length > 0 ?
+    nonAcad.map(user => createUserCard(user)).join('') :
+    '<div class="empty-state"><i class="fas fa-users"></i><p>No non-academic users found</p></div>';
+
   // Display faculty
   const facultyGrid = document.getElementById('faculty-grid');
   facultyGrid.innerHTML = faculty.length > 0 ?
     faculty.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No faculty found</p></div>';
 
-  console.log('DOM updated - students shown:', students.length, 'faculty shown:', faculty.length);
+  console.log('DOM updated - students shown:', students.length, 'non_acad shown:', nonAcad.length, 'faculty shown:', faculty.length);
 
   // Show/hide no results message
-  const hasResults = (currentTab === 'students' && students.length > 0) ||
-                    (currentTab === 'faculty' && faculty.length > 0) ||
-                    (roleFilter !== 'all' && filteredUsers.length > 0);
+  const currentTabUsers = currentTab === 'students' ? students : 
+                         currentTab === 'non_acad' ? nonAcad : faculty;
+  const hasResults = currentTabUsers.length > 0;
   document.getElementById('no-results').classList.toggle('hidden', hasResults);
 
   console.log('displayUsers completed');
 }// Update statistics
 function updateStats() {
   const students = allUsers.filter(user => user.role === 'student');
+  const nonAcad = allUsers.filter(user => user.role === 'non_acad');
   const faculty = allUsers.filter(user => user.role === 'faculty');
   const verifiedUsers = allUsers.filter(user => user.verification_status === 'verified');
   
@@ -537,6 +614,9 @@ function switchTab(tab) {
   // Update tab content
   document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
   document.getElementById(tab + '-content').classList.add('active');
+  
+  // Re-display users for the current tab
+  displayUsers();
 }
 
 // Export users function
@@ -646,6 +726,7 @@ window.onload = function() {
   console.log('Page loaded, initializing...');
   initializeFilters(); // Initialize filters first
   loadStudents();
+  loadNonAcad();
   loadFaculty();
 };
 
@@ -689,6 +770,57 @@ function submitFaculty(e) {
   return false;
 }
 
+// Add User (General)
+function submitAddUser(e) {
+  e.preventDefault();
+  const form = document.getElementById('add-user-form');
+  const data = new FormData(form);
+  data.append('action', 'add_user');
+  fetch('api_users.php', { method: 'POST', body: data })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        closeModal('add-user-modal');
+        // Reload all user types to ensure data is fresh
+        loadStudents();
+        loadNonAcad();
+        loadFaculty();
+        form.reset();
+        // Reset field visibility
+        document.getElementById('faculty-fields').style.display = 'none';
+        document.getElementById('common-fields').style.display = 'block';
+      } else {
+        alert('Failed to add user: ' + (res.message || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while adding the user.');
+    });
+  return false;
+}
+
+// Toggle role-specific fields
+function toggleRoleFields() {
+  const role = document.getElementById('add-role').value;
+  const facultyFields = document.getElementById('faculty-fields');
+  const commonFields = document.getElementById('common-fields');
+  
+  if (role === 'faculty') {
+    facultyFields.style.display = 'block';
+    // Make faculty-specific fields required
+    document.querySelector('input[name="fullname"]').required = true;
+    document.querySelector('input[name="faculty_id"]').required = true;
+  } else {
+    facultyFields.style.display = 'none';
+    // Remove required from faculty-specific fields
+    document.querySelector('input[name="fullname"]').required = false;
+    document.querySelector('input[name="faculty_id"]').required = false;
+  }
+  
+  commonFields.style.display = 'block';
+}
+
 function editUser(id) {
   // Fetch user data
   fetch('api_users.php?id=' + id)
@@ -724,6 +856,7 @@ function deleteUser(id) {
     .then(res => {
       if (res.success) {
         loadStudents();
+        loadNonAcad();
         loadFaculty();
       } else {
         alert('Failed to delete user.');
@@ -743,6 +876,7 @@ function submitEditUser(e) {
       if (res.success) {
         closeModal('edit-user-modal');
         loadStudents();
+        loadNonAcad();
         loadFaculty();
       } else {
         alert('Failed to update user.');
@@ -764,6 +898,7 @@ function verifyUser(id) {
     .then(res => {
       if (res.success) {
         loadStudents();
+        loadNonAcad();
         loadFaculty();
       } else {
         alert('Failed to verify user.');
@@ -785,6 +920,7 @@ function unverifyUser(id) {
     .then(res => {
       if (res.success) {
         loadStudents();
+        loadNonAcad();
         loadFaculty();
       } else {
         alert('Failed to unverify user.');

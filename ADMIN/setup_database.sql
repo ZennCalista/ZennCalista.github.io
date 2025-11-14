@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NULL,
     password VARCHAR(255) NULL,
     department_id INT NULL,
-    role ENUM('admin','faculty','student') NULL,
+    role ENUM('admin','faculty','student','non_acad') NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     phone VARCHAR(20) NULL,
     department VARCHAR(100) NULL,

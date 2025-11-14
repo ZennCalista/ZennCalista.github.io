@@ -4,7 +4,7 @@ require_once 'db.php';
 
 // Fetch users by role
 if (isset($_GET['role'])) {
-    $role = $_GET['role'] === 'faculty' ? 'faculty' : 'student';
+    $role = $_GET['role'];
     
     if ($role === 'faculty') {
         // Fetch faculty with additional details
@@ -25,7 +25,7 @@ if (isset($_GET['role'])) {
             $users[] = $row;
         }
     } else {
-        // Fetch students with additional details
+        // Fetch students and non_acad with additional details (they use the same students table)
         $sql = "SELECT u.*, s.student_id, s.course, s.contact_no, s.emergency_contact 
                 FROM users u 
                 LEFT JOIN students s ON u.id = s.user_id 
@@ -73,6 +73,7 @@ if (isset($_GET['id'])) {
                 }
             }
         } else {
+            // For students and non_acad users (both use students table)
             $stmt2 = $conn->prepare("SELECT student_id, course, contact_no, emergency_contact FROM students WHERE user_id = ?");
             if ($stmt2) {
                 $stmt2->bind_param("i", $row['id']);
