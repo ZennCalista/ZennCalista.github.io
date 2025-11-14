@@ -536,7 +536,10 @@ async function showEditProgramForm(programId) {
       <h2>Edit Program</h2>
       <form id="editProgramForm">
         <input name="program_name" value="${prog.program_name}" required />
-        <input name="department" value="${prog.department}" required />
+        <select name="department" id="editDepartmentSelect" required>
+          <option value="">Select Department</option>
+          <!-- Options will be loaded -->
+        </select>
         <input name="start_date" type="date" value="${prog.start_date}" required />
         <input name="end_date" type="date" value="${prog.end_date}" required />
         <input name="location" value="${prog.location}" required />
@@ -544,6 +547,7 @@ async function showEditProgramForm(programId) {
         <select name="status" required>
           <option value="ongoing" ${prog.status.trim() === 'ongoing' ? 'selected' : ''}>Ongoing</option>
           <option value="ended" ${prog.status.trim() === 'ended' ? 'selected' : ''}>Ended</option>
+          <option value="planning" ${prog.status.trim() === 'planning' ? 'selected' : ''}>Planning</option>
         </select>
         <textarea name="description">${prog.description}</textarea>
         <button type="submit">Save</button>
@@ -551,6 +555,10 @@ async function showEditProgramForm(programId) {
       </form>
     </div>
   `;
+  
+  // Load departments and set selected
+  loadDepartmentListForEdit(prog.department_id);
+  
   document.getElementById('editProgramForm').onsubmit = async function(e) {
     e.preventDefault();
     try {
@@ -885,8 +893,33 @@ function addSession() {
   sessionsContainer.appendChild(sessionDiv);
 }
 
-function removeSession(button) {
-  button.parentElement.remove();
+async function loadDepartmentListForEdit(selectedDeptId) {
+  try {
+    const response = await fetch('../backend/departments.php?action=options');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const departments = await response.json();
+    const select = document.getElementById('editDepartmentSelect');
+    
+    select.innerHTML = '<option value="">Select Department *</option>';
+    
+    if (Array.isArray(departments) && departments.length > 0) {
+      departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.value || dept.id;
+        option.textContent = dept.text || dept.name;
+        if ((dept.value || dept.id) == selectedDeptId) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading departments for edit:', error);
+  }
 }
 
 // --- Initial Render ---

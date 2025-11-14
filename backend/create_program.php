@@ -24,7 +24,7 @@ try {
     
     // Get form data - all fields from the modal
     $program_name = $data['program_name'] ?? '';
-    $department = $data['department'] ?? '';
+    $department_id = $data['department'] ?? ''; // This is now the department_id from the select
     $program_type = $data['program_type'] ?? '';
     $description = $data['description'] ?? '';
     $location = $data['location'] ?? '';
@@ -39,6 +39,20 @@ try {
     $budget = $data['budget'] ?? 0;
     $status = 'planning'; // Default status
 
+    // Look up department name from department_id
+    $department_name = '';
+    if (!empty($department_id)) {
+        $dept_sql = "SELECT department_name FROM departments WHERE department_id = ?";
+        $dept_stmt = $conn->prepare($dept_sql);
+        $dept_stmt->bind_param("i", $department_id);
+        $dept_stmt->execute();
+        $dept_result = $dept_stmt->get_result();
+        if ($dept_row = $dept_result->fetch_assoc()) {
+            $department_name = $dept_row['department_name'];
+        }
+        $dept_stmt->close();
+    }
+
     // Handle project titles
     $project_titles = [];
     if (!empty($data['project_title_1'])) $project_titles[] = $data['project_title_1'];
@@ -50,7 +64,7 @@ try {
     $sdg_goals = $data['selected_sdgs'] ?? '[]';
 
     // Validate required fields
-    if (empty($program_name) || empty($department) || empty($program_type) ||
+    if (empty($program_name) || empty($department_id) || empty($program_type) ||
         empty($description) || empty($location) || empty($target_audience) ||
         empty($start_date) || empty($end_date) || empty($max_students)) {
         throw new Exception('Please fill in all required fields');
@@ -58,10 +72,10 @@ try {
 
     // Insert program into database with all fields
     $sql = "INSERT INTO programs (
-        program_name, project_titles, department, program_type, description, location,
+        program_name, project_titles, department_id, department, program_type, description, location,
         target_audience, start_date, previous_date, end_date, max_students, male_count,
         female_count, requirements, budget, sdg_goals, status, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
     $stmt = $conn->prepare($sql);
 
@@ -69,8 +83,8 @@ try {
         throw new Exception('Database prepare error: ' . $conn->error);
     }
 
-    $stmt->bind_param("sssssssssiiiidsss",
-        $program_name, $project_titles_json, $department, $program_type, $description, $location,
+    $stmt->bind_param("sisssssssssiiiidsss",
+        $program_name, $project_titles_json, $department_id, $department_name, $program_type, $description, $location,
         $target_audience, $start_date, $previous_date, $end_date, $max_students, $male_count,
         $female_count, $requirements, $budget, $sdg_goals, $status
     );

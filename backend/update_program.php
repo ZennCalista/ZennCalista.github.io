@@ -9,61 +9,68 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $program_id = $_POST['program_id'] ?? '';
-    $program_name = $_POST['program_name'] ?? '';
-    $program_type = $_POST['program_type'] ?? '';
-    $department = $_POST['department'] ?? '';
-    $description = $_POST['description'] ?? '';
-    $objectives = $_POST['objectives'] ?? '';
-    $target_participants = $_POST['target_participants'] ?? '';
-    $expected_outcome = $_POST['expected_outcome'] ?? '';
-    $budget = $_POST['budget'] ?? 0;
-    $venue = $_POST['venue'] ?? '';
-    $resources_needed = $_POST['resources_needed'] ?? '';
-    $max_participants = $_POST['max_participants'] ?? 0;
-    $registration_deadline = $_POST['registration_deadline'] ?? '';
-    $status = $_POST['status'] ?? 'planning';
-    $approval_status = $_POST['approval_status'] ?? 'pending';
-    $priority_level = $_POST['priority_level'] ?? 'normal';
+    // Get JSON input
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+    
+    if (!$data) {
+        // Fallback to POST data
+        $data = $_POST;
+    }
 
-    // Validate required fields (removed faculty_id)
-    if (empty($program_id) || empty($program_name) || empty($program_type) || 
-        empty($department) || empty($description) || empty($objectives) || 
-        empty($target_participants)) {
+    $program_id = $data['id'] ?? $_GET['id'] ?? '';
+    $program_name = $data['program_name'] ?? '';
+    $department_id = $data['department'] ?? '';
+    $program_type = $data['program_type'] ?? '';
+    $description = $data['description'] ?? '';
+    $location = $data['location'] ?? '';
+    $target_audience = $data['target_audience'] ?? '';
+    $start_date = $data['start_date'] ?? '';
+    $end_date = $data['end_date'] ?? '';
+    $max_students = $data['max_students'] ?? 0;
+    $status = $data['status'] ?? 'planning';
+
+    // Look up department name from department_id
+    $department_name = '';
+    if (!empty($department_id)) {
+        $dept_sql = "SELECT department_name FROM departments WHERE department_id = ?";
+        $dept_stmt = $conn->prepare($dept_sql);
+        $dept_stmt->bind_param("i", $department_id);
+        $dept_stmt->execute();
+        $dept_result = $dept_stmt->get_result();
+        if ($dept_row = $dept_result->fetch_assoc()) {
+            $department_name = $dept_row['department_name'];
+        }
+        $dept_stmt->close();
+    }
+
+    // Validate required fields
+    if (empty($program_id) || empty($program_name) || empty($department_id) || empty($description) || 
+        empty($location) || empty($start_date) || empty($end_date) || empty($max_students)) {
         throw new Exception('Please fill in all required fields');
     }
 
-    // Update program (removed faculty_id from query)
-    $stmt = $pdo->prepare("
-        UPDATE programs SET 
-            program_name = ?, program_type = ?, department = ?, description = ?, 
-            objectives = ?, target_participants = ?, expected_outcome = ?, budget = ?, 
-            venue = ?, resources_needed = ?, max_participants = ?, registration_deadline = ?, 
-            status = ?, approval_status = ?, priority_level = ?, updated_at = NOW()
-        WHERE id = ?
-    ");
+    // Update program
+    $sql = "UPDATE programs SET 
+        program_name = ?, department_id = ?, department = ?, program_type = ?, description = ?, 
+        location = ?, target_audience = ?, start_date = ?, end_date = ?, max_students = ?, 
+        status = ?, updated_at = NOW()
+        WHERE id = ?";
 
-    $stmt->execute([
-        $program_name, $program_type, $department, $description, $objectives,
-        $target_participants, $expected_outcome, $budget, $venue, $resources_needed,
-        $max_participants, $registration_deadline, $status, $approval_status, 
-        $priority_level, $program_id
-    ]);
+    $stmt = $conn->prepare($sql);
 
-    // Handle SDGs update
-    // First delete existing SDGs
-    $stmt = $pdo->prepare("DELETE FROM program_sdgs WHERE program_id = ?");
-    $stmt->execute([$program_id]);
+    if (!$stmt) {
+        throw new Exception('Database prepare error: ' . $conn->error);
+    }
 
-    // Then insert new SDGs
-    if (!empty($_POST['sdgs'])) {
-        $sdgs = $_POST['sdgs'];
-        if (is_array($sdgs)) {
-            $stmt = $pdo->prepare("INSERT INTO program_sdgs (program_id, sdg_id) VALUES (?, ?)");
-            foreach ($sdgs as $sdg_id) {
-                $stmt->execute([$program_id, $sdg_id]);
-            }
-        }
+    $stmt->bind_param("sisssssssisi",
+        $program_name, $department_id, $department_name, $program_type, $description,
+        $location, $target_audience, $start_date, $end_date, $max_students,
+        $status, $program_id
+    );
+
+    if (!$stmt->execute()) {
+        throw new Exception('Database execution error: ' . $stmt->error);
     }
 
     echo json_encode([
@@ -72,6 +79,14 @@ try {
     ]);
 
 } catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
+
+if (isset($stmt)) {
+    $stmt->close();
+}
+$conn->close();
 ?>
