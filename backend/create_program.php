@@ -83,7 +83,7 @@ try {
         throw new Exception('Database prepare error: ' . $conn->error);
     }
 
-    $stmt->bind_param("sisssssssssiiiidsss",
+    $stmt->bind_param("ssissssssssiiisdss",
         $program_name, $project_titles_json, $department_id, $department_name, $program_type, $description, $location,
         $target_audience, $start_date, $previous_date, $end_date, $max_students, $male_count,
         $female_count, $requirements, $budget, $sdg_goals, $status
@@ -96,27 +96,33 @@ try {
     $program_id = $conn->insert_id;
 
     // Handle sessions if provided
-    if (!empty($data['session_date'])) {
-        $session_dates = $data['session_date'];
-        $session_starts = $data['session_start'] ?? [];
-        $session_ends = $data['session_end'] ?? [];
-        $session_titles = $data['session_title'] ?? [];
+    $sessions = [];
+    foreach ($data as $key => $value) {
+        if (preg_match('/^session_(\w+)\[(\d+)\]$/', $key, $matches)) {
+            $field = $matches[1];
+            $index = (int)$matches[2];
+            if (!isset($sessions[$index])) {
+                $sessions[$index] = [];
+            }
+            $sessions[$index][$field] = $value;
+        }
+    }
 
-        if (is_array($session_dates)) {
-            foreach ($session_dates as $index => $date) {
-                if (!empty($date)) {
-                    $start_time = $session_starts[$index] ?? '';
-                    $end_time = $session_ends[$index] ?? '';
-                    $title = $session_titles[$index] ?? '';
+    if (!empty($sessions)) {
+        foreach ($sessions as $session) {
+            if (!empty($session['date'])) {
+                $title = $session['title'] ?? '';
+                if (empty($title)) {
+                    $title = 'Session ' . ($index + 1);
+                }
 
-                    $session_sql = "INSERT INTO program_sessions (program_id, session_date, session_start, session_end, session_title, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
-                    $session_stmt = $conn->prepare($session_sql);
+                $session_sql = "INSERT INTO program_sessions (program_id, session_date, session_start, session_end, session_title, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+                $session_stmt = $conn->prepare($session_sql);
 
-                    if ($session_stmt) {
-                        $session_stmt->bind_param("issss", $program_id, $date, $start_time, $end_time, $title);
-                        $session_stmt->execute();
-                        $session_stmt->close();
-                    }
+                if ($session_stmt) {
+                    $session_stmt->bind_param("issss", $program_id, $date, $start_time, $end_time, $title);
+                    $session_stmt->execute();
+                    $session_stmt->close();
                 }
             }
         }

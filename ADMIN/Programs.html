@@ -52,6 +52,117 @@
       border-radius: 4px;
       margin: 10px 0;
     }
+    .file-upload-area {
+      border: 2px dashed #007bff;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: #f8f9fa;
+    }
+    .file-upload-area:hover,
+    .file-upload-area.dragover {
+      border-color: #0056b3;
+      background-color: #e3f2fd;
+    }
+    .file-upload-btn {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s ease;
+      margin: 10px 0;
+    }
+    .file-upload-btn:hover {
+      background: #0056b3;
+    }
+    .image-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .image-preview {
+      position: relative;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+    }
+    .image-preview img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .image-preview .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .program-images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .program-image-item {
+      text-align: center;
+    }
+    /* Styles for existing images shown in the edit modal */
+    .existing-image-item {
+      display: inline-block;
+      margin: 5px;
+      position: relative;
+      width: 100px;
+      vertical-align: top;
+    }
+    .existing-image-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      display: block;
+    }
+    .remove-existing-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #ff4d4f;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .existing-desc-input {
+      width: 100px;
+      font-size: 11px;
+      margin-top: 6px;
+      padding: 4px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
   </style>
 
 </head>
@@ -88,6 +199,7 @@
       <li>Total Programs: <strong id="totalPrograms"></strong></li>
       <li>Ongoing: <strong id="ongoingPrograms"></strong></li>
       <li>Ended: <strong id="endedPrograms"></strong></li>
+      <li>Archived: <strong id="archivedPrograms"></strong></li>
       <li>Upcoming Sessions: <strong id="upcomingSessions"></strong></li>
     </ul>
   </section>
@@ -114,11 +226,40 @@
     <button onclick="showCreateProgramForm()">+ Create Program</button>
   </section>
 
+  <!-- Archived Programs -->
+  <section class="program-overview">
+    <h2>Archived Programs</h2>
+    <table class="feature-table" id="archivedProgramsTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Dates</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS will populate this -->
+      </tbody>
+    </table>
+  </section>
+
   <!-- Program Details Modal -->
   <div id="programDetailsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;" class="modal" onclick="if(event.target===this)closeModal('programDetailsModal')"></div>
 
   <!-- Create/Edit Program Modal -->
-  <div id="programFormModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;" class="modal"></div>
+  <div id="programFormModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1001; align-items:center; justify-content:center;" class="modal" onclick="if(event.target===this)closeModal('programFormModal')"></div>
+
+  <!-- Image Viewer Modal -->
+  <div id="imageViewerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.85); z-index:1100; align-items:center; justify-content:center;" class="modal" onclick="imageViewerClick(event)">
+    <div class="modal-content" style="background:transparent; box-shadow:none; max-width:90vw; max-height:90vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <img id="imageViewerImg" src="" alt="" style="max-width: 100%; max-height: 80vh; border-radius:6px; margin-top:8px;" />
+      <div id="imageViewerDesc" style="color: #fff; margin-top: 10px; text-align: center; max-width: 90vw;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -141,12 +282,12 @@ function fetchFaculty() {
     return [];
   });
 }
-function fetchSessions(programId) {
-  return fetch(`../backend/get_sessions.php?program_id=${programId}`).then(res => {
+function fetchArchivedPrograms() {
+  return fetch('../backend/get_archived_programs.php').then(res => {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     return res.json();
   }).catch(err => {
-    console.error('Error fetching sessions:', err);
+    console.error('Error fetching archived programs:', err);
     return [];
   });
 }
@@ -159,18 +300,26 @@ function renderStats(programs, sessions) {
   const today = new Date();
   const upcoming = sessions.filter(s => new Date(s.session_date) >= today);
   document.getElementById('upcomingSessions').innerText = upcoming.length;
+
+  // Update archived count if element exists
+  const archivedCountEl = document.getElementById('archivedPrograms');
+  if (archivedCountEl) {
+    archivedCountEl.innerText = archivedProgramsData.length;
+  }
 }
 
 let currentPage = 1;
 const pageSize = 5;
 let programsData = [];
+let archivedProgramsData = [];
 let facultyListData = [];
 let sessionsByProgramData = {};
 
 async function renderProgramsTable() {
   try {
-    const [programs, facultyList, allSessions] = await Promise.all([
+    const [programs, archivedPrograms, facultyList, allSessions] = await Promise.all([
       fetchPrograms(),
+      fetchArchivedPrograms(),
       fetchFaculty(),
       fetch('../backend/get_all_sessions.php').then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -183,6 +332,7 @@ async function renderProgramsTable() {
 
     // Save data for pagination
     programsData = programs;
+    archivedProgramsData = archivedPrograms;
     facultyListData = facultyList;
 
     // Group sessions by program_id
@@ -194,6 +344,7 @@ async function renderProgramsTable() {
 
     renderStats(programs, allSessions);
     renderProgramsPage();
+    renderArchivedProgramsTable();
   } catch (error) {
     console.error('Error rendering programs table:', error);
     // Show error message to user
@@ -222,7 +373,7 @@ function renderProgramsPage() {
       <td>
         <button onclick="showProgramDetails(${prog.id})">View</button>
         <button onclick="showEditProgramForm(${prog.id})">Edit</button>
-        <button onclick="deleteProgram(${prog.id})">Delete</button>
+        <button onclick="archiveProgram(${prog.id})">Archive</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -259,6 +410,33 @@ function gotoPage(page) {
   renderProgramsPage();
 }
 
+function renderArchivedProgramsTable() {
+  const tbody = document.querySelector('#archivedProgramsTable tbody');
+  tbody.innerHTML = '';
+
+  if (archivedProgramsData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;">No archived programs found.</td></tr>';
+    return;
+  }
+
+  archivedProgramsData.forEach(prog => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${prog.program_name}</td>
+      <td>${prog.department || '-'}</td>
+      <td>${prog.start_date} to ${prog.end_date}</td>
+      <td>${prog.location || '-'}</td>
+      <td>${prog.max_students || '-'}</td>
+      <td>${prog.status}</td>
+      <td>
+        <button onclick="viewArchivedProgramDetails(${prog.id})">View</button>
+        <button onclick="restoreProgram(${prog.id})">Restore</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 // --- Program Details Modal ---
 async function showProgramDetails(programId) {
   const modal = document.getElementById('programDetailsModal');
@@ -271,16 +449,48 @@ async function showProgramDetails(programId) {
   }
   const sessions = sessionsByProgramData[programId] || [];
 
+  // Fetch program images
+  let images = [];
+  try {
+    const imagesResponse = await fetch(`../backend/get_program_images.php?id=${programId}`);
+    const imagesData = await imagesResponse.json();
+    if (imagesData.success) {
+      images = imagesData.images;
+    }
+  } catch (error) {
+    console.error('Error fetching program images:', error);
+  }
+
   modal.innerHTML = `
     <div class="modal-content">
       <button onclick="closeModal('programDetailsModal')" class="close-modal" title="Close">&times;</button>
       <h2>${prog.program_name}</h2>
-      <p><strong>Department:</strong> ${prog.department}</p>
-      <p><strong>Dates:</strong> ${prog.start_date} to ${prog.end_date}</p>
-      <p><strong>Location:</strong> ${prog.location}</p>
-      <p><strong>Capacity:</strong> ${prog.max_students}</p>
-      <p><strong>Status:</strong> ${prog.status}</p>
-      <p><strong>Description:</strong> ${prog.description}</p>
+      <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+        <div style="flex: 1;">
+          <p><strong>Department:</strong> ${prog.department}</p>
+          <p><strong>Dates:</strong> ${prog.start_date} to ${prog.end_date}</p>
+          <p><strong>Location:</strong> ${prog.location}</p>
+          <p><strong>Capacity:</strong> ${prog.max_students}</p>
+          <p><strong>Status:</strong> ${prog.status}</p>
+          <p><strong>Description:</strong> ${prog.description}</p>
+        </div>
+        <div style="flex-shrink: 0; max-width: 300px;">
+          ${images.length > 0 ? `
+            <div class="program-images-grid">
+              ${images.map(img => `
+                <div class="program-image-item">
+                  <img src="../backend/get_image.php?id=${img.id}" 
+                       alt="${img.description}" 
+                       style="max-width: 100%; max-height: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;" 
+                       title="${img.description || 'Click to view full size'}"
+                       onclick="window.open(this.src, '_blank')">
+                  ${img.description ? `<small style="display: block; text-align: center; margin-top: 5px;">${img.description}</small>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : '<p style="color: #888;">No images uploaded</p>'}
+        </div>
+      </div>
       <h3>Sessions</h3>
       <table class="feature-table">
         <thead>
@@ -316,6 +526,15 @@ async function showProgramDetails(programId) {
       <button onclick="showCreateSessionForm(${programId})">+ Add Session</button>
     </div>
   `;
+  // Attach click handlers for images to open in the image viewer
+  try {
+    modal.querySelectorAll('.program-images-grid img').forEach(imgEl => {
+      imgEl.style.cursor = 'pointer';
+      imgEl.addEventListener('click', () => openImageViewer(imgEl.src, imgEl.alt || ''));
+    });
+  } catch (e) {
+    // ignore if no images present or DOM selection fails
+  }
 }
 
 // --- Create/Edit Program Modal ---
@@ -429,13 +648,27 @@ function showCreateProgramForm() {
           <input type="hidden" name="selected_sdgs" id="selectedSDGs" value="[]" />
         </fieldset>
 
+        <!-- Program Photos Upload -->
+        <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+          <legend><strong>Program Photos</strong></legend>
+          <div class="file-upload-area" id="program-photos-upload-area">
+            <p>Drag and drop photos here or</p>
+            <button type="button" class="file-upload-btn" onclick="document.getElementById('program-photos').click()">
+              Choose Photos
+            </button>
+            <input type="file" id="program-photos" name="program_photos[]" multiple accept="image/*" style="display: none;">
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">
+              Supported formats: JPG, PNG, GIF, WebP (Max 5MB each)
+            </p>
+          </div>
+          <div id="program-photos-preview-container" class="image-preview-container"></div>
+        </fieldset>
+
         <!-- Program Sessions -->
         <fieldset style="padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
           <legend><strong>Program Sessions</strong></legend>
-          <div id="sessionsContainer">
-            <!-- Sessions will be added here -->
-          </div>
-          <button type="button" onclick="addSession()" style="margin-top: 10px; padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">Add Session</button>
+          <div id="sessionsContainer"></div>
+          <button type="button" onclick="addSession()" style="margin-top: 10px; padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Session</button>
         </fieldset>
 
         <!-- Form Actions -->
@@ -450,11 +683,46 @@ function showCreateProgramForm() {
   // Initialize SDG checkboxes
   initializeSDGs();
   
+  // Allow end date to be any date (including before start date)
+  const startDateInput = document.querySelector('input[name="start_date"]');
+  const endDateInput = document.querySelector('input[name="end_date"]');
+  
+  if (startDateInput && endDateInput) {
+    // Remove any min attribute that might restrict end date
+    endDateInput.removeAttribute('min');
+    
+    // Ensure end date can be selected regardless of start date
+    startDateInput.addEventListener('change', function() {
+      // Don't set min attribute on end date - allow any date
+      endDateInput.removeAttribute('min');
+    });
+  }
+  
+  // Initialize image upload
+  initializeImageUpload();
+  
   // Load departments list first
   loadDepartmentList();
   
   // Add initial session
   addSession();
+  
+  // Auto-calculate max participants from male/female counts
+  const maxStudentsInput = document.querySelector('input[name="max_students"]');
+  const maleCountInput = document.querySelector('input[name="male_count"]');
+  const femaleCountInput = document.querySelector('input[name="female_count"]');
+  
+  function updateMaxParticipants() {
+    const maleCount = parseInt(maleCountInput.value) || 0;
+    const femaleCount = parseInt(femaleCountInput.value) || 0;
+    const total = maleCount + femaleCount;
+    if (total > 0) {
+      maxStudentsInput.value = total;
+    }
+  }
+  
+  maleCountInput.addEventListener('input', updateMaxParticipants);
+  femaleCountInput.addEventListener('input', updateMaxParticipants);
   
   // Handle form submission
   document.getElementById('createProgramForm').onsubmit = async function(e) {
@@ -462,6 +730,10 @@ function showCreateProgramForm() {
     
     try {
       const formData = new FormData(this);
+      
+      // Remove file inputs as they are handled separately
+      formData.delete('program-image');
+      
       const data = Object.fromEntries(formData);
       
       // Collect SDG selections
@@ -512,6 +784,34 @@ function showCreateProgramForm() {
       if (result.status === 'success') {
         alert('Program created successfully!');
         closeModal('programFormModal');
+        
+        // Upload photos if any were selected
+        if (selectedProgramPhotos.length > 0 && result.program_id) {
+          const formData = new FormData();
+          formData.append('program_id', result.program_id);
+          
+          selectedProgramPhotos.forEach((file, index) => {
+            formData.append('images[]', file);
+            formData.append('image_descriptions[]', programPhotoDescriptions[file.name] || '');
+          });
+
+          try {
+            const uploadResponse = await fetch('../backend/upload_program_images.php', { 
+              method: 'POST', 
+              body: formData 
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (!uploadResult.success) {
+              console.warn('Image upload failed:', uploadResult.message);
+              alert('Program created but photo upload failed: ' + uploadResult.message);
+            }
+          } catch (uploadError) {
+            console.error('Photo upload error:', uploadError);
+            alert('Program created but photo upload failed');
+          }
+        }
+        
         renderProgramsTable();
       } else {
         alert('Error: ' + result.message);
@@ -550,6 +850,24 @@ async function showEditProgramForm(programId) {
           <option value="planning" ${prog.status.trim() === 'planning' ? 'selected' : ''}>Planning</option>
         </select>
         <textarea name="description">${prog.description}</textarea>
+        
+        <!-- Program Photos Upload -->
+        <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 15px 0;">
+          <legend style="font-weight: bold; color: #333;">Program Photos</legend>
+          <div id="edit-program-existing-images" style="margin-bottom: 15px;"></div>
+          <div class="file-upload-area" id="edit-program-photos-upload-area">
+            <p>Drag and drop additional photos here or</p>
+            <button type="button" class="file-upload-btn" onclick="document.getElementById('edit-program-photos').click()">
+              Choose Additional Photos
+            </button>
+            <input type="file" id="edit-program-photos" name="edit_program_photos[]" multiple accept="image/*" style="display: none;">
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">
+              Supported formats: JPG, PNG, GIF, WebP (Max 5MB each)
+            </p>
+          </div>
+          <div id="edit-program-photos-preview-container" class="image-preview-container"></div>
+        </fieldset>
+        
         <button type="submit">Save</button>
         <button type="button" onclick="closeModal('programFormModal')">Cancel</button>
       </form>
@@ -558,6 +876,24 @@ async function showEditProgramForm(programId) {
   
   // Load departments and set selected
   loadDepartmentListForEdit(prog.department_id);
+  
+  // Allow end date to be any date (including before start date)
+  const editStartDateInput = document.querySelector('#editProgramForm input[name="start_date"]');
+  const editEndDateInput = document.querySelector('#editProgramForm input[name="end_date"]');
+  
+  if (editStartDateInput && editEndDateInput) {
+    // Remove any min attribute that might restrict end date
+    editEndDateInput.removeAttribute('min');
+    
+    // Ensure end date can be selected regardless of start date
+    editStartDateInput.addEventListener('change', function() {
+      // Don't set min attribute on end date - allow any date
+      editEndDateInput.removeAttribute('min');
+    });
+  }
+  
+  // Initialize image upload for edit form
+  initializeEditImageUpload(prog.id);
   
   document.getElementById('editProgramForm').onsubmit = async function(e) {
     e.preventDefault();
@@ -575,6 +911,46 @@ async function showEditProgramForm(programId) {
       
       const result = await response.json();
       if (result.success !== false) {
+        // Handle image removals
+        if (window.editImagesToRemove && window.editImagesToRemove.length > 0) {
+          try {
+            await fetch('../backend/delete_program_images.php', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ image_ids: window.editImagesToRemove })
+            });
+          } catch (error) {
+            console.warn('Failed to delete some images:', error);
+          }
+        }
+
+        // Handle new image uploads
+        if (window.selectedEditProgramPhotos && window.selectedEditProgramPhotos.length > 0) {
+          const formData = new FormData();
+          formData.append('program_id', programId);
+          
+          window.selectedEditProgramPhotos.forEach((file, index) => {
+            formData.append('images[]', file);
+            formData.append('image_descriptions[]', window.editProgramPhotoDescriptions[file.name] || '');
+          });
+
+          try {
+            const uploadResponse = await fetch('../backend/upload_program_images.php', { 
+              method: 'POST', 
+              body: formData 
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (!uploadResult.success) {
+              console.warn('Image upload failed:', uploadResult.message);
+              alert('Program updated but photo upload failed: ' + uploadResult.message);
+            }
+          } catch (uploadError) {
+            console.error('Photo upload error:', uploadError);
+            alert('Program updated but photo upload failed');
+          }
+        }
+        
         closeModal('programFormModal');
         renderProgramsTable();
       } else {
@@ -587,26 +963,97 @@ async function showEditProgramForm(programId) {
   };
 }
 
-// --- Delete Program ---
-async function deleteProgram(programId) {
-  if (confirm('Delete this program? This action cannot be undone.')) {
+// --- Archive Program ---
+async function archiveProgram(programId) {
+  if (confirm('Archive this program? It will be moved to the archived programs section and can be restored later.')) {
     try {
-      const response = await fetch(`../backend/delete_program.php?id=${programId}`);
-      
+      const response = await fetch(`../backend/archive_program.php`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `id=${programId}`
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       if (result.success) {
-        alert('Program deleted successfully!');
+        alert('Program archived successfully!');
         renderProgramsTable();
       } else {
-        alert('Error deleting program: ' + (result.error || 'Unknown error'));
+        alert('Error archiving program: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Error deleting program:', error);
-      alert('Error deleting program: ' + error.message);
+      console.error('Error archiving program:', error);
+      alert('Error archiving program: ' + error.message);
+    }
+  }
+}
+
+// --- View Archived Program Details ---
+async function viewArchivedProgramDetails(archiveId) {
+  const modal = document.getElementById('programDetailsModal');
+  modal.classList.add('show');
+
+  const prog = archivedProgramsData.find(p => p.id == archiveId);
+  if (!prog) {
+    modal.innerHTML = '<div class="modal-content"><p>Archived program not found.</p><button onclick="closeModal(\'programDetailsModal\')" class="close-modal">&times;</button></div>';
+    return;
+  }
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <button onclick="closeModal('programDetailsModal')" class="close-modal" title="Close">&times;</button>
+      <h2>${prog.program_name} (Archived)</h2>
+      <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+        <div style="flex: 1;">
+          <p><strong>Department:</strong> ${prog.department || '-'}</p>
+          <p><strong>Dates:</strong> ${prog.start_date} to ${prog.end_date}</p>
+          <p><strong>Location:</strong> ${prog.location || '-'}</p>
+          <p><strong>Capacity:</strong> ${prog.max_students || '-'}</p>
+          <p><strong>Status:</strong> ${prog.status}</p>
+          <p><strong>Description:</strong> ${prog.description || 'No description'}</p>
+        </div>
+        <div style="flex-shrink: 0; max-width: 300px;">
+          ${prog.images && prog.images.length > 0 ? `
+            <div class="program-images-grid">
+              ${prog.images.map(img => `<img src="${img.image_url}" alt="${img.image_desc || 'Program image'}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 6px; margin: 5px; cursor: pointer;" onclick="openImageViewer('${img.image_url}', '${img.image_desc || ''}')">`).join('')}
+            </div>
+          ` : '<p style="color: #888;">No images uploaded</p>'}
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="restoreProgram(${prog.id})" style="background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Restore Program</button>
+      </div>
+    </div>
+  `;
+}
+
+// --- Restore Program ---
+async function restoreProgram(archiveId) {
+  if (confirm('Restore this program? It will be moved back to the active programs list.')) {
+    try {
+      const response = await fetch(`../backend/restore_program.php`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `id=${archiveId}`
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Program restored successfully!');
+        renderProgramsTable();
+      } else {
+        alert('Error restoring program: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error restoring program:', error);
+      alert('Error restoring program: ' + error.message);
     }
   }
 }
@@ -757,6 +1204,48 @@ function closeModal(id) {
   }
 }
 
+// Image viewer helpers
+function openImageViewer(src, description) {
+  try {
+    const viewer = document.getElementById('imageViewerModal');
+    const img = document.getElementById('imageViewerImg');
+    const desc = document.getElementById('imageViewerDesc');
+    if (!viewer || !img) return;
+    img.src = src;
+    img.alt = description || '';
+    desc.textContent = description || '';
+    viewer.classList.add('show');
+  } catch (e) {
+    console.error('Failed to open image viewer', e);
+    // fallback: open in new tab
+    window.open(src, '_blank');
+  }
+}
+
+function closeImageViewer() {
+  const viewer = document.getElementById('imageViewerModal');
+  const img = document.getElementById('imageViewerImg');
+  if (viewer) {
+    viewer.classList.remove('show');
+    setTimeout(() => {
+      if (!viewer.classList.contains('show') && img) {
+        img.src = '';
+        document.getElementById('imageViewerDesc').textContent = '';
+      }
+    }, 200);
+  }
+}
+
+// Click handler for the image viewer overlay: close when clicking outside the image
+function imageViewerClick(event) {
+  // If the clicked element is the image itself, don't close
+  if (event && event.target && event.target.id === 'imageViewerImg') {
+    return;
+  }
+  // Otherwise close the viewer
+  closeImageViewer();
+}
+
 // --- Helper Functions for Create Program Form ---
 
 function initializeSDGs() {
@@ -895,6 +1384,292 @@ function addSession() {
   `;
   
   sessionsContainer.appendChild(sessionDiv);
+}
+
+function removeSession(button) {
+  const sessionDiv = button.parentElement;
+  sessionDiv.remove();
+}
+
+let selectedProgramPhotos = [];
+let programPhotoDescriptions = {};
+
+function initializeImageUpload() {
+  const fileUploadArea = document.getElementById('program-photos-upload-area');
+  const fileInput = document.getElementById('program-photos');
+  const imagePreviewContainer = document.getElementById('program-photos-preview-container');
+
+  // Click to upload
+  fileUploadArea.addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON' && !e.target.classList.contains('remove-btn')) {
+      fileInput.click();
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener('change', function(e) {
+    handleProgramPhotos(Array.from(e.target.files));
+  });
+
+  // Drag and drop
+  fileUploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.add('dragover');
+  });
+
+  fileUploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('dragover');
+  });
+
+  fileUploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('dragover');
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+      handleProgramPhotos(files);
+    }
+  });
+
+  function handleProgramPhotos(files) {
+    files.forEach(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File ' + file.name + ' is too large. Maximum size is 5MB.');
+        return;
+      }
+      
+      if (!selectedProgramPhotos.find(f => f.name === file.name && f.size === file.size)) {
+        selectedProgramPhotos.push(file);
+        programPhotoDescriptions[file.name] = '';
+        displayProgramPhotoPreview(file);
+      }
+    });
+  }
+
+  function displayProgramPhotoPreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'image-preview';
+      previewDiv.innerHTML = `
+        <img src="${e.target.result}" alt="${file.name}">
+        <button type="button" class="remove-btn" data-filename="${file.name}">&times;</button>
+        <input type="text" class="desc-input" placeholder="Photo description" data-filename="${file.name}">
+      `;
+      
+      previewDiv.querySelector('.remove-btn').addEventListener('click', function() {
+        removeProgramPhoto(this.dataset.filename);
+      });
+      
+      previewDiv.querySelector('.desc-input').addEventListener('change', function() {
+        updateProgramPhotoDescription(this.dataset.filename, this.value);
+      });
+
+      // Allow clicking preview to open full-size in viewer
+      const _img = previewDiv.querySelector('img');
+      if (_img) {
+        _img.style.cursor = 'pointer';
+        _img.addEventListener('click', function() {
+          openImageViewer(this.src, file.name);
+        });
+      }
+      
+      imagePreviewContainer.appendChild(previewDiv);
+    };
+    reader.readAsDataURL(file);
+  }
+
+
+  function removeProgramPhoto(fileName) {
+    selectedProgramPhotos = selectedProgramPhotos.filter(file => file.name !== fileName);
+    delete programPhotoDescriptions[fileName];
+    updateProgramPhotoPreviews();
+  }
+
+  function updateProgramPhotoPreviews() {
+    imagePreviewContainer.innerHTML = '';
+    selectedProgramPhotos.forEach(file => displayProgramPhotoPreview(file));
+  }
+
+  function updateProgramPhotoDescription(fileName, description) {
+    programPhotoDescriptions[fileName] = description;
+  }
+}
+
+function initializeEditImageUpload(programId) {
+  let selectedEditProgramPhotos = [];
+  let editProgramPhotoDescriptions = {};
+  let existingImages = [];
+  let imagesToRemove = [];
+
+  const existingImagesContainer = document.getElementById('edit-program-existing-images');
+  const fileUploadArea = document.getElementById('edit-program-photos-upload-area');
+  const fileInput = document.getElementById('edit-program-photos');
+  const imagePreviewContainer = document.getElementById('edit-program-photos-preview-container');
+
+  // Load existing images
+  fetch(`../backend/get_program_images.php?id=${programId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        existingImages = data.images;
+        displayExistingImages();
+      }
+    })
+    .catch(error => console.error('Error loading existing images:', error));
+
+  function displayExistingImages() {
+    existingImagesContainer.innerHTML = existingImages.length > 0 ? 
+      '<h4 style="margin-bottom: 10px;">Current Photos:</h4>' +
+      existingImages.map(img => `
+        <div class="existing-image-item" style="display: inline-block; margin: 5px; position: relative;">
+          <img src="../backend/get_image.php?id=${img.id}" 
+               alt="${img.description}" 
+               style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+          <button type="button" class="remove-existing-btn" data-image-id="${img.id}" 
+                  style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
+          <input type="text" class="existing-desc-input" data-image-id="${img.id}" 
+                 value="${img.description}" 
+                 style="width: 100px; font-size: 11px; margin-top: 2px; padding: 2px;" placeholder="Description">
+        </div>
+      `).join('') : '<p style="color: #888; font-style: italic;">No existing photos</p>';
+
+    // Add event listeners for remove buttons
+    document.querySelectorAll('.remove-existing-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const imageId = this.dataset.imageId;
+        imagesToRemove.push(imageId);
+        existingImages = existingImages.filter(img => img.id != imageId);
+        displayExistingImages();
+      });
+    });
+
+    // Add click handlers for existing images to open viewer
+    existingImagesContainer.querySelectorAll('.existing-image-item img').forEach(imgEl => {
+      imgEl.style.cursor = 'pointer';
+      imgEl.addEventListener('click', function() {
+        openImageViewer(this.src, this.alt || '');
+      });
+    });
+
+    // Add event listeners for description inputs
+    document.querySelectorAll('.existing-desc-input').forEach(input => {
+      input.addEventListener('change', function() {
+        const imageId = this.dataset.imageId;
+        const newDesc = this.value;
+        // Note: For simplicity, we're not updating existing images' descriptions in this edit
+        // In a full implementation, you'd want to update the database
+      });
+    });
+  }
+
+  // Click to upload
+  fileUploadArea.addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON' && !e.target.classList.contains('remove-btn')) {
+      fileInput.click();
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener('change', function(e) {
+    handleEditProgramPhotos(Array.from(e.target.files));
+  });
+
+  // Drag and drop
+  fileUploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.add('dragover');
+  });
+
+  fileUploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('dragover');
+  });
+
+  fileUploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('dragover');
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+      handleEditProgramPhotos(files);
+    }
+  });
+
+  function handleEditProgramPhotos(files) {
+    files.forEach(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File ' + file.name + ' is too large. Maximum size is 5MB.');
+        return;
+      }
+      
+      if (!selectedEditProgramPhotos.find(f => f.name === file.name && f.size === file.size)) {
+        selectedEditProgramPhotos.push(file);
+        editProgramPhotoDescriptions[file.name] = '';
+        displayEditProgramPhotoPreview(file);
+      }
+    });
+  }
+
+  function displayEditProgramPhotoPreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'image-preview';
+      previewDiv.innerHTML = `
+        <img src="${e.target.result}" alt="${file.name}">
+        <button type="button" class="remove-btn" data-filename="${file.name}">&times;</button>
+        <input type="text" class="desc-input" placeholder="Photo description" data-filename="${file.name}">
+      `;
+      
+      previewDiv.querySelector('.remove-btn').addEventListener('click', function() {
+        removeEditProgramPhoto(this.dataset.filename);
+      });
+      
+      previewDiv.querySelector('.desc-input').addEventListener('change', function() {
+        updateEditProgramPhotoDescription(this.dataset.filename, this.value);
+      });
+
+      // Enable preview click to view full size
+      const _img2 = previewDiv.querySelector('img');
+      if (_img2) {
+        _img2.style.cursor = 'pointer';
+        _img2.addEventListener('click', function() {
+          openImageViewer(this.src, file.name);
+        });
+      }
+      
+      imagePreviewContainer.appendChild(previewDiv);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeEditProgramPhoto(fileName) {
+    selectedEditProgramPhotos = selectedEditProgramPhotos.filter(file => file.name !== fileName);
+    delete editProgramPhotoDescriptions[fileName];
+    updateEditProgramPhotoPreviews();
+  }
+
+  function updateEditProgramPhotoPreviews() {
+    imagePreviewContainer.innerHTML = '';
+    selectedEditProgramPhotos.forEach(file => displayEditProgramPhotoPreview(file));
+  }
+
+  function updateEditProgramPhotoDescription(fileName, description) {
+    editProgramPhotoDescriptions[fileName] = description;
+  }
+
+  // Expose variables for form submission
+  window.selectedEditProgramPhotos = selectedEditProgramPhotos;
+  window.editProgramPhotoDescriptions = editProgramPhotoDescriptions;
+  window.editImagesToRemove = imagesToRemove;
 }
 
 async function loadDepartmentListForEdit(selectedDeptId) {

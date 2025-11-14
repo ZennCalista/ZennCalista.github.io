@@ -76,6 +76,18 @@ CREATE TABLE IF NOT EXISTS departments (
     department_name VARCHAR(255) NOT NULL
 );
 
+-- Create program_images table for storing program photos
+CREATE TABLE IF NOT EXISTS program_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    program_id INT NOT NULL,
+    image_data LONGBLOB NOT NULL,
+    image_type VARCHAR(50) NOT NULL,
+    file_size INT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_program_image (program_id)
+);
+
 -- Create participants table
 CREATE TABLE IF NOT EXISTS participants (
     id INT AUTO_INCREMENT PRIMARY KEY,
