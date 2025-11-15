@@ -32,6 +32,9 @@
 
   <script>
     let userData = {}; // To store user_id and role after initial registration
+    let userEmail = ''; // Store user email for OTP
+    let otpTimer = null; // Timer for OTP resend cooldown
+    let otpExpirationTime = null; // Store OTP expiration timestamp
 
     function showRegisterForm() {
       const rightPanel = document.getElementById('right-panel');
@@ -164,6 +167,9 @@
         return;
       }
 
+      // Store email for OTP use
+      userEmail = email;
+
       // Send initial registration data to the server
       fetch('register.php', {
         method: 'POST',
@@ -190,7 +196,11 @@
           const data = JSON.parse(text);
           if (data.status === 'success') {
             userData = { user_id: data.user_id, role: data.role };
-            showRoleSpecificForm();
+            if (data.next_step === 'otp_verification') {
+              showOTPVerificationForm();
+            } else {
+              showRoleSpecificForm();
+            }
           } else {
             // Log full error details to console
             console.error('Registration error:', data);
@@ -210,7 +220,54 @@
       });
     }
 
-    function loadDepartments() {
+    function showOTPVerificationForm() {
+      const rightPanel = document.getElementById('right-panel');
+      const panelContent = rightPanel.querySelector('.panel-content');
+
+      // Trigger exit animation
+      panelContent.classList.add('exit');
+
+      // Wait for the exit animation to finish, then replace with OTP form
+      setTimeout(() => {
+        rightPanel.innerHTML = `
+          <div class="panel-content enter-start">
+            <div class="form-title">VERIFY EMAIL</div>
+            <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
+              We've sent a 6-digit verification code to your email.<br>
+              Please enter it below to continue.
+            </p>
+            <div id="otp-inputs" class="otp-inputs">
+              <input type="text" maxlength="1" class="otp-digit" id="otp-1" />
+              <input type="text" maxlength="1" class="otp-digit" id="otp-2" />
+              <input type="text" maxlength="1" class="otp-digit" id="otp-3" />
+              <input type="text" maxlength="1" class="otp-digit" id="otp-4" />
+              <input type="text" maxlength="1" class="otp-digit" id="otp-5" />
+              <input type="text" maxlength="1" class="otp-digit" id="otp-6" />
+            </div>
+            <div id="otp-timer" class="otp-timer">Resend code in 60s</div>
+            <div class="otp-actions">
+              <button class="button" onclick="resendOTP()" id="resend-btn" disabled>RESEND CODE</button>
+              <button class="button" onclick="verifyOTPCode()">VERIFY</button>
+            </div>
+            <div class="otp-links">
+              <a href="#" onclick="goBackToInitialForm()" style="color: #666; font-size: 14px;">Change Email</a>
+            </div>
+          </div>
+        `;
+
+        const newContent = rightPanel.querySelector('.panel-content');
+        setTimeout(() => {
+          newContent.classList.remove('enter-start');
+          newContent.classList.add('enter');
+        }, 10);
+
+        // Auto-send OTP when form loads
+        sendOTP();
+
+        // Set up OTP input handling
+        setupOTPInputs();
+      }, 600);
+    }
       fetch('../ADMIN/api_users.php?action=get_departments')
         .then(response => response.json())
         .then(data => {
@@ -374,6 +431,201 @@
         console.error('Error:', error);
         alert('An error occurred during registration: ' + error.message);
       });
+    }
+
+    function sendOTP() {
+      if (!userEmail) {
+        alert('Email not found. Please restart registration.');
+        return;
+      }
+
+      fetch('send_otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userData.user_id, email: userEmail })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          startOTPTimer();
+          alert('OTP sent to your email successfully!');
+        } else {
+          alert('Failed to send OTP: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
+      });
+    }
+
+    function verifyOTPCode() {
+      const otpDigits = [];
+      for (let i = 1; i <= 6; i++) {
+        const digit = document.getElementById(`otp-${i}`).value;
+        if (!digit) {
+          alert('Please enter the complete 6-digit code.');
+          return;
+        }
+        otpDigits.push(digit);
+      }
+
+      const otpCode = otpDigits.join('');
+
+      fetch('verify_otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userData.user_id, otp_code: otpCode })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert(data.message);
+          showRoleSpecificForm();
+        } else {
+          alert('Verification failed: ' + data.message);
+          // Clear OTP inputs on failure
+          for (let i = 1; i <= 6; i++) {
+            document.getElementById(`otp-${i}`).value = '';
+          }
+          document.getElementById('otp-1').focus();
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
+      });
+    }
+
+    function resendOTP() {
+      const resendBtn = document.getElementById('resend-btn');
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'SENDING...';
+
+      sendOTP();
+
+      // Reset button after sending
+      setTimeout(() => {
+        resendBtn.textContent = 'RESEND CODE';
+      }, 1000);
+    }
+
+    function setupOTPInputs() {
+      const inputs = document.querySelectorAll('.otp-digit');
+
+      inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          // Only allow numbers
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+
+          // Auto-focus next input
+          if (e.target.value && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          // Handle backspace
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+
+          // Handle Enter key to submit
+          if (e.key === 'Enter') {
+            verifyOTPCode();
+          }
+        });
+
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const paste = e.clipboardData.getData('text');
+          const digits = paste.replace(/[^0-9]/g, '').slice(0, 6);
+
+          digits.split('').forEach((digit, i) => {
+            if (inputs[index + i]) {
+              inputs[index + i].value = digit;
+            }
+          });
+
+          // Focus the next empty input or the last input
+          const nextIndex = Math.min(index + digits.length, inputs.length - 1);
+          inputs[nextIndex].focus();
+        });
+      });
+
+      // Focus first input
+      inputs[0].focus();
+    }
+
+    function startOTPTimer() {
+      let timeLeft = 60;
+      const timerElement = document.getElementById('otp-timer');
+      const resendBtn = document.getElementById('resend-btn');
+
+      if (otpTimer) clearInterval(otpTimer);
+
+      otpTimer = setInterval(() => {
+        timerElement.textContent = `Resend code in ${timeLeft}s`;
+        resendBtn.disabled = true;
+
+        timeLeft--;
+
+        if (timeLeft < 0) {
+          clearInterval(otpTimer);
+          timerElement.textContent = 'You can now resend the code';
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'RESEND CODE';
+        }
+      }, 1000);
+    }
+
+    function goBackToInitialForm() {
+      const rightPanel = document.getElementById('right-panel');
+      const panelContent = rightPanel.querySelector('.panel-content');
+
+      // Trigger exit animation
+      panelContent.classList.add('exit');
+
+      // Wait for the exit animation to finish, then replace with initial registration form
+      setTimeout(() => {
+        rightPanel.innerHTML = `
+          <div class="panel-content enter-start">
+            <div class="form-title">REGISTER</div>
+            <input type="text" id="firstname" placeholder="Firstname" class="form-input" />
+            <div class="name-row">
+              <input type="text" id="lastname" placeholder="Lastname" class="form-input lastname" />
+              <input type="text" id="mi" placeholder="M.I." class="form-input mi" />
+            </div>
+            <input type="email" id="email" placeholder="Email" class="form-input" />
+            <input type="password" id="password" placeholder="Password" class="form-input" />
+            <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+            <div class="radio-group">
+              <span>User Role:</span>
+              <div class="radio-options">
+                <div class="radio-option">
+                  <input type="radio" id="student" name="role" value="student" checked />
+                  <label for="student">Student</label>
+                </div>
+                <div class="radio-option">
+                  <input type="radio" id="non_acad" name="role" value="non_acad" />
+                  <label for="non_acad">Non-Acad</label>
+                </div>
+                <div class="radio-option">
+                  <input type="radio" id="faculty" name="role" value="faculty" />
+                  <label for="faculty">Faculty</label>
+                </div>
+              </div>
+            </div>
+            <img src="arrow.png" alt="Submit Arrow" class="submit-arrow" onclick="submitInitialForm()" />
+          </div>
+        `;
+
+        const newContent = rightPanel.querySelector('.panel-content');
+        setTimeout(() => {
+          newContent.classList.remove('enter-start');
+          newContent.classList.add('enter');
+        }, 10);
+      }, 600);
     }
 
     function goBackToRoleSelection() {

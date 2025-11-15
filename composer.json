@@ -2,6 +2,7 @@
   "require": {
     "php": "^8.2",
     "ext-mysqli": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "phpmailer/phpmailer": "^7.0"
   }
 }

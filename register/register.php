@@ -37,13 +37,25 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     $password = password_hash($data['password'], PASSWORD_DEFAULT); // Hash the password
     $role = $data['role'] ?? 'student';
 
-    // Insert into the users table
-    // Note: users table schema does not include 'mi' column. Insert matching schema.
-    $sql = "INSERT INTO users (firstname, lastname, email, password, role) VALUES (?, ?, ?, ?, ?)";
+    // Check if email already exists
+    $email_check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $email_check->bind_param("s", $email);
+    $email_check->execute();
+    $email_result = $email_check->get_result();
+
+    if ($email_result->num_rows > 0) {
+        echo json_encode(["status" => "error", "message" => "Email already registered"]);
+        $email_check->close();
+        $conn->close();
+        exit;
+    }
+    $email_check->close();
+
+    // Insert into the users table with email_verified = false
+    $sql = "INSERT INTO users (firstname, lastname, email, password, role, email_verified) VALUES (?, ?, ?, ?, ?, FALSE)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         error_log('register.php prepare failed: ' . $conn->error);
-        // Include DB error detail to help debugging (temporary)
         echo json_encode(["status" => "error", "message" => "Server error: could not prepare statement", "detail" => $conn->error]);
         $conn->close();
         exit;
@@ -51,10 +63,16 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     $stmt->bind_param("sssss", $firstname, $lastname, $email, $password, $role);
 
     if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Initial registration successful", "user_id" => $stmt->insert_id, "role" => $role]);
+        $user_id = $stmt->insert_id;
+        echo json_encode([
+            "status" => "success",
+            "message" => "Registration initiated. Please verify your email.",
+            "user_id" => $user_id,
+            "role" => $role,
+            "next_step" => "otp_verification"
+        ]);
     } else {
         error_log('register.php user insert failed: ' . $stmt->error);
-        // Include error detail for debugging
         echo json_encode(["status" => "error", "message" => "Failed to register user", "detail" => $stmt->error]);
     }
 
@@ -67,6 +85,28 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
 if (!empty($data['user_id']) && !empty($data['role'])) {
     $user_id = $data['user_id'];
     $role = $data['role'];
+
+    // Check if user exists and email is verified
+    $user_check = $conn->prepare("SELECT id, email_verified FROM users WHERE id = ?");
+    $user_check->bind_param("i", $user_id);
+    $user_check->execute();
+    $user_result = $user_check->get_result();
+
+    if ($user_result->num_rows === 0) {
+        echo json_encode(["status" => "error", "message" => "User not found"]);
+        $user_check->close();
+        $conn->close();
+        exit;
+    }
+
+    $user_row = $user_result->fetch_assoc();
+    if (!$user_row['email_verified']) {
+        echo json_encode(["status" => "error", "message" => "Email not verified. Please verify your email first."]);
+        $user_check->close();
+        $conn->close();
+        exit;
+    }
+    $user_check->close();
 
     if ($role === 'student' || $role === 'non_acad') {
         if (empty($data['contact_no']) || empty($data['emergency_contact'])) {
