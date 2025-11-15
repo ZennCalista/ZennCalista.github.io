@@ -1,20 +1,23 @@
 <?php
 // Email configuration for OTP system
-// CURRENTLY IN TESTING MODE - OTP codes will be logged instead of sent via email
+// CONFIGURE THESE SETTINGS WITH YOUR SENDGRID API KEY FOR PRODUCTION
 //
-// To enable real email sending, configure these settings with your email provider credentials:
-// 1. For Gmail: Use App Passwords (not your regular password)
-// 2. For Outlook: Use your account password
-// 3. Update all 'your-*' placeholders with actual values
+// SendGrid Setup (Recommended for Heroku):
+// 1. Sign up for SendGrid (free tier available)
+// 2. Create an API key in SendGrid dashboard
+// 3. Replace 'your-sendgrid-api-key' with your actual API key
+// 4. Verify your sender email in SendGrid
+//
+// For local testing, keep the Gmail settings if preferred
 
 return [
     'smtp' => [
-        'host' => 'smtp.gmail.com', // SMTP host (gmail, outlook, etc.)
-        'port' => 587, // SMTP port (587 for TLS, 465 for SSL)
+        'host' => 'smtp.sendgrid.net', // SendGrid SMTP host
+        'port' => 587, // SMTP port
         'encryption' => 'tls', // 'tls' or 'ssl'
-        'username' => 'ic.extensionservices@gmail.com', // Your email address - CHANGE THIS
-        'password' => 'niou jrcx xedc ytdx', // Your email password or app password - CHANGE THIS
-        'from_email' => 'ic.extensionservices@gmail.com', // From email address - CHANGE THIS
+        'username' => 'apikey', // SendGrid uses 'apikey' as username
+        'password' => 'your-sendgrid-api-key', // Your SendGrid API key - CHANGE THIS
+        'from_email' => 'ic.extensionservices@gmail.com', // From email address
         'from_name' => 'eTracker System' // From name
     ],
     'otp' => [
