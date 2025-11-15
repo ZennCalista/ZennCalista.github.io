@@ -273,7 +273,7 @@
     }
 
     function loadDepartments() {
-      fetch('get_departments.php?action=get_departments')
+      fetch('/register/get_departments.php?action=get_departments')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
