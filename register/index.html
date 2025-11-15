@@ -274,7 +274,9 @@
         setupOTPInputs();
       }, 600);
     }
-      fetch('../ADMIN/api_users.php?action=get_departments')
+
+    function loadDepartments() {
+      fetch('get_departments.php?action=get_departments')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
