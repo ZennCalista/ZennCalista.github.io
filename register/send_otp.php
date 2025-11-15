@@ -30,9 +30,9 @@ if (!isset($data['user_id']) || !isset($data['email'])) {
 $user_id = intval($data['user_id']);
 $email = trim($data['email']);
 
-// Validate email format
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(["status" => "error", "message" => "Invalid email format"]);
+// Validate email format and domain
+if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/@cvsu\.edu\.ph$/', $email)) {
+    echo json_encode(["status" => "error", "message" => "Only @cvsu.edu.ph email addresses are allowed"]);
     $conn->close();
     exit;
 }

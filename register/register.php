@@ -37,6 +37,13 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     $password = password_hash($data['password'], PASSWORD_DEFAULT); // Hash the password
     $role = $data['role'] ?? 'student';
 
+    // Validate email domain - only @cvsu.edu.ph emails allowed
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/@cvsu\.edu\.ph$/', $email)) {
+        echo json_encode(["status" => "error", "message" => "Only @cvsu.edu.ph email addresses are allowed for registration"]);
+        $conn->close();
+        exit;
+    }
+
     // Check if email already exists
     $email_check = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $email_check->bind_param("s", $email);
