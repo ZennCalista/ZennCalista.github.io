@@ -31,8 +31,31 @@ $user_id = intval($data['user_id']);
 $email = trim($data['email']);
 
 // Validate email format and domain
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/@cvsu\.edu\.ph$/', $email)) {
-    echo json_encode(["status" => "error", "message" => "Only @cvsu.edu.ph email addresses are allowed"]);
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(["status" => "error", "message" => "Invalid email format"]);
+    $conn->close();
+    exit;
+}
+
+// Check user role to determine email domain requirements
+$user_role_check = $conn->prepare("SELECT role FROM users WHERE id = ?");
+$user_role_check->bind_param("i", $user_id);
+$user_role_check->execute();
+$user_role_result = $user_role_check->get_result();
+
+if ($user_role_result->num_rows === 0) {
+    echo json_encode(["status" => "error", "message" => "User not found"]);
+    $user_role_check->close();
+    $conn->close();
+    exit;
+}
+
+$user_role = $user_role_result->fetch_assoc()['role'];
+$user_role_check->close();
+
+// Validate email domain - only @cvsu.edu.ph emails allowed for students and faculty
+if (($user_role === 'student' || $user_role === 'faculty') && !preg_match('/@cvsu\.edu\.ph$/', $email)) {
+    echo json_encode(["status" => "error", "message" => "Students and faculty must use @cvsu.edu.ph email addresses"]);
     $conn->close();
     exit;
 }

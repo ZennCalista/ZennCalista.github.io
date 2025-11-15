@@ -37,9 +37,16 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     $password = password_hash($data['password'], PASSWORD_DEFAULT); // Hash the password
     $role = $data['role'] ?? 'student';
 
-    // Validate email domain - only @cvsu.edu.ph emails allowed
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/@cvsu\.edu\.ph$/', $email)) {
-        echo json_encode(["status" => "error", "message" => "Only @cvsu.edu.ph email addresses are allowed for registration"]);
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(["status" => "error", "message" => "Invalid email format"]);
+        $conn->close();
+        exit;
+    }
+
+    // Validate email domain - only @cvsu.edu.ph emails allowed for students and faculty
+    if (($role === 'student' || $role === 'faculty') && !preg_match('/@cvsu\.edu\.ph$/', $email)) {
+        echo json_encode(["status" => "error", "message" => "Students and faculty must use @cvsu.edu.ph email addresses"]);
         $conn->close();
         exit;
     }
