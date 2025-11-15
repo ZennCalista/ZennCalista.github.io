@@ -87,9 +87,14 @@ if ($email_result['status'] !== 'success') {
 }
 
 // Success response (don't include OTP in response for security)
+$message = "OTP sent successfully to your email";
+if (strpos($email_result['message'], 'logged for testing') !== false) {
+    $message = "TESTING MODE: Check your PHP error log for the OTP code";
+}
+
 echo json_encode([
     "status" => "success",
-    "message" => "OTP sent successfully to your email",
+    "message" => $message,
     "expires_in" => $config['otp']['expiry_minutes'] * 60 // Convert to seconds
 ]);
 

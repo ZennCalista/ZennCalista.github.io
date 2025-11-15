@@ -25,6 +25,14 @@ class OTPUtils {
      * Send OTP via email
      */
     public function sendOTP($email, $otp_code) {
+        // Check if we're in testing mode (no real SMTP configured)
+        if ($this->config['smtp']['username'] === 'your-email@gmail.com' ||
+            strpos($this->config['smtp']['username'], 'your-') === 0) {
+            // Testing mode - log OTP instead of sending email
+            error_log("TESTING MODE: OTP for {$email} is: {$otp_code}");
+            return ['status' => 'success', 'message' => 'OTP logged for testing (check error log)'];
+        }
+
         $mail = new PHPMailer(true);
 
         try {
