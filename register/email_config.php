@@ -5,8 +5,15 @@
 // SendGrid Setup (Recommended for Heroku):
 // 1. Sign up for SendGrid (free tier available)
 // 2. Create an API key in SendGrid dashboard
-// 3. Replace 'your-sendgrid-api-key' with your actual API key
+// 3. Set the SENDGRID_API_KEY environment variable in your deployment platform (Heroku/Railway)
 // 4. Verify your sender email in SendGrid
+//
+// For local testing, create a .env file in the project root with:
+// SENDGRID_API_KEY=your-actual-api-key-here
+//
+// For production deployment:
+// - Heroku: heroku config:set SENDGRID_API_KEY=your-key-here
+// - Railway: Set environment variable in dashboard
 //
 // For local testing, keep the Gmail settings if preferred
 
@@ -16,7 +23,7 @@ return [
         'port' => 587, // SMTP port
         'encryption' => 'tls', // 'tls' or 'ssl'
         'username' => 'apikey', // SendGrid uses 'apikey' as username
-        'password' => 'your-sendgrid-api-key', // Your SendGrid API key - CHANGE THIS
+        'password' => getenv('SENDGRID_API_KEY') ?: 'your-sendgrid-api-key', // Read from environment variable
         'from_email' => 'ic.extensionservices@gmail.com', // From email address
         'from_name' => 'eTracker System' // From name
     ],
