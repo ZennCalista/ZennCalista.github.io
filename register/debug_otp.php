@@ -10,11 +10,31 @@ try {
     include 'db.php';
     echo "Step 2: Database included\n";
 
-    include 'otp_utils.php';
-    echo "Step 3: OTP utils included\n";
+    try {
+        include 'otp_utils.php';
+        echo "Step 3: OTP utils included\n";
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to include otp_utils.php: ' . $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
+        exit;
+    }
 
-    $otp_utils = new OTPUtils($conn);
-    echo "Step 4: OTP utils instantiated\n";
+    try {
+        $otp_utils = new OTPUtils($conn);
+        echo "Step 4: OTP utils instantiated\n";
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to create OTPUtils: ' . $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
+        exit;
+    }
 
     $config = require 'email_config.php';
     echo "Step 5: Config loaded\n";
