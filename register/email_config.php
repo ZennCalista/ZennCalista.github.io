@@ -1,4 +1,7 @@
 <?php
+// Load environment variables for local development
+require_once __DIR__ . '/../env_loader.php';
+
 // Email configuration for OTP system
 // CONFIGURE THESE SETTINGS WITH YOUR SENDGRID API KEY FOR PRODUCTION
 //
