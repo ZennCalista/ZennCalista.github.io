@@ -1,6 +1,11 @@
 <?php
-require_once 'vendor/autoload.php';
-require_once 'email_config.php';
+// Only require PHPMailer if not in testing mode
+$config = require 'email_config.php';
+if ($config['smtp']['username'] === 'your-email@gmail.com' || strpos($config['smtp']['username'], 'your-') === 0) {
+    // Testing mode - don't require PHPMailer
+} else {
+    require_once 'vendor/autoload.php';
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
