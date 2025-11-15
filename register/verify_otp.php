@@ -40,8 +40,8 @@ if (!preg_match('/^\d{6}$/', $otp_code)) {
 $verify_result = $otp_utils->verifyOTP($user_id, $otp_code);
 
 if ($verify_result['status'] === 'success') {
-    // Mark user email as verified
-    $update_stmt = $conn->prepare("UPDATE users SET email_verified = TRUE WHERE id = ?");
+    // Mark user as verified
+    $update_stmt = $conn->prepare("UPDATE users SET verification_status = 'verified' WHERE id = ?");
     $update_stmt->bind_param("i", $user_id);
     $update_stmt->execute();
     $update_stmt->close();

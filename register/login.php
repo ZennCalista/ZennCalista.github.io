@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Authentication is handled against the users table in the database (no hard-coded fallbacks)
 
     // Fetch full user record so we can populate session['user'] for portal compatibility
-    $stmt = $conn->prepare("SELECT id, password, role, firstname, lastname, email FROM users WHERE email = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, password, role, firstname, lastname, email, verification_status FROM users WHERE email = ? LIMIT 1");
     if (!$stmt) {
         error_log('Prepare failed in login.php: ' . $conn->error);
         echo json_encode(['status' => 'error', 'message' => 'Server error']);
@@ -45,6 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$ok) {
         error_log("Login failed for email: $email");
         echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
+        exit;
+    }
+
+    // Check if user is verified (for faculty and student roles only)
+    if (($user['role'] === 'faculty' || $user['role'] === 'student' || $user['role'] === 'non_acad') && $user['verification_status'] !== 'verified') {
+        error_log("Login blocked for unverified user: {$user['email']} (role: {$user['role']})");
+        echo json_encode(['status' => 'error', 'message' => 'Your account is not verified. Please complete the registration process first.']);
         exit;
     }
 

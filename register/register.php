@@ -58,8 +58,8 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     }
     $email_check->close();
 
-    // Insert into the users table with email_verified = false
-    $sql = "INSERT INTO users (firstname, lastname, email, password, role, email_verified) VALUES (?, ?, ?, ?, ?, FALSE)";
+    // Insert into the users table with verification_status = unverified
+    $sql = "INSERT INTO users (firstname, lastname, email, password, role, verification_status) VALUES (?, ?, ?, ?, ?, 'unverified')";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         error_log('register.php prepare failed: ' . $conn->error);
@@ -92,8 +92,8 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
     $user_id = $data['user_id'];
     $role = $data['role'];
 
-    // Check if user exists and email is verified
-    $user_check = $conn->prepare("SELECT id, email_verified FROM users WHERE id = ?");
+    // Check if user exists and is verified
+    $user_check = $conn->prepare("SELECT id, verification_status FROM users WHERE id = ?");
     $user_check->bind_param("i", $user_id);
     $user_check->execute();
     $user_result = $user_check->get_result();
@@ -106,6 +106,12 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
     }
 
     $user_row = $user_result->fetch_assoc();
+    if ($user_row['verification_status'] !== 'verified') {
+        echo json_encode(["status" => "error", "message" => "Email not verified. Please complete OTP verification first."]);
+        $user_check->close();
+        $conn->close();
+        exit;
+    }
     $user_check->close();
 
     if ($role === 'student' || $role === 'non_acad') {
