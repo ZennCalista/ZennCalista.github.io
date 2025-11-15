@@ -1,5 +1,43 @@
 <?php
 require_once 'db.php';
+require_once '../backend/token_utils.php';
+
+// Admin authentication check
+function requireAdminAuth() {
+    global $conn;
+    session_start();
+
+    // Check for token authentication first (multi-device support)
+    $token = getTokenFromCookie();
+    if ($token) {
+        $tokenUser = validateToken($conn, $token);
+        if ($tokenUser && in_array($tokenUser['role'], ['admin', 'faculty'])) {
+            // Token is valid and user has admin/faculty role
+            $_SESSION['user_id'] = $tokenUser['id'];
+            $_SESSION['role'] = $tokenUser['role'];
+            $_SESSION['user'] = $tokenUser;
+            return true;
+        }
+    }
+
+    // Fallback to session authentication
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Authentication required']);
+        exit;
+    }
+
+    if (!in_array($_SESSION['role'], ['admin', 'faculty'])) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Admin or faculty access required']);
+        exit;
+    }
+
+    return true;
+}
+
+// Require admin authentication for all operations
+requireAdminAuth();
 
 // Set content type for JSON response
 header('Content-Type: application/json');

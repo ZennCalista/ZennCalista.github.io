@@ -81,6 +81,11 @@ if ($user_id) {
           <section class="tab-pane active" id="directory">
             <h2>Program Directory</h2>
             <input type="text" placeholder="Search programs..." class="search-bar" id="search-programs" />
+            <select id="status-filter" class="status-dropdown">
+              <option value="all">All Programs</option>
+              <option value="ongoing" selected>Ongoing Programs</option>
+              <option value="planning">Planning Programs</option>
+            </select>
             <div class="loading" id="directory-loading">
               <span class="spinner"></span> Loading Programs...
             </div>
@@ -117,11 +122,11 @@ if ($user_id) {
   </div>
 
   <script>
-  // --- PROGRAM DIRECTORY: Card-based, expandable details ---
   let directoryPrograms = [];
   let directoryCurrentPage = 1;
   const directoryPageSize = 8;
   let enrolledPrograms = {}; // program_id: status
+  let currentStatusFilter = 'ongoing';
 
   function fetchEnrolledPrograms() {
     return fetch('get_my_enrollments.php')
@@ -133,26 +138,44 @@ if ($user_id) {
       });
   }
 
+  function getFilteredPrograms() {
+    let programs = directoryPrograms;
+    // Apply status filter
+    if (currentStatusFilter !== 'all') {
+      programs = programs.filter(p => p.status === currentStatusFilter);
+    }
+    // Apply search filter
+    const searchTerm = document.getElementById('search-programs').value.toLowerCase();
+    if (searchTerm) {
+      programs = programs.filter(p =>
+        p.program_name.toLowerCase().includes(searchTerm) ||
+        (p.department && p.department.toLowerCase().includes(searchTerm)) ||
+        (p.description && p.description.toLowerCase().includes(searchTerm))
+      );
+    }
+    return programs;
+  }
+
   function renderDirectoryCards(programs, page = 1) {
     const cardList = document.getElementById('program-directory-cards');
     cardList.innerHTML = '';
     const start = (page - 1) * directoryPageSize;
     const end = start + directoryPageSize;
-    // Only show active programs (not ended)
-    const activePrograms = programs.filter(program =>
-      program.status === 'ongoing'
-    );
-    const pagePrograms = activePrograms.slice(start, end);
+    const filteredPrograms = getFilteredPrograms();
+    const pagePrograms = filteredPrograms.slice(start, end);
 
     if (pagePrograms.length === 0) {
-      cardList.innerHTML = '<div style="width:100%">No programs available</div>';
+      const message = currentStatusFilter === 'all' ? 'No programs available' : `No ${currentStatusFilter} programs available`;
+      cardList.innerHTML = `<div style="width:100%">${message}</div>`;
       document.getElementById('directory-pagination').innerHTML = '';
       return;
     }
 
     pagePrograms.forEach(program => {
       let enrollBtnHtml = '';
-      if (enrolledPrograms[program.id] === 'approved') {
+      if (program.status === 'planning') {
+        enrollBtnHtml = `<button class="enroll-btn planning" disabled>Planning - Coming Soon</button>`;
+      } else if (enrolledPrograms[program.id] === 'approved') {
         enrollBtnHtml = `<button class="enroll-btn enrolled" disabled>✓ Enrolled</button>`;
       } else if (enrolledPrograms[program.id] === 'pending') {
         enrollBtnHtml = `<button class="enroll-btn pending" disabled>⏳ Pending Approval</button>`;
@@ -228,7 +251,7 @@ if ($user_id) {
             message.textContent = 'Processing your enrollment request...';
             message.style.color = '#007bff';
             
-            fetch('/Student/enroll.php', {
+            fetch('enroll.php', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ program_id: program.id })
@@ -295,7 +318,7 @@ if ($user_id) {
       cardList.appendChild(card);
     });
 
-    renderDirectoryPagination(activePrograms.length, page);
+    renderDirectoryPagination(filteredPrograms.length, page);
   }
 
   function renderDirectoryPagination(total, currentPage) {
@@ -352,15 +375,16 @@ if ($user_id) {
     // Search
     const searchInput = document.getElementById('search-programs');
     searchInput.oninput = () => {
-      const filter = searchInput.value.toLowerCase();
-      const filtered = directoryPrograms.filter(p =>
-        p.program_name.toLowerCase().includes(filter) ||
-        (p.department && p.department.toLowerCase().includes(filter)) ||
-        (p.description && p.description.toLowerCase().includes(filter))
-      );
       directoryCurrentPage = 1;
-      renderDirectoryCards(filtered, directoryCurrentPage);
+      renderDirectoryCards(directoryPrograms, directoryCurrentPage);
     };
+
+    // Status filter
+    document.getElementById('status-filter').addEventListener('change', () => {
+      currentStatusFilter = document.getElementById('status-filter').value;
+      directoryCurrentPage = 1;
+      renderDirectoryCards(directoryPrograms, directoryCurrentPage);
+    });
   }
 
   // --- MY PROGRAMS: Mini tabs with filtered program management ---
@@ -697,7 +721,7 @@ if ($user_id) {
     const select = document.getElementById('enroll-program');
     select.innerHTML = '<option value="" disabled selected>Select a program</option>';
 
-    fetch('/Student/get_active_programs.php')
+    fetch('get_active_programs.php')
       .then(response => response.json())
       .then(data => {
         if (data.status === 'success' && data.programs.length > 0) {
@@ -718,7 +742,7 @@ if ($user_id) {
   }
 
   function populateUserInfo() {
-    fetch('/STUDENT/get_user_info.php')
+    fetch('get_user_info.php')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -751,7 +775,7 @@ if ($user_id) {
         const reason = document.getElementById('enroll-reason').value;
         const message = document.getElementById('enroll-message');
 
-        fetch('/Student/enroll.php', {
+        fetch('enroll.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ program_id: programId, reason })

@@ -2,9 +2,50 @@
 
 header('Content-Type: application/json');
 require_once 'db.php';
+require_once 'token_utils.php';
+
+// Admin authentication check
+function requireAdminAuth() {
+    global $conn;
+    session_start();
+
+    // Check for token authentication first (multi-device support)
+    $token = getTokenFromCookie();
+    if ($token) {
+        $tokenUser = validateToken($conn, $token);
+        if ($tokenUser && in_array($tokenUser['role'], ['admin', 'faculty'])) {
+            // Token is valid and user has admin/faculty role
+            $_SESSION['user_id'] = $tokenUser['id'];
+            $_SESSION['role'] = $tokenUser['role'];
+            $_SESSION['user'] = $tokenUser;
+            return true;
+        }
+    }
+
+    // Fallback to session authentication
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Authentication required']);
+        exit;
+    }
+
+    if (!in_array($_SESSION['role'], ['admin', 'faculty'])) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Admin or faculty access required']);
+        exit;
+    }
+
+    return true;
+}
+
+// Require admin authentication for all operations
+requireAdminAuth();
 
 // Total Students
 $students = $conn->query("SELECT COUNT(*) as total FROM users WHERE role='student'")->fetch_assoc()['total'];
+
+// Total Non-Acad Users
+$non_acad = $conn->query("SELECT COUNT(*) as total FROM users WHERE role='non_acad'")->fetch_assoc()['total'];
 
 // Total Faculty
 $faculty = $conn->query("SELECT COUNT(*) as total FROM users WHERE role='faculty'")->fetch_assoc()['total'];
@@ -43,6 +84,7 @@ while ($row = $res->fetch_assoc()) {
 
 echo json_encode([
     'students' => (int)$students,
+    'non_acad' => (int)$non_acad,
     'faculty' => (int)$faculty,
     'programs' => (int)$programs,
     'certificates' => (int)$certificates,

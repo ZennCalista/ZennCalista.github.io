@@ -86,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Redirect based on role
-    error_log("Login redirect: user_id={$user['id']}, role={$user['role']}, redirect_url=" . ($user['role'] === 'student' ? '../STUDENT/index.php' : '../portal/home/home.html'));
-    if ($user['role'] === 'student') {
+    error_log("Login redirect: user_id={$user['id']}, role={$user['role']}, redirect_url=" . (($user['role'] === 'student' || $user['role'] === 'non_acad') ? '../STUDENT/index.php' : '../portal/home/home.html'));
+    if ($user['role'] === 'student' || $user['role'] === 'non_acad') {
         $redirect_url = '../STUDENT/index.php';
     } else {
         // Faculty and admin go to portal home page

@@ -12,7 +12,11 @@ if (isset($_SESSION['role'])) {
     } elseif ($role === 'faculty') {
         header('Location: ../FACULTY/Dashboard.php');
         exit();
+    } elseif ($role === 'student' || $role === 'non_acad') {
+        header('Location: ../STUDENT/index.php');
+        exit();
     } else {
+        // Fallback for any other roles
         header('Location: ../STUDENT/index.php');
         exit();
     }

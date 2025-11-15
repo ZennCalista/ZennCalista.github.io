@@ -1,11 +1,27 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// Function to return JSON error
+function returnJsonError($message) {
+    echo json_encode(['status' => 'error', 'message' => $message]);
+    exit;
+}
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
+    returnJsonError('Unauthorized: Please log in as a student');
+}
+
 require_once '../FACULTY/db.php';
+if ($conn->connect_error) {
+    returnJsonError('Database connection failed: ' . $conn->connect_error);
+}
 
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
-    exit;
+    returnJsonError('User not logged in');
 }
 
 $user_id = $_SESSION['user_id'];
@@ -36,8 +52,7 @@ $sql = "SELECT
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
-    echo json_encode(['status' => 'error', 'message' => 'Database preparation error: ' . $conn->error]);
-    exit;
+    returnJsonError('Database preparation error: ' . $conn->error);
 }
 
 $stmt->bind_param('i', $user_id);

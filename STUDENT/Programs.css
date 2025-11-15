@@ -1074,3 +1074,35 @@ tr:last-child td {
 }
 
 /* Enhanced My Programs Styles - Cleaner Layout */
+
+/* Status Filter Styles */
+.status-filter { margin-bottom: 10px; }
+.status-btn { padding: 8px 16px; margin-right: 10px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; }
+.status-btn.active { background: #007bff; color: white; border-color: #007bff; }
+.enroll-btn.planning { background: #6c757d; color: white; cursor: not-allowed; }
+.status-dropdown { 
+  margin-top: 10px; 
+  margin-bottom: 15px;
+  padding: 10px 12px; 
+  border: 1px solid #ddd; 
+  border-radius: 8px; 
+  background: #fff; 
+  font-size: 14px;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  min-width: 200px;
+}
+.status-dropdown:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+}
+.status-dropdown:hover {
+  border-color: #007bff;
+}
+.status-dropdown option {
+  padding: 8px;
+  background: #fff;
+  color: #333;
+}

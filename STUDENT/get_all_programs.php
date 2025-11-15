@@ -6,15 +6,19 @@ header('Content-Type: application/json');
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized: Please log in as a student']);
+// Function to return JSON error
+function returnJsonError($message) {
+    echo json_encode(['status' => 'error', 'message' => $message]);
     exit;
+}
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
+    returnJsonError('Unauthorized: Please log in as a student');
 }
 
 require_once '../FACULTY/db.php';
 if ($conn->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Database connection failed: ' . $conn->connect_error]);
-    exit;
+    returnJsonError('Database connection failed: ' . $conn->connect_error);
 }
 
 // Removed the date filter for reports
@@ -32,12 +36,10 @@ $sql = "SELECT
             u.lastname AS faculty_lastname
         FROM programs p
         LEFT JOIN users u ON p.faculty_id = u.id
-        WHERE p.status = 'ongoing'
         ORDER BY p.start_date DESC";
 $result = $conn->query($sql);
 if (!$result) {
-    echo json_encode(['status' => 'error', 'message' => 'Query failed: ' . $conn->error]);
-    exit;
+    returnJsonError('Query failed: ' . $conn->error);
 }
 
 $programs = [];

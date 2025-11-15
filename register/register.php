@@ -68,21 +68,23 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
     $user_id = $data['user_id'];
     $role = $data['role'];
 
-    if ($role === 'student') {
-        if (empty($data['student_id']) || empty($data['course']) || empty($data['contact_no']) || empty($data['emergency_contact'])) {
-            echo json_encode(["status" => "error", "message" => "Missing student details"]);
+    if ($role === 'student' || $role === 'non_acad') {
+        if (empty($data['contact_no']) || empty($data['emergency_contact'])) {
+            echo json_encode(["status" => "error", "message" => "Missing " . ($role === 'student' ? 'student' : 'non-academic') . " details"]);
             $conn->close();
             exit;
         }
-        $student_id = $data['student_id'];
-        $course = $data['course'];
         $contact_no = $data['contact_no'];
         $emergency_contact = $data['emergency_contact'];
+
+        // For students and non_acad, insert into students table (student_id and course can be NULL)
+        $student_id = $data['student_id'] ?? null;
+        $course = $data['course'] ?? null;
 
         $sql = "INSERT INTO students (user_id, student_id, course, contact_no, emergency_contact) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
-            error_log('register.php prepare failed (students): ' . $conn->error);
+            error_log('register.php prepare failed (' . $role . '): ' . $conn->error);
             echo json_encode(["status" => "error", "message" => "Server error"]);
             $conn->close();
             exit;
@@ -90,10 +92,10 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
         $stmt->bind_param("issss", $user_id, $student_id, $course, $contact_no, $emergency_contact);
 
         if ($stmt->execute()) {
-            echo json_encode(["status" => "success", "message" => "Student registration completed"]);
+            echo json_encode(["status" => "success", "message" => ucfirst($role) . " registration completed"]);
         } else {
-            error_log('register.php student insert failed: ' . $stmt->error);
-            echo json_encode(["status" => "error", "message" => "Failed to register student details", "detail" => $stmt->error]);
+            error_log('register.php ' . $role . ' insert failed: ' . $stmt->error);
+            echo json_encode(["status" => "error", "message" => "Failed to register " . $role . " details", "detail" => $stmt->error]);
         }
 
         $stmt->close();
