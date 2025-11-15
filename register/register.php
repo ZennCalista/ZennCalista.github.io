@@ -73,10 +73,9 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
         $user_id = $stmt->insert_id;
         echo json_encode([
             "status" => "success",
-            "message" => "Registration initiated. Please verify your email.",
+            "message" => "Registration initiated successfully.",
             "user_id" => $user_id,
-            "role" => $role,
-            "next_step" => "otp_verification"
+            "role" => $role
         ]);
     } else {
         error_log('register.php user insert failed: ' . $stmt->error);
@@ -107,12 +106,6 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
     }
 
     $user_row = $user_result->fetch_assoc();
-    if (!$user_row['email_verified']) {
-        echo json_encode(["status" => "error", "message" => "Email not verified. Please verify your email first."]);
-        $user_check->close();
-        $conn->close();
-        exit;
-    }
     $user_check->close();
 
     if ($role === 'student' || $role === 'non_acad') {
@@ -151,13 +144,12 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
     }
 
     if ($role === 'faculty') {
-        if (empty($data['faculty_name']) || empty($data['faculty_id']) || empty($data['position'])) {
+        if (empty($data['department']) || empty($data['position'])) {
             echo json_encode(["status" => "error", "message" => "Missing faculty details"]);
             $conn->close();
             exit;
         }
-        $faculty_name = $data['faculty_name'];
-        $faculty_id = $data['faculty_id'];
+        $department = $data['department'];
         $position = $data['position'];
 
         // department_id may be passed or department name may be passed

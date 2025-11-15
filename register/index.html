@@ -35,6 +35,7 @@
     let userEmail = ''; // Store user email for OTP
     let otpTimer = null; // Timer for OTP resend cooldown
     let otpExpirationTime = null; // Store OTP expiration timestamp
+    let roleSpecificData = null; // Store role-specific data until OTP verification
 
     function showRegisterForm() {
       const rightPanel = document.getElementById('right-panel');
@@ -202,11 +203,7 @@
           const data = JSON.parse(text);
           if (data.status === 'success') {
             userData = { user_id: data.user_id, role: data.role };
-            if (data.next_step === 'otp_verification') {
-              showOTPVerificationForm();
-            } else {
-              showRoleSpecificForm();
-            }
+            showRoleSpecificForm();
           } else {
             // Log full error details to console
             console.error('Registration error:', data);
@@ -401,44 +398,9 @@
         data.position = position;
       }
 
-      // Send role-specific data to the server
-      fetch('register.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(text => {
-        try {
-          const data = JSON.parse(text);
-          if (data.status === 'success') {
-            alert(data.message);
-            // Optionally redirect or reset the form
-            window.location.reload();
-          } else {
-            // Log full error details to console
-            console.error('Registration error:', data);
-            // Show detailed error if available
-            const errorMsg = data.message + (data.detail ? '\n\nDetails: ' + data.detail : '');
-            alert(errorMsg);
-          }
-        } catch (e) {
-          console.error('JSON parse error:', e);
-          console.error('Response text:', text);
-          alert('Server returned invalid response. Please check console for details.');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred during registration: ' + error.message);
-      });
+      // Store role-specific data and proceed to OTP verification
+      roleSpecificData = data;
+      showOTPVerificationForm();
     }
 
     function sendOTP() {
@@ -489,7 +451,42 @@
       .then(data => {
         if (data.status === 'success') {
           alert(data.message);
-          showRoleSpecificForm();
+          // If we have role-specific data, submit it now
+          if (roleSpecificData) {
+            fetch('register.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(roleSpecificData)
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+              }
+              return response.text();
+            })
+            .then(text => {
+              try {
+                const regData = JSON.parse(text);
+                if (regData.status === 'success') {
+                  alert(regData.message + ' Registration completed successfully!');
+                  window.location.reload();
+                } else {
+                  console.error('Role-specific registration error:', regData);
+                  alert('OTP verified but registration failed: ' + regData.message);
+                }
+              } catch (e) {
+                console.error('JSON parse error:', e);
+                alert('Server returned invalid response after OTP verification.');
+              }
+            })
+            .catch(error => {
+              console.error('Error submitting role-specific data:', error);
+              alert('OTP verified but failed to complete registration: ' + error.message);
+            });
+          } else {
+            alert('Registration completed successfully!');
+            window.location.reload();
+          }
         } else {
           alert('Verification failed: ' + data.message);
           // Clear OTP inputs on failure
