@@ -12,9 +12,9 @@ return [
         'host' => 'smtp.gmail.com', // SMTP host (gmail, outlook, etc.)
         'port' => 587, // SMTP port (587 for TLS, 465 for SSL)
         'encryption' => 'tls', // 'tls' or 'ssl'
-        'username' => 'your-email@gmail.com', // Your email address - CHANGE THIS
-        'password' => 'your-app-password', // Your email password or app password - CHANGE THIS
-        'from_email' => 'your-email@gmail.com', // From email address - CHANGE THIS
+        'username' => 'ic.extensionservices@gmail.com', // Your email address - CHANGE THIS
+        'password' => 'niou jrcx xedc ytdx', // Your email password or app password - CHANGE THIS
+        'from_email' => 'ic.extensionservices@gmail.com', // From email address - CHANGE THIS
         'from_name' => 'eTracker System' // From name
     ],
     'otp' => [
