@@ -349,9 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
   closeBtn.onclick = function() {
     modal.style.display = 'none';
   };
-  window.onclick = function(event) {
-    if (event.target === modal) modal.style.display = 'none';
-  };
 
   manualForm.onsubmit = function(e) {
     e.preventDefault();
@@ -404,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.status === 'success' && data.programs.length > 0) {
               let hasApproved = false;
               data.programs.forEach(p => {
-                if (p.status === 'approved') {
+                if (p.enrollment_status === 'approved') {
                   hasApproved = true;
                   const opt = document.createElement('option');
                   opt.value = p.id; // Use program_id for QR value
@@ -421,6 +418,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           });
       };
+
+  closeQrBtn.onclick = function() {
+    qrModal.style.display = 'none';
+  };
+
+  // Combined window click handler for both modals
+  window.onclick = function(event) {
+    if (event.target === modal) modal.style.display = 'none';
+    if (event.target === qrModal) qrModal.style.display = 'none';
+  };
 
       // Show QR after selecting program
       qrProgramForm.onsubmit = function(e) {
@@ -515,35 +522,6 @@ document.getElementById('submit-qr-code').onclick = function() {
 };
 
 }); // <-- Add this to close the DOMContentLoaded event listener
-
-// QR Code manual entry
-document.getElementById('submit-qr-code').onclick = function() {
-  const code = document.getElementById('qr-code-input').value.trim();
-  const qrModal = document.getElementById('qr-modal');
-  const qrCodeMessage = document.getElementById('qr-code-message');
-  if (!code) {
-    qrCodeMessage.innerText = "Please enter the code.";
-    return;
-  }
-  fetch('mark_attendance.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ qr_data: code })
-  })
-  .then(res => res.json())
-  .then(data => {
-    qrCodeMessage.innerText = data.message;
-    if (data.status === 'success') {
-      setTimeout(() => {
-        qrModal.style.display = 'none';
-        location.reload();
-      }, 1000);
-    }
-  })
-  .catch(() => {
-    qrCodeMessage.innerText = "Error marking attendance.";
-  });
-};
 
 </script>
 </body>
