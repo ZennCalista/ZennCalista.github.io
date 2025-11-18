@@ -147,14 +147,14 @@ try {
         user_id,
         status,
         faculty_certificate_issued
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'beginner', 'extension', ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, 'ongoing', 0)";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'beginner', 'extension', ?, ?, ?, ?, ?, 'pending', 'normal', ?, NOW(), ?, ?, 'ongoing', 0)";
     
     error_log("SQL: $sql");
     error_log("Parameters: " . json_encode([
         $program_name, $department, $start_date, $previous_date, $end_date, $location,
         $max_students, $male_count, $female_count, $description, $project_titles_json,
-        $sessions_json, $sdg_goals_json, $program_type, $target_audience, $dept_approval,
-        $priority, $budget, $faculty_id, $user_id
+        $sessions_json, $sdg_goals_json, $program_type, $target_audience, $budget,
+        $faculty_id, $user_id
     ]));
     
     $stmt = $conn->prepare($sql);
@@ -163,7 +163,7 @@ try {
     }
     
     $stmt->bind_param(
-        "ssssssiiissssssssdiii",
+        "ssssssiiisssssssdii",
         $program_name,
         $department,
         $start_date,
@@ -179,8 +179,6 @@ try {
         $sdg_goals_json,
         $program_type,
         $target_audience,
-        $dept_approval,
-        $priority,
         $budget,
         $faculty_id,
         $user_id
