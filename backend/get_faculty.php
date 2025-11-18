@@ -16,7 +16,8 @@ $department_map = [
     6 => 'Department of Administration - ENTREP',
     7 => 'Department of Administration - BSOA', 
     8 => 'Department of Administration - BM',
-    9 => 'Department of Computer Studies'
+    9 => 'Department of Computer Studies',
+    19 => 'RDE Department'
 ];
 
 if ($department_id && isset($department_map[$department_id])) {

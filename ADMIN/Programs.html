@@ -1320,7 +1320,8 @@ async function loadDepartmentList() {
         {value: 8, text: 'Teacher Education Department'},
         {value: 15, text: 'Department of Administration - ENTREP'},
         {value: 16, text: 'Department of Administration - BSOA'},
-        {value: 17, text: 'Department of Administration - BM'}
+        {value: 17, text: 'Department of Administration - BM'},
+        {value: 19, text: 'RDE Department'}
       ];
       
       fallbackDepts.forEach(dept => {
@@ -1359,6 +1360,7 @@ async function loadDepartmentList() {
         <option value="15">Department of Administration - ENTREP</option>
         <option value="16">Department of Administration - BSOA</option>
         <option value="17">Department of Administration - BM</option>
+        <option value="19">RDE Department</option>
       `;
       console.log('Used emergency fallback departments');
     }

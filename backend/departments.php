@@ -40,7 +40,8 @@ try {
                         ['value' => 'Department of Administration - ENTREP', 'text' => 'Department of Administration - ENTREP'],
                         ['value' => 'Department of Administration - BSOA', 'text' => 'Department of Administration - BSOA'],
                         ['value' => 'Department of Administration - BM', 'text' => 'Department of Administration - BM'],
-                        ['value' => 'Department of Computer Studies', 'text' => 'Department of Computer Studies']
+                        ['value' => 'Department of Computer Studies', 'text' => 'Department of Computer Studies'],
+                        ['value' => 'RDE Department', 'text' => 'RDE Department']
                     ];
                 }
                 echo json_encode($options);
