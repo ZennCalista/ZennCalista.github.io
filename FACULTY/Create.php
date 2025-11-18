@@ -1222,13 +1222,13 @@ function submitForm() {
     body: formData,
     credentials: 'same-origin'
   })
-  .then(response => {
-    if (!response.ok) {
-      return response.text().then(text => {
-        throw new Error(`Server error ${response.status}: ${text}`);
-      });
+  .then(response => response.text())
+  .then(text => {
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error('Invalid JSON response from server: ' + text.substring(0, 200));
     }
-    return response.json();
   })
   .then(data => {
     console.log('Server response:', data);

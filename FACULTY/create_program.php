@@ -1,9 +1,13 @@
 <?php
-require_once 'db.php';
-session_start();
-
 // Set content type for JSON response
 header('Content-Type: application/json');
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once 'db.php';
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
