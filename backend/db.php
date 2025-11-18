@@ -1,7 +1,7 @@
 <?php
-$host = 'database-1.ch0e2sa0mf0l.ap-southeast-2.rds.amazonaws.com';
-$user = 'admin';
-$pass = 'admin1234!';
+$host = 'localhost';
+$user = 'root';
+$pass = '';
 $dbname = 'etracker';
 
 // Set a timeout for DNS resolution
