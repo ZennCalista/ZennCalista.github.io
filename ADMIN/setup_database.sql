@@ -26,7 +26,15 @@ CREATE TABLE IF NOT EXISTS programs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     is_archived TINYINT(1) NOT NULL DEFAULT 0,
-    archived_at DATETIME NULL
+    archived_at DATETIME NULL,
+    -- Additional columns for faculty program creation
+    program_level VARCHAR(50) NULL DEFAULT 'beginner',
+    program_category VARCHAR(100) NULL DEFAULT 'extension',
+    sessions_data LONGTEXT NULL,
+    dept_approval ENUM('pending','approved','rejected') NULL DEFAULT 'pending',
+    priority ENUM('low','normal','high') NULL DEFAULT 'normal',
+    user_id INT NULL,
+    faculty_certificate_issued TINYINT(1) NOT NULL DEFAULT 0
 );
 
 -- Create program_sessions table (not just 'sessions')
