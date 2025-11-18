@@ -1222,7 +1222,14 @@ function submitForm() {
     body: formData,
     credentials: 'same-origin'
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      return response.text().then(text => {
+        throw new Error(`Server error ${response.status}: ${text}`);
+      });
+    }
+    return response.json();
+  })
   .then(data => {
     console.log('Server response:', data);
     
@@ -1252,9 +1259,9 @@ function submitForm() {
     if (messageDiv) {
       messageDiv.style.display = 'block';
       messageDiv.className = 'error-message';
-      messageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Network error occurred while creating the program.';
+      messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
     } else {
-      alert('Network error occurred while creating the program.');
+      alert(`Error: ${error.message}`);
     }
   })
   .finally(() => {
