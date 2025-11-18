@@ -213,58 +213,6 @@
     </div>
   </footer>
 
-  <!-- Load Floating Action Button (Upload) - Admin & Faculty Only -->
-  <div id="fab-container"></div>
-  <script>
-    (async function() {
-      try {
-        // Check if user is admin or faculty before loading FAB
-        const sessionRes = await fetch('backend/session_user.php', { credentials: 'include' });
-        
-        if (sessionRes.ok) {
-          const sessionData = await sessionRes.json();
-          
-          // Only load FAB if user is authenticated and is admin or faculty
-          if (sessionData.authenticated && sessionData.user && 
-              (sessionData.user.role === 'admin' || sessionData.user.role === 'faculty')) {
-            const response = await fetch('../shared/fab_upload.html');
-            const html = await response.text();
-            
-            // Create a temporary container to parse the HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            
-            // Extract and append non-script elements
-            const container = document.getElementById('fab-container');
-            Array.from(tempDiv.children).forEach(child => {
-              if (child.tagName !== 'SCRIPT') {
-                container.appendChild(child.cloneNode(true));
-              }
-            });
-            
-            // Extract and execute scripts
-            const scripts = tempDiv.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-              const newScript = document.createElement('script');
-              if (oldScript.src) {
-                newScript.src = oldScript.src;
-              } else {
-                newScript.textContent = oldScript.textContent;
-              }
-              document.body.appendChild(newScript);
-            });
-            
-            console.log('FAB loaded successfully for admin/faculty user');
-          } else {
-            console.log('FAB not loaded: User is not admin or faculty');
-          }
-        }
-      } catch (error) {
-        console.error('Error loading FAB:', error);
-      }
-    })();
-  </script>
-
   <!-- JavaScript for Carousel and Programs article -->
   <script>
     // Page transition functionality
