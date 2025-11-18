@@ -21,6 +21,9 @@ try {
     // Get faculty_id from user_id
     $faculty_sql = "SELECT id FROM faculty WHERE user_id = ?";
     $faculty_stmt = $conn->prepare($faculty_sql);
+    if (!$faculty_stmt) {
+        throw new Exception('Faculty query prepare failed: ' . $conn->error);
+    }
     $faculty_stmt->bind_param("i", $user_id);
     $faculty_stmt->execute();
     $faculty_result = $faculty_stmt->get_result();
@@ -97,9 +100,6 @@ try {
     if (empty($program_name)) {
         throw new Exception('Program name is required');
     }
-    if (empty($description)) {
-        throw new Exception('Program description is required');
-    }
     if (empty($location)) {
         throw new Exception('Program location is required');
     }
@@ -145,13 +145,21 @@ try {
         faculty_certificate_issued
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'beginner', 'extension', ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, 'ongoing', 0)";
     
+    error_log("SQL: $sql");
+    error_log("Parameters: " . json_encode([
+        $program_name, $department, $start_date, $previous_date, $end_date, $location,
+        $max_students, $male_count, $female_count, $description, $project_titles_json,
+        $sessions_json, $sdg_goals_json, $program_type, $target_audience, $dept_approval,
+        $priority, $budget, $faculty_id, $user_id
+    ]));
+    
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception('Prepare failed: ' . $conn->error);
     }
     
     $stmt->bind_param(
-        "ssssssiiissssssdiii",
+        "ssssssiiissssssssdiii",
         $program_name,
         $department,
         $start_date,
