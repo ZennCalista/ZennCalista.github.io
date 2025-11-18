@@ -45,12 +45,27 @@ requireAdminAuth();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'add_attendance') {
     $student_name = $_POST['student_name'];
     $program_id = intval($_POST['program_id']);
+    $session_id = isset($_POST['session_id']) ? intval($_POST['session_id']) : null;
     $status = $_POST['status'];
     $time_in = $_POST['time_in'];
     $date = $_POST['date'];
 
-    $stmt = $conn->prepare("INSERT INTO attendance (student_name, program_id, status, time_in, date) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sisss", $student_name, $program_id, $status, $time_in, $date);
+    // If session_id is provided, get program_id and date from session
+    if ($session_id) {
+        $session_query = "SELECT program_id, session_date FROM program_sessions WHERE id = ?";
+        $stmt = $conn->prepare($session_query);
+        $stmt->bind_param("i", $session_id);
+        $stmt->execute();
+        $session_data = $stmt->get_result()->fetch_assoc();
+
+        if ($session_data) {
+            $program_id = $session_data['program_id'];
+            $date = $session_data['session_date'];
+        }
+    }
+
+    $stmt = $conn->prepare("INSERT INTO attendance (student_name, program_id, session_id, status, time_in, date, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("siisss", $student_name, $program_id, $session_id, $status, $time_in, $date);
     $stmt->execute();
     echo json_encode(['success' => true]);
     exit;

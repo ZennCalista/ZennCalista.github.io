@@ -36,59 +36,42 @@
    
     <h1>Attendance Tracker</h1>
 
-    <div class="attendance-controls">
-<!-- Manual Entry Button -->
-<button class="btn" onclick="openModal()">
-    <i class="fas fa-plus-square"></i> Manual Entry
-  </button>
-  
-  <!-- Manual Entry Modal -->
-  <div id="manualEntryModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>Manual Attendance Entry</h2>
-      <form id="manualEntryForm">
-        <label for="participantRole">Role</label>
-        <select id="participantRole" name="participantRole" required>
-          <option value="">Select Role</option>
-          <option value="Student">Student</option>
-          <option value="Faculty">Faculty</option>
-          <option value="Partner">Partner</option>
-          <option value="Stakeholder">Stakeholder</option>
-        </select>
-  
-        <label for="studentId">ID Number</label>
-        <input type="text" id="studentId" name="studentId" required />
-  
-        <label for="studentName">Full Name</label>
-        <input type="text" id="studentName" name="studentName" required />
-  
-        <label for="programName">Program</label>
-        <select id="programName" name="programName">
-          <option value="">Select a Program</option>
-          <option value="Community Health Seminar">Community Health Seminar</option>
-          <option value="Environmental Awareness Drive">Environmental Awareness Drive</option>
-        </select>
-  
-        <label for="attendanceDate">Date</label>
-        <input type="date" id="attendanceDate" name="attendanceDate" required />
-  
-        <label for="status">Attendance Status</label>
-        <select id="status" name="status" required>
-          <option value="Present">Present</option>
-          <option value="Late">Late</option>
-          <option value="Absent">Absent</option>
-        </select>
-  
-        <div class="modal-buttons">
-          <button type="submit" class="btn">Save Entry</button>
-          <button type="button" class="btn cancel" onclick="closeModal()">Cancel</button>
-        </div>
-      </form>
+    <!-- Session Selection -->
+    <div class="session-selector" style="margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+      <h3>Select Session for Attendance</h3>
+      <select id="sessionSelector" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;">
+        <option value="">Choose a session...</option>
+      </select>
+      <div class="session-info" id="sessionInfo" style="display: none; margin-top: 1rem; padding: 1rem; background: white; border-radius: 4px;">
+        <h4 id="sessionTitle"></h4>
+        <p><strong>Date:</strong> <span id="sessionDate"></span></p>
+        <p><strong>Time:</strong> <span id="sessionTime"></span></p>
+        <p><strong>Location:</strong> <span id="sessionLocation"></span></p>
+        <p><strong>Enrolled:</strong> <span id="enrolledCount">0</span> | <strong>Recorded:</strong> <span id="recordedCount">0</span></p>
+      </div>
     </div>
-  </div>
-  
-        <button class="btn" onclick="exportAttendanceSummary()">Export Summary</button>
+
+    <div class="attendance-controls">
+      <!-- Manual Entry Button -->
+      <button class="btn" onclick="openModal()">
+        <i class="fas fa-plus-square"></i> Manual Entry
+      </button>
+      
+      <!-- Bulk Processing Buttons -->
+      <button class="btn" onclick="initializeBulkAttendance()" id="bulkBtn" disabled>
+        <i class="fas fa-users"></i> Bulk Process
+      </button>
+      
+      <button class="btn" onclick="markAllAbsent()" id="markAbsentBtn" disabled style="background: #dc3545;">
+        <i class="fas fa-user-times"></i> Mark All Absent
+      </button>
+      
+      <!-- Quick Check-in -->
+      <button class="btn" onclick="openQuickCheckinModal()" id="quickCheckinBtn" disabled>
+        <i class="fas fa-check-circle"></i> Quick Check-in
+      </button>
+
+      <button class="btn" onclick="exportAttendanceSummary()">Export Summary</button>
     </div>
     
     <!-- Program Attendance Overview -->
@@ -157,96 +140,330 @@
       <!-- <canvas id="attendanceChart" width="400" height="120" style="margin:30px 0;"></canvas> -->
 </div>
 
+  <!-- Manual Entry Modal -->
+  <div id="manualEntryModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Manual Attendance Entry</h2>
+      <form id="manualEntryForm">
+        <label for="participantRole">Role</label>
+        <select id="participantRole" name="participantRole" required>
+          <option value="">Select Role</option>
+          <option value="Student">Student</option>
+          <option value="Faculty">Faculty</option>
+          <option value="Partner">Partner</option>
+          <option value="Stakeholder">Stakeholder</option>
+        </select>
+
+        <label for="studentId">ID Number</label>
+        <input type="text" id="studentId" name="studentId" required />
+
+        <label for="studentName">Full Name</label>
+        <input type="text" id="studentName" name="studentName" required />
+
+        <label for="programName">Program</label>
+        <select id="programName" name="programName">
+          <option value="">Select a Program</option>
+        </select>
+
+        <label for="attendanceDate">Date</label>
+        <input type="date" id="attendanceDate" name="attendanceDate" required />
+
+        <label for="status">Attendance Status</label>
+        <select id="status" name="status" required>
+          <option value="Present">Present</option>
+          <option value="Late">Late</option>
+          <option value="Absent">Absent</option>
+        </select>
+
+        <div class="modal-buttons">
+          <button type="submit" class="btn">Save Entry</button>
+          <button type="button" class="btn cancel" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bulk Attendance Modal -->
+  <div id="bulkAttendanceModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <span class="close" onclick="closeBulkModal()">&times;</span>
+      <h2>Bulk Attendance Processing</h2>
+      <div id="bulkContent">
+        <p>Loading participants...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Check-in Modal -->
+  <div id="quickCheckinModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeQuickCheckinModal()">&times;</span>
+      <h2>Quick Check-in</h2>
+      <form id="quickCheckinForm">
+        <label for="quickStudentName">Student Name</label>
+        <input type="text" id="quickStudentName" name="quickStudentName" required placeholder="Enter full name" />
+
+        <label for="quickStatus">Status</label>
+        <select id="quickStatus" name="quickStatus" required>
+          <option value="Present">Present</option>
+          <option value="Late">Late</option>
+          <option value="Absent">Absent</option>
+        </select>
+
+        <label for="quickTimeIn">Time In (optional)</label>
+        <input type="time" id="quickTimeIn" name="quickTimeIn" />
+
+        <div class="modal-buttons">
+          <button type="submit" class="btn">Check In</button>
+          <button type="button" class="btn cancel" onclick="closeQuickCheckinModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
     
     <script>
-        function openModal() {
-          document.getElementById('manualEntryModal').style.display = 'block';
-        }
-      
-        function closeModal() {
-          document.getElementById('manualEntryModal').style.display = 'none';
-          document.getElementById('manualEntryForm').reset();
-        }
-      
-        document.getElementById('manualEntryForm').addEventListener('submit', function (e) {
-          e.preventDefault();
+let currentSessionId = null;
 
-          const student_name = document.getElementById('studentName').value;
-          const program_id = document.getElementById('programName').value;
-          const status = document.getElementById('status').value;
-          const date = document.getElementById('attendanceDate').value;
-          const time_in = new Date().toLocaleTimeString('en-GB', { hour12: false }); // current time
+// Modal functions
+function openModal() {
+  document.getElementById('manualEntryModal').style.display = 'block';
+}
 
-          const formData = new FormData();
-          formData.append('action', 'add_attendance');
-          formData.append('student_name', student_name);
-          formData.append('program_id', program_id);
-          formData.append('status', status);
-          formData.append('date', date);
-          formData.append('time_in', time_in);
+function closeModal() {
+  document.getElementById('manualEntryModal').style.display = 'none';
+  document.getElementById('manualEntryForm').reset();
+}
 
-          fetch('api_attendance.php', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(res => {
-              if (res.success) {
-                alert('Attendance saved!');
-                closeModal();
-                loadAttendanceLogs();
-              } else {
-                alert('Failed to save attendance.');
-              }
-            });
-        });
+function closeBulkModal() {
+  document.getElementById('bulkAttendanceModal').style.display = 'none';
+}
 
-     
-  // Simulated attendance data (replace with backend data fetch later)
-  const attendanceLogs = [
-    { role: 'Student', status: 'Present' },
-    { role: 'Student', status: 'Late' },
-    { role: 'Student', status: 'Absent' },
-    { role: 'Student', status: 'Present' },
-    { role: 'Faculty', status: 'Present' },
-    { role: 'Faculty', status: 'Present' },
-    { role: 'Faculty', status: 'Absent' },
-  ];
+function openQuickCheckinModal() {
+  if (!currentSessionId) {
+    alert('Please select a session first');
+    return;
+  }
+  document.getElementById('quickCheckinModal').style.display = 'block';
+}
 
-  function calculateRoleInsights(logs) {
-    const roles = {
-      Student: { total: 0, present: 0, sessions: 0 },
-      Faculty: { total: 0, present: 0, sessions: 0 }
-    };
+function closeQuickCheckinModal() {
+  document.getElementById('quickCheckinModal').style.display = 'none';
+  document.getElementById('quickCheckinForm').reset();
+}
 
-    logs.forEach(log => {
-      const role = log.role;
-      if (roles[role]) {
-        roles[role].sessions++;
-        if (log.status !== 'Absent') {
-          roles[role].present++;
-        }
+// Session selection
+document.getElementById('sessionSelector').addEventListener('change', function() {
+  const sessionId = this.value;
+  currentSessionId = sessionId;
+
+  if (sessionId) {
+    loadSessionInfo(sessionId);
+    // Enable buttons
+    document.getElementById('bulkBtn').disabled = false;
+    document.getElementById('markAbsentBtn').disabled = false;
+    document.getElementById('quickCheckinBtn').disabled = false;
+  } else {
+    document.getElementById('sessionInfo').style.display = 'none';
+    // Disable buttons
+    document.getElementById('bulkBtn').disabled = true;
+    document.getElementById('markAbsentBtn').disabled = true;
+    document.getElementById('quickCheckinBtn').disabled = true;
+  }
+});
+
+// Load session information
+function loadSessionInfo(sessionId) {
+  fetch(`../backend/bulk_attendance_processor.php?action=initialize_session_attendance&session_id=${sessionId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const session = data.session;
+        document.getElementById('sessionTitle').textContent = session.program_name + ' - ' + session.session_title;
+        document.getElementById('sessionDate').textContent = new Date(session.session_date).toLocaleDateString();
+        document.getElementById('sessionTime').textContent = session.session_start + ' - ' + session.session_end;
+        document.getElementById('sessionLocation').textContent = session.location || 'TBD';
+        document.getElementById('enrolledCount').textContent = data.participants.length;
+        document.getElementById('recordedCount').textContent = data.participants.filter(p => p.current_status !== 'Not Recorded').length;
+        document.getElementById('sessionInfo').style.display = 'block';
       }
     });
+}
 
-    // Simulated total participant counts (unique people)
-    roles.Student.total = 30; // Example only
-    roles.Faculty.total = 5;
+// Load available sessions
+function loadSessions() {
+  fetch('../backend/bulk_attendance_processor.php?action=get_sessions_for_bulk')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const select = document.getElementById('sessionSelector');
+        select.innerHTML = '<option value="">Choose a session...</option>';
 
-    // Update DOM
-    document.getElementById('studentTotal').innerText = roles.Student.total;
-    document.getElementById('studentSessions').innerText = roles.Student.sessions;
-    document.getElementById('studentAvg').innerText =
-      roles.Student.sessions > 0 ? Math.round((roles.Student.present / roles.Student.sessions) * 100) + '%' : '0%';
+        data.sessions.forEach(session => {
+          const option = document.createElement('option');
+          option.value = session.id;
+          option.textContent = `${session.program_name} - ${session.session_title} (${session.session_date})`;
+          select.appendChild(option);
+        });
+      }
+    });
+}
 
-    document.getElementById('facultyTotal').innerText = roles.Faculty.total;
-    document.getElementById('facultySessions').innerText = roles.Faculty.sessions;
-    document.getElementById('facultyAvg').innerText =
-      roles.Faculty.sessions > 0 ? Math.round((roles.Faculty.present / roles.Faculty.sessions) * 100) + '%' : '0%';
-  }
+// Bulk attendance processing
+function initializeBulkAttendance() {
+  if (!currentSessionId) return;
 
-        // Run on page load
-        calculateRoleInsights(attendanceLogs);
+  document.getElementById('bulkAttendanceModal').style.display = 'block';
+  document.getElementById('bulkContent').innerHTML = '<p>Loading participants...</p>';
 
+  fetch('../backend/bulk_attendance_processor.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `action=initialize_session_attendance&session_id=${currentSessionId}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      let html = '<div style="max-height: 400px; overflow-y: auto;">';
+      html += '<table style="width: 100%; border-collapse: collapse;">';
+      html += '<thead><tr style="background: #f8f9fa;"><th>Name</th><th>Role</th><th>Current Status</th><th>Actions</th></tr></thead>';
+      html += '<tbody>';
 
-        function populateProgramsDropdown() {
+      data.participants.forEach(participant => {
+        const statusClass = participant.current_status === 'Present' ? 'success' :
+                           participant.current_status === 'Late' ? 'warning' :
+                           participant.current_status === 'Absent' ? 'danger' : 'secondary';
+
+        html += `<tr>
+          <td>${participant.name}</td>
+          <td>${participant.role}</td>
+          <td><span class="status-${statusClass}">${participant.current_status}</span></td>
+          <td>
+            <select onchange="updateParticipantStatus(${participant.attendance_id || 'null'}, '${participant.name}', this.value)" style="padding: 2px;">
+              <option value="">Change...</option>
+              <option value="Present">Present</option>
+              <option value="Late">Late</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </td>
+        </tr>`;
+      });
+
+      html += '</tbody></table></div>';
+      html += '<div style="margin-top: 1rem; text-align: center;">';
+      html += '<button class="btn" onclick="closeBulkModal()">Close</button>';
+      html += '</div>';
+
+      document.getElementById('bulkContent').innerHTML = html;
+    }
+  });
+}
+
+// Update participant status
+function updateParticipantStatus(attendanceId, studentName, newStatus) {
+  if (!newStatus) return;
+
+  const formData = new FormData();
+  formData.append('action', 'update_attendance_status');
+  formData.append('attendance_id', attendanceId);
+  formData.append('status', newStatus);
+
+  fetch('../backend/bulk_attendance_processor.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Status updated successfully');
+        initializeBulkAttendance(); // Refresh the modal
+        loadSessionInfo(currentSessionId); // Refresh session info
+      } else {
+        alert('Failed to update status: ' + (data.error || 'Unknown error'));
+      }
+    });
+}
+
+// Mark all absent
+function markAllAbsent() {
+  if (!currentSessionId) return;
+
+  if (!confirm('This will mark all enrolled participants who haven\'t checked in as absent. Continue?')) return;
+
+  const formData = new FormData();
+  formData.append('action', 'bulk_mark_absent');
+  formData.append('session_id', currentSessionId);
+
+  fetch('../backend/bulk_attendance_processor.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        loadSessionInfo(currentSessionId);
+        loadAttendanceLogs();
+      } else {
+        alert('Failed to mark absents: ' + (data.error || 'Unknown error'));
+      }
+    });
+}
+
+// Quick check-in
+document.getElementById('quickCheckinForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append('action', 'quick_checkin');
+  formData.append('session_id', currentSessionId);
+  formData.append('student_name', document.getElementById('quickStudentName').value);
+  formData.append('status', document.getElementById('quickStatus').value);
+  formData.append('time_in', document.getElementById('quickTimeIn').value || '');
+
+  fetch('../backend/bulk_attendance_processor.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        closeQuickCheckinModal();
+        loadSessionInfo(currentSessionId);
+        loadAttendanceLogs();
+      } else {
+        alert('Failed to check in: ' + (data.error || 'Unknown error'));
+      }
+    });
+});
+
+// Manual entry form
+document.getElementById('manualEntryForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append('action', 'add_attendance');
+  formData.append('student_name', document.getElementById('studentName').value);
+  formData.append('program_id', document.getElementById('programName').value);
+  formData.append('status', document.getElementById('status').value);
+  formData.append('date', document.getElementById('attendanceDate').value);
+  formData.append('time_in', new Date().toLocaleTimeString('en-GB', { hour12: false }));
+
+  fetch('api_attendance.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        alert('Attendance saved!');
+        closeModal();
+        loadAttendanceLogs();
+      } else {
+        alert('Failed to save attendance.');
+      }
+    });
+});
+
+// Load data on page load
+window.addEventListener('DOMContentLoaded', function() {
+  loadSessions();
+  populateProgramsDropdown();
+  loadAttendanceLogs();
+  loadProgramAttendanceOverview();
+});
+
+// Populate programs dropdown
+function populateProgramsDropdown() {
   fetch('api_attendance.php?action=get_programs')
     .then(res => res.json())
     .then(data => {
@@ -262,8 +479,8 @@
       }
     });
 }
-populateProgramsDropdown();
 
+// Load attendance logs
 function loadAttendanceLogs() {
   fetch('api_attendance.php?action=get_logs')
     .then(res => res.json())
@@ -286,9 +503,8 @@ function loadAttendanceLogs() {
       }
     });
 }
-loadAttendanceLogs();
 
-
+// Load program attendance overview
 function loadProgramAttendanceOverview() {
   fetch('api_attendance.php?action=get_program_summary')
     .then(res => res.json())
@@ -297,8 +513,6 @@ function loadProgramAttendanceOverview() {
         const tbody = document.getElementById('programOverviewBody');
         tbody.innerHTML = '';
         let totalRegistered = 0, totalPresent = 0, totalAbsent = 0, percentSum = 0, count = 0;
-        const labels = [];
-        const percents = [];
 
         data.data.forEach(row => {
           const highlight = row.attendance_percent < 75 ? ' style="background:#ffe5e5;"' : '';
@@ -317,8 +531,6 @@ function loadProgramAttendanceOverview() {
           totalAbsent += parseInt(row.absent);
           percentSum += parseInt(row.attendance_percent);
           count++;
-          labels.push(`${row.program_name} (${row.date})`);
-          percents.push(row.attendance_percent);
         });
 
         // Add totals row
@@ -336,26 +548,12 @@ function loadProgramAttendanceOverview() {
       }
     });
 }
-loadProgramAttendanceOverview();
 
-
-function animateValue(id, start, end, duration) {
-  const obj = document.getElementById(id);
-  let startTimestamp = null;
-  const step = (timestamp) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-    obj.innerText = Math.floor(progress * (end - start) + start);
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    } else {
-      obj.innerText = end;
-    }
-  };
-  window.requestAnimationFrame(step);
+// Export function placeholder
+function exportAttendanceSummary() {
+  alert('Export functionality would be implemented here');
 }
-// Usage: animateValue('studentTotal', 0, roles.Student.total, 800);
-      </script>
+    </script>
       
 </body>
 </html>

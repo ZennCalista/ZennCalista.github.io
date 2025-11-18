@@ -56,8 +56,26 @@ $programs = $conn->query("SELECT COUNT(*) as total FROM programs WHERE status='o
 // Certificates Issued (count all participants as issued)
 $certificates = $conn->query("SELECT COUNT(*) as total FROM participants")->fetch_assoc()['total'];
 
-// Attendance Rate (placeholder, since no attendance table)
-$attendance = 85; // Placeholder value
+// Attendance Rate (calculated from session-based attendance data)
+$attendance_result = $conn->query("
+    SELECT
+        COUNT(DISTINCT CASE WHEN a.status IN ('Present', 'Late') THEN CONCAT(a.session_id, '_', a.student_name) END) as present_count,
+        COUNT(DISTINCT CASE WHEN a.status = 'Absent' THEN CONCAT(a.session_id, '_', a.student_name) END) as absent_count,
+        COUNT(DISTINCT CONCAT(a.session_id, '_', a.student_name)) as total_records
+    FROM attendance a
+    JOIN program_sessions ps ON a.session_id = ps.id
+");
+$attendance_data = $attendance_result->fetch_assoc();
+
+// Calculate attendance rate based on session attendance
+if ($attendance_data['total_records'] > 0) {
+    $attendance = round(($attendance_data['present_count'] / $attendance_data['total_records']) * 100);
+} else {
+    // Fallback to old calculation if no session data
+    $old_result = $conn->query("SELECT COUNT(*) as total, SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) as present FROM attendance");
+    $old_data = $old_result->fetch_assoc();
+    $attendance = $old_data['total'] > 0 ? round(($old_data['present'] / $old_data['total']) * 100) : 0;
+}
 
 // Upcoming Sessions (use program start_date)
 $sessions = [];
