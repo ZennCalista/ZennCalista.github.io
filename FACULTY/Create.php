@@ -1219,7 +1219,8 @@ function submitForm() {
   
   fetch('create_program.php', {
     method: 'POST',
-    body: formData
+    body: formData,
+    credentials: 'same-origin'
   })
   .then(response => response.json())
   .then(data => {

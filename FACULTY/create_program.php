@@ -151,7 +151,7 @@ try {
     }
     
     $stmt->bind_param(
-        "ssssssiiissssssiii",
+        "ssssssiiissssssdiii",
         $program_name,
         $department,
         $start_date,
