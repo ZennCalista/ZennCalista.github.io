@@ -13,7 +13,7 @@
     <h2>eTracker Admin</h2>
     <a href="Dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
     <a href="User.html"><i class="fas fa-users"></i> User Management</a>
-    <a href="Programs.html"><i class="fas fa-calendar-alt"></i> Program Schedule</a>
+    <a href="Programs.html"><i class="fas fa-calendar-alt"></i> Project Management</a>
         <a href="ProjectEvaluation.html"><i class="fas fa-clipboard-check"></i> Project Evaluation</a>
 
     <a href="Attendance.html"><i class="fas fa-check-square"></i> Attendance Tracker</a>
@@ -293,6 +293,11 @@
         </div>
         <div class="modal-body">
           <div class="report-filters">
+            <div class="filter-group">
+              <label>
+                <input type="checkbox" id="all-dates-checkbox"> Include all dates
+              </label>
+            </div>
             <div class="filter-group">
               <label for="date-range">Date Range:</label>
               <input type="date" id="start-date" name="start-date">
@@ -606,6 +611,11 @@
       const currentDate = today.toISOString().split('T')[0];
       const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()).toISOString().split('T')[0];
       
+      // Reset checkbox and enable date inputs
+      document.getElementById('all-dates-checkbox').checked = false;
+      document.getElementById('start-date').disabled = false;
+      document.getElementById('end-date').disabled = false;
+      
       document.getElementById('start-date').value = lastMonth;
       document.getElementById('end-date').value = currentDate;
       
@@ -629,15 +639,28 @@
       document.getElementById('report-modal').setAttribute('data-report-type', reportType);
       
       // Load real report data
-      await loadReportData(reportType, lastMonth, currentDate);
+      await loadReportData(reportType, lastMonth, currentDate, 'all', 'all');
     }
 
-    async function loadReportData(reportType, startDate, endDate) {
+    async function loadReportData(reportType, startDate, endDate, programId = 'all', department = 'all') {
       const reportContent = document.getElementById('report-content');
       reportContent.innerHTML = '<div class="loading">Loading report data...</div>';
 
       try {
-        const response = await fetch(`api_reports.php?action=${reportType}&start_date=${startDate}&end_date=${endDate}`);
+        let url = `api_reports.php?action=${reportType}`;
+        
+        if (startDate && endDate) {
+          url += `&start_date=${startDate}&end_date=${endDate}`;
+        }
+        
+        if (programId && programId !== 'all') {
+          url += `&program_id=${programId}`;
+        }
+        if (department && department !== 'all') {
+          url += `&department=${department}`;
+        }
+        
+        const response = await fetch(url);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1067,22 +1090,25 @@
     }
 
     async function applyReportFilters() {
-      const startDate = document.getElementById('start-date').value;
-      const endDate = document.getElementById('end-date').value;
+      const allDatesChecked = document.getElementById('all-dates-checkbox').checked;
+      const startDate = allDatesChecked ? null : document.getElementById('start-date').value;
+      const endDate = allDatesChecked ? null : document.getElementById('end-date').value;
+      const programId = document.getElementById('program-filter').value;
+      const department = document.getElementById('department-filter-modal').value;
       const modal = document.getElementById('report-modal');
       const reportType = modal.getAttribute('data-report-type');
       
-      if (!startDate || !endDate) {
-        alert('Please select both start and end dates.');
+      if (!allDatesChecked && (!startDate || !endDate)) {
+        alert('Please select both start and end dates, or check "Include all dates".');
         return;
       }
       
-      if (new Date(startDate) > new Date(endDate)) {
+      if (!allDatesChecked && new Date(startDate) > new Date(endDate)) {
         alert('Start date must be before end date.');
         return;
       }
       
-      await loadReportData(reportType, startDate, endDate);
+      await loadReportData(reportType, startDate, endDate, programId, department);
     }
 
     function exportReport(format) {
@@ -1472,6 +1498,31 @@
       // Close modal when clicking overlay
       if (modalOverlay) {
         modalOverlay.addEventListener('click', closeReportModal);
+      }
+      
+      // Handle "All dates" checkbox
+      const allDatesCheckbox = document.getElementById('all-dates-checkbox');
+      const startDateInput = document.getElementById('start-date');
+      const endDateInput = document.getElementById('end-date');
+      
+      if (allDatesCheckbox) {
+        allDatesCheckbox.addEventListener('change', function() {
+          const isChecked = this.checked;
+          startDateInput.disabled = isChecked;
+          endDateInput.disabled = isChecked;
+          
+          if (isChecked) {
+            startDateInput.value = '';
+            endDateInput.value = '';
+          } else {
+            // Set default date range when unchecked
+            const today = new Date();
+            const currentDate = today.toISOString().split('T')[0];
+            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()).toISOString().split('T')[0];
+            startDateInput.value = lastMonth;
+            endDateInput.value = currentDate;
+          }
+        });
       }
     });
   </script>

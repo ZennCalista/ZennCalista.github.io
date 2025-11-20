@@ -99,7 +99,7 @@ try {
 
 function getDashboardStats($conn) {
     // Get total active programs
-    $programs_query = "SELECT COUNT(*) as total FROM programs WHERE status = 'ongoing'";
+    $programs_query = "SELECT COUNT(*) as total FROM programs WHERE status = 'ongoing' AND is_archived = 0";
     $programs_result = mysqli_query($conn, $programs_query);
     $total_programs = $programs_result ? mysqli_fetch_assoc($programs_result)['total'] : 0;
 
@@ -134,6 +134,11 @@ function getDashboardStats($conn) {
 }
 
 function getProgramParticipation($conn) {
+    $program_id = $_GET['program_id'] ?? null;
+    $department = $_GET['department'] ?? null;
+    $start_date = $_GET['start_date'] ?? null;
+    $end_date = $_GET['end_date'] ?? null;
+    
     $query = "SELECT 
         p.program_name,
         p.department,
@@ -147,10 +152,45 @@ function getProgramParticipation($conn) {
         ROUND((COUNT(CASE WHEN pt.status = 'accepted' THEN 1 END) * 100.0 / p.max_students), 1) as enrollment_rate
         FROM programs p
         LEFT JOIN participants pt ON p.id = pt.program_id
-        GROUP BY p.id, p.program_name, p.department, p.start_date, p.end_date, p.max_students
+        WHERE 1=1";
+    
+    $params = [];
+    $types = "";
+    
+    if ($program_id && $program_id !== 'all') {
+        $query .= " AND p.id = ?";
+        $params[] = $program_id;
+        $types .= "i";
+    }
+    
+    if ($department && $department !== 'all') {
+        $query .= " AND p.department = ?";
+        $params[] = $department;
+        $types .= "s";
+    }
+    
+    if ($start_date) {
+        $query .= " AND p.start_date >= ?";
+        $params[] = $start_date;
+        $types .= "s";
+    }
+    
+    if ($end_date) {
+        $query .= " AND p.end_date <= ?";
+        $params[] = $end_date;
+        $types .= "s";
+    }
+    
+    $query .= " GROUP BY p.id, p.program_name, p.department, p.start_date, p.end_date, p.max_students
         ORDER BY p.start_date DESC";
     
-    $result = mysqli_query($conn, $query);
+    $stmt = mysqli_prepare($conn, $query);
+    if ($params) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
     $data = [];
     
     if ($result) {
@@ -158,6 +198,8 @@ function getProgramParticipation($conn) {
             $data[] = $row;
         }
     }
+    
+    mysqli_stmt_close($stmt);
     
     return [
         'success' => true,
@@ -171,6 +213,11 @@ function getProgramParticipation($conn) {
 }
 
 function getAttendanceAnalysis($conn) {
+    $program_id = $_GET['program_id'] ?? null;
+    $department = $_GET['department'] ?? null;
+    $start_date = $_GET['start_date'] ?? null;
+    $end_date = $_GET['end_date'] ?? null;
+    
     $query = "SELECT 
         a.student_name,
         p.program_name,
@@ -182,10 +229,45 @@ function getAttendanceAnalysis($conn) {
         ROUND((COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0 / COUNT(a.id)), 1) as attendance_rate
         FROM attendance a
         JOIN programs p ON a.program_id = p.id
-        GROUP BY a.student_name, p.id, p.program_name, p.department
+        WHERE 1=1";
+    
+    $params = [];
+    $types = "";
+    
+    if ($program_id && $program_id !== 'all') {
+        $query .= " AND p.id = ?";
+        $params[] = $program_id;
+        $types .= "i";
+    }
+    
+    if ($department && $department !== 'all') {
+        $query .= " AND p.department = ?";
+        $params[] = $department;
+        $types .= "s";
+    }
+    
+    if ($start_date) {
+        $query .= " AND a.date >= ?";
+        $params[] = $start_date;
+        $types .= "s";
+    }
+    
+    if ($end_date) {
+        $query .= " AND a.date <= ?";
+        $params[] = $end_date;
+        $types .= "s";
+    }
+    
+    $query .= " GROUP BY a.student_name, p.id, p.program_name, p.department
         ORDER BY attendance_rate DESC, a.student_name";
     
-    $result = mysqli_query($conn, $query);
+    $stmt = mysqli_prepare($conn, $query);
+    if ($params) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
     $data = [];
     
     if ($result) {
@@ -193,6 +275,8 @@ function getAttendanceAnalysis($conn) {
             $data[] = $row;
         }
     }
+    
+    mysqli_stmt_close($stmt);
     
     // Calculate summary statistics
     $total_students = count($data);
@@ -212,6 +296,11 @@ function getAttendanceAnalysis($conn) {
 }
 
 function getStudentPerformance($conn) {
+    $program_id = $_GET['program_id'] ?? null;
+    $department = $_GET['department'] ?? null;
+    $start_date = $_GET['start_date'] ?? null;
+    $end_date = $_GET['end_date'] ?? null;
+    
     $query = "SELECT 
         pt.student_name,
         pt.student_email,
@@ -230,10 +319,44 @@ function getStudentPerformance($conn) {
         FROM participants pt
         JOIN programs p ON pt.program_id = p.id
         LEFT JOIN detailed_evaluations de ON pt.program_id = de.program_id AND pt.student_name = de.student_name
-        WHERE pt.status = 'accepted'
-        ORDER BY pt.enrollment_date DESC";
+        WHERE pt.status = 'accepted'";
     
-    $result = mysqli_query($conn, $query);
+    $params = [];
+    $types = "";
+    
+    if ($program_id && $program_id !== 'all') {
+        $query .= " AND p.id = ?";
+        $params[] = $program_id;
+        $types .= "i";
+    }
+    
+    if ($department && $department !== 'all') {
+        $query .= " AND p.department = ?";
+        $params[] = $department;
+        $types .= "s";
+    }
+    
+    if ($start_date) {
+        $query .= " AND pt.enrollment_date >= ?";
+        $params[] = $start_date;
+        $types .= "s";
+    }
+    
+    if ($end_date) {
+        $query .= " AND pt.enrollment_date <= ?";
+        $params[] = $end_date;
+        $types .= "s";
+    }
+    
+    $query .= " ORDER BY pt.enrollment_date DESC";
+    
+    $stmt = mysqli_prepare($conn, $query);
+    if ($params) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
     $data = [];
     
     if ($result) {
@@ -241,6 +364,8 @@ function getStudentPerformance($conn) {
             $data[] = $row;
         }
     }
+    
+    mysqli_stmt_close($stmt);
     
     return [
         'success' => true,
@@ -254,6 +379,11 @@ function getStudentPerformance($conn) {
 }
 
 function getEvaluationFeedback($conn) {
+    $program_id = $_GET['program_id'] ?? null;
+    $department = $_GET['department'] ?? null;
+    $start_date = $_GET['start_date'] ?? null;
+    $end_date = $_GET['end_date'] ?? null;
+    
     $query = "SELECT 
         de.student_name,
         p.program_name,
@@ -269,9 +399,44 @@ function getEvaluationFeedback($conn) {
         ROUND((de.content + de.facilitators + de.relevance + de.organization + de.experience) / 5.0, 1) as overall_rating
         FROM detailed_evaluations de
         JOIN programs p ON de.program_id = p.id
-        ORDER BY de.eval_date DESC";
+        WHERE 1=1";
     
-    $result = mysqli_query($conn, $query);
+    $params = [];
+    $types = "";
+    
+    if ($program_id && $program_id !== 'all') {
+        $query .= " AND p.id = ?";
+        $params[] = $program_id;
+        $types .= "i";
+    }
+    
+    if ($department && $department !== 'all') {
+        $query .= " AND p.department = ?";
+        $params[] = $department;
+        $types .= "s";
+    }
+    
+    if ($start_date) {
+        $query .= " AND de.eval_date >= ?";
+        $params[] = $start_date;
+        $types .= "s";
+    }
+    
+    if ($end_date) {
+        $query .= " AND de.eval_date <= ?";
+        $params[] = $end_date;
+        $types .= "s";
+    }
+    
+    $query .= " ORDER BY de.eval_date DESC";
+    
+    $stmt = mysqli_prepare($conn, $query);
+    if ($params) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
     $data = [];
     
     if ($result) {
@@ -279,6 +444,8 @@ function getEvaluationFeedback($conn) {
             $data[] = $row;
         }
     }
+    
+    mysqli_stmt_close($stmt);
     
     // Calculate summary statistics
     $total_evaluations = count($data);
@@ -305,6 +472,11 @@ function getEvaluationFeedback($conn) {
 }
 
 function getProgramCompletion($conn) {
+    $program_id = $_GET['program_id'] ?? null;
+    $department = $_GET['department'] ?? null;
+    $start_date = $_GET['start_date'] ?? null;
+    $end_date = $_GET['end_date'] ?? null;
+    
     $query = "SELECT 
         p.program_name,
         p.department,
@@ -317,10 +489,45 @@ function getProgramCompletion($conn) {
         ROUND((COUNT(CASE WHEN pt.certificate_issued = 1 THEN 1 END) * 100.0 / COUNT(pt.id)), 1) as completion_rate
         FROM programs p
         LEFT JOIN participants pt ON p.id = pt.program_id AND pt.status = 'accepted'
-        GROUP BY p.id, p.program_name, p.department, p.start_date, p.end_date, p.status
+        WHERE 1=1";
+    
+    $params = [];
+    $types = "";
+    
+    if ($program_id && $program_id !== 'all') {
+        $query .= " AND p.id = ?";
+        $params[] = $program_id;
+        $types .= "i";
+    }
+    
+    if ($department && $department !== 'all') {
+        $query .= " AND p.department = ?";
+        $params[] = $department;
+        $types .= "s";
+    }
+    
+    if ($start_date) {
+        $query .= " AND p.start_date >= ?";
+        $params[] = $start_date;
+        $types .= "s";
+    }
+    
+    if ($end_date) {
+        $query .= " AND p.end_date <= ?";
+        $params[] = $end_date;
+        $types .= "s";
+    }
+    
+    $query .= " GROUP BY p.id, p.program_name, p.department, p.start_date, p.end_date, p.status
         ORDER BY p.start_date DESC";
     
-    $result = mysqli_query($conn, $query);
+    $stmt = mysqli_prepare($conn, $query);
+    if ($params) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
     $data = [];
     
     if ($result) {
@@ -328,6 +535,8 @@ function getProgramCompletion($conn) {
             $data[] = $row;
         }
     }
+    
+    mysqli_stmt_close($stmt);
     
     return [
         'success' => true,
@@ -342,6 +551,11 @@ function getProgramCompletion($conn) {
 }
 
 function getFacultyPerformance($conn) {
+    $program_id = $_GET['program_id'] ?? null;
+    $department = $_GET['department'] ?? null;
+    $start_date = $_GET['start_date'] ?? null;
+    $end_date = $_GET['end_date'] ?? null;
+    
     $query = "SELECT 
         f.faculty_name,
         f.department,
@@ -355,10 +569,45 @@ function getFacultyPerformance($conn) {
         LEFT JOIN programs p ON f.id = p.faculty_id
         LEFT JOIN participants pt ON p.id = pt.program_id AND pt.status = 'accepted'
         LEFT JOIN detailed_evaluations de ON p.id = de.program_id
-        GROUP BY f.id, f.faculty_name, f.department, f.position
+        WHERE 1=1";
+    
+    $params = [];
+    $types = "";
+    
+    if ($program_id && $program_id !== 'all') {
+        $query .= " AND p.id = ?";
+        $params[] = $program_id;
+        $types .= "i";
+    }
+    
+    if ($department && $department !== 'all') {
+        $query .= " AND f.department = ?";
+        $params[] = $department;
+        $types .= "s";
+    }
+    
+    if ($start_date) {
+        $query .= " AND p.start_date >= ?";
+        $params[] = $start_date;
+        $types .= "s";
+    }
+    
+    if ($end_date) {
+        $query .= " AND p.end_date <= ?";
+        $params[] = $end_date;
+        $types .= "s";
+    }
+    
+    $query .= " GROUP BY f.id, f.faculty_name, f.department, f.position
         ORDER BY programs_managed DESC, overall_rating DESC";
     
-    $result = mysqli_query($conn, $query);
+    $stmt = mysqli_prepare($conn, $query);
+    if ($params) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
     $data = [];
     
     if ($result) {
@@ -366,6 +615,8 @@ function getFacultyPerformance($conn) {
             $data[] = $row;
         }
     }
+    
+    mysqli_stmt_close($stmt);
     
     return [
         'success' => true,
