@@ -177,7 +177,15 @@
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             
             const responseText = await res.text();
-            docs = JSON.parse(responseText);
+            const responseData = JSON.parse(responseText);
+            
+            // Handle new response format with success/data structure
+            if (responseData.success && responseData.data) {
+              docs = responseData.data;
+            } else {
+              // Fallback for old format (direct array)
+              docs = Array.isArray(responseData) ? responseData : [];
+            }
             break;
           } catch (error) {
             lastError = error;

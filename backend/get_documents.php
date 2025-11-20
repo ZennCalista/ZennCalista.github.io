@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-include '../FACULTY/db.php';
+include 'db.php';
 
 if (!$conn) {
     http_response_code(500);
@@ -23,7 +23,7 @@ if (!$conn) {
 }
 
 try {
-    $sql = "SELECT * FROM document_uploads ORDER BY upload_date DESC";
+    $sql = "SELECT id, program_id, faculty_id, document_type, file_path, original_filename, upload_date, status, uploaded_by, created_at FROM document_uploads ORDER BY upload_date DESC";
     $res = $conn->query($sql);
     
     if (!$res) {
@@ -35,10 +35,9 @@ try {
         $docs[] = $row;
     }
     
-    echo json_encode($docs);
+    echo json_encode(['success' => true, 'data' => $docs]);
     
 } catch (Exception $e) {
-    error_log("Error in get_documents.php: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Failed to fetch documents: ' . $e->getMessage()]);
 }
