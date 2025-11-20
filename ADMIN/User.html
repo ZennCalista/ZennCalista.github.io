@@ -115,9 +115,6 @@
             <button class="tab-btn active" onclick="switchTab('students')" id="students-tab">
               <i class="fas fa-user-graduate"></i> Students
             </button>
-            <button class="tab-btn" onclick="switchTab('non_acad')" id="non_acad-tab">
-              <i class="fas fa-users"></i> Non-Acad
-            </button>
             <button class="tab-btn" onclick="switchTab('faculty')" id="faculty-tab">
               <i class="fas fa-chalkboard-teacher"></i> Faculty
             </button>
@@ -127,13 +124,6 @@
           <div id="students-content" class="tab-content active">
             <div class="users-grid" id="students-grid">
               <!-- Students will be loaded here -->
-            </div>
-          </div>
-
-          <!-- Non-Acad Section -->
-          <div id="non_acad-content" class="tab-content">
-            <div class="users-grid" id="non_acad-grid">
-              <!-- Non-Acad users will be loaded here -->
             </div>
           </div>
 
@@ -571,23 +561,16 @@ function displayUsers() {
     students.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-user-graduate"></i><p>No students found</p></div>';
 
-  // Display non_acad
-  const nonAcadGrid = document.getElementById('non_acad-grid');
-  nonAcadGrid.innerHTML = nonAcad.length > 0 ?
-    nonAcad.map(user => createUserCard(user)).join('') :
-    '<div class="empty-state"><i class="fas fa-users"></i><p>No non-academic users found</p></div>';
-
   // Display faculty
   const facultyGrid = document.getElementById('faculty-grid');
   facultyGrid.innerHTML = faculty.length > 0 ?
     faculty.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No faculty found</p></div>';
 
-  console.log('DOM updated - students shown:', students.length, 'non_acad shown:', nonAcad.length, 'faculty shown:', faculty.length);
+  console.log('DOM updated - students shown:', students.length, 'faculty shown:', faculty.length);
 
   // Show/hide no results message
-  const currentTabUsers = currentTab === 'students' ? students : 
-                         currentTab === 'non_acad' ? nonAcad : faculty;
+  const currentTabUsers = currentTab === 'students' ? students : faculty;
   const hasResults = currentTabUsers.length > 0;
   document.getElementById('no-results').classList.toggle('hidden', hasResults);
 

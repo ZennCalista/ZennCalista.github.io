@@ -46,10 +46,6 @@
         <div class="card-value" id="stat-students">-</div>
       </div>
       <div class="card">
-        <div class="card-title">Non-Acad Users</div>
-        <div class="card-value" id="stat-non-acad">-</div>
-      </div>
-      <div class="card">
         <div class="card-title">Faculty Members</div>
         <div class="card-value" id="stat-faculty">-</div>
       </div>
@@ -128,7 +124,6 @@ async function loadDashboardStats() {
     const stats = await res.json();
 
     document.getElementById('stat-students').innerText = stats.students || 0;
-    document.getElementById('stat-non-acad').innerText = stats.non_acad || 0;
     document.getElementById('stat-faculty').innerText = stats.faculty || 0;
     document.getElementById('stat-programs').innerText = stats.programs || 0;
     document.getElementById('stat-certificates').innerText = stats.certificates || 0;
@@ -277,7 +272,6 @@ async function loadDashboardStats() {
     console.error('Error loading dashboard stats:', error);
     // Optionally show error in UI
     document.getElementById('stat-students').innerText = 'Error';
-    document.getElementById('stat-non-acad').innerText = 'Error';
     document.getElementById('stat-faculty').innerText = 'Error';
     document.getElementById('stat-programs').innerText = 'Error';
     document.getElementById('stat-certificates').innerText = 'Error';
