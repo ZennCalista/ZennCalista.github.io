@@ -66,17 +66,17 @@
           <h3>Program Trends</h3>
           <canvas id="programTrendsChart" height="180"></canvas>
         </div> -->
-        <div class="panel" style="margin-bottom:1.5rem;">
+        <div class="panel uploaded-programs" style="margin-bottom:1.5rem;">
           <h3>Uploaded Programs</h3>
-          <div style="display: flex; gap: 1rem; align-items: center;">
+          <div class="charts-container" style="display: flex; gap: 1rem; align-items: center;">
             <div style="flex: 1;">
               <h4 style="text-align: center; margin-bottom: 0.5rem;">Programs by Department</h4>
-              <canvas id="programsByDeptChart" width="120" height="120" style="width: 120px; height: 120px; display: block; margin: 0 auto;"></canvas>
+              <canvas id="programsByDeptChart" width="120" height="120" style="width: 120px; height: 120px; display: block; margin: 0 auto; position: relative; z-index: 2;"></canvas>
               <p style="text-align:center;font-weight:bold; margin-top: 0.5rem;" id="totalProgramsLabel">-- Programs</p>
             </div>
             <div style="flex: 1;">
-              <h4 style="text-align: center; margin-bottom: 0.5rem;">Top 3 Departments</h4>
-              <canvas id="topDeptsChart" height="120"></canvas>
+              <h4 style="text-align: center; margin-bottom: 0.5rem;"></h4>
+              <canvas id="topDeptsChart" height="120" style="position: relative; z-index: 2;"></canvas>
             </div>
           </div>
         </div>

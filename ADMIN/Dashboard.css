@@ -329,3 +329,13 @@
       padding: 1rem 0.7rem;
     }
   }
+
+/* Scoped: allow Chart.js tooltips to overflow only for the Uploaded Programs panel */
+.panel.uploaded-programs,
+.panel.uploaded-programs .charts-container {
+  overflow: visible;
+}
+.panel.uploaded-programs canvas {
+  position: relative;
+  z-index: 9999;
+}
