@@ -192,6 +192,35 @@ body {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+/* Stabilize layout and prevent long filenames from breaking the table */
+.documents-table {
+  table-layout: fixed;
+}
+.documents-table th,
+.documents-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.documents-table td.document-cell {
+  max-width: 48%;
+}
+.document-info strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
+}
+.document-info small {
+  display: block;
+  color: #6b7280;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .documents-table th {
   background: #1B472B;
   color: white;

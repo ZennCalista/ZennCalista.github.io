@@ -84,6 +84,32 @@
       transform: translateY(-1px) !important;
       box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
     }
+    /* Search section styles - match existing filter card look */
+    .search-section { margin: 18px 0; }
+    .search-container {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .search-container input[type="search"] {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e8ecec;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-container input[type="search"]:focus {
+      box-shadow: 0 4px 12px rgba(17,77,46,0.06);
+      border-color: #d1e9df;
+    }
+    .search-container .filter-btn.primary { padding: 10px 14px; }
+    .search-container .filter-btn.secondary { padding: 10px 12px; background: #f7f8f9; border: 1px solid #ececec; }
   </style>
 </head>
 <body>
@@ -133,6 +159,16 @@
         </div>
         
         <div class="filter-group">
+          <label for="programFilter">
+            <i class="fas fa-calendar"></i>
+            Program
+          </label>
+          <select id="programFilter" name="programFilter">
+            <option value="">-- All Programs --</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
           <label for="statusFilter">
             <i class="fas fa-check-circle"></i>
             Status
@@ -168,6 +204,14 @@
       </div>
     </section>
 
+    <section class="search-section">
+      <div class="search-container">
+        <input type="search" id="searchInput" placeholder="Search documents, filenames or faculty ID..." />
+        <button id="searchBtn" type="button" class="filter-btn primary"><i class="fas fa-search"></i> Search</button>
+        <button id="clearSearchBtn" type="button" class="filter-btn secondary">Clear</button>
+      </div>
+    </section>
+
     <section class="documents-section">
       <div class="section-header">
         <h2><i class="fas fa-file-alt"></i> Submitted Documents</h2>
@@ -185,7 +229,6 @@
               <th>DOCUMENT</th>
               <th>TYPE</th>
               <th>FACULTY</th>
-              <th>PROGRAM</th>
               <th>UPLOAD DATE</th>
               <th>STATUS</th>
               <th>ACTIONS</th>
@@ -193,7 +236,7 @@
           </thead>
           <tbody id="documentsTableBody">
             <tr>
-              <td colspan="7" class="loading">
+              <td colspan="6" class="loading">
                 <i class="fas fa-spinner fa-spin"></i> Loading documents...
               </td>
             </tr>
@@ -256,6 +299,17 @@
   <script>
     let allDocuments = [];
     let currentDocumentId = null;
+    let allPrograms = [];
+    let programsMap = {};
+
+    // Simple debounce utility for live search
+    function debounce(fn, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
 
     async function fetchDocuments() {
       try {
@@ -305,6 +359,45 @@
       }
     }
 
+    async function fetchPrograms() {
+      try {
+        // Request programs including archived ones so admin can filter by them too
+        const res = await fetch('../backend/get_programs.php?include_archived=1');
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const raw = await res.json();
+        // Handle both formats: { success: true, data: [...] } or direct array
+        const data = (raw && raw.success && Array.isArray(raw.data)) ? raw.data : (Array.isArray(raw) ? raw : []);
+        // Optional: sort programs alphabetically by program_name
+        data.sort((a, b) => {
+          const aName = (a.program_name || '').toString().toLowerCase();
+          const bName = (b.program_name || '').toString().toLowerCase();
+          if (aName < bName) return -1;
+          if (aName > bName) return 1;
+          return 0;
+        });
+
+        allPrograms = data;
+        programsMap = {};
+        allPrograms.forEach(program => {
+          programsMap[program.id] = program.program_name || `Program ${program.id}`;
+        });
+        populateProgramFilter();
+      } catch (error) {
+        console.error('Error fetching programs:', error);
+      }
+    }
+
+    function populateProgramFilter() {
+      const select = document.getElementById('programFilter');
+      select.innerHTML = '<option value="">-- All Programs --</option>';
+      allPrograms.forEach(program => {
+        const option = document.createElement('option');
+        option.value = program.id;
+        option.textContent = program.program_name || `Program ${program.id}`;
+        select.appendChild(option);
+      });
+    }
+
     function renderDocumentsTable(docs) {
       const tbody = document.getElementById('documentsTableBody');
       tbody.innerHTML = '';
@@ -312,7 +405,7 @@
       if (!docs || docs.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" class="no-data">
+            <td colspan="6" class="no-data">
               <i class="fas fa-folder-open"></i>
               <p>No documents found</p>
             </td>
@@ -344,12 +437,6 @@
             <div class="faculty-info">
               <i class="fas fa-user"></i>
               Faculty ID: ${doc.faculty_id}
-            </div>
-          </td>
-          <td>
-            <div class="program-info">
-              <i class="fas fa-calendar"></i>
-              Program ID: ${doc.program_id}
             </div>
           </td>
           <td>${uploadDate}</td>
@@ -412,6 +499,9 @@
       const typeFilter = document.getElementById('docTypeFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const dateFilter = document.getElementById('dateFilter').value;
+      const programFilter = document.getElementById('programFilter').value;
+      const searchInputEl = document.getElementById('searchInput');
+      const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim().toLowerCase() : '';
       
       let filteredDocs = allDocuments.filter(doc => {
         if (typeFilter && doc.document_type !== typeFilter) return false;
@@ -420,6 +510,24 @@
           const docDate = new Date(doc.upload_date).toDateString();
           const filterDate = new Date(dateFilter).toDateString();
           if (docDate !== filterDate) return false;
+        }
+        if (programFilter && doc.program_id != programFilter) return false;
+        // Apply search term (combine with other filters)
+        if (searchTerm) {
+          const needle = searchTerm;
+          const filename = (doc.original_filename || '').toString().toLowerCase();
+          const path = (doc.file_path || '').toString().toLowerCase();
+          const faculty = (doc.faculty_id || '').toString().toLowerCase();
+          const idStr = (doc.id || '').toString().toLowerCase();
+          const programName = programsMap && programsMap[doc.program_id] ? programsMap[doc.program_id].toString().toLowerCase() : '';
+
+          if (!(
+            filename.includes(needle) ||
+            path.includes(needle) ||
+            faculty.includes(needle) ||
+            idStr.includes(needle) ||
+            programName.includes(needle)
+          )) return false;
         }
         return true;
       });
@@ -431,6 +539,7 @@
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
+      document.getElementById('programFilter').value = '';
       renderDocumentsTable(allDocuments);
     }
 
@@ -664,8 +773,38 @@
         viewModal.style.display = 'none';
       }
       
-      // Load documents
+      // Load programs first so program titles are available for search/filtering
+      await fetchPrograms();
+      // Then load documents (so search by program title works immediately)
       await loadDocuments();
+
+      // Wire up search controls
+      try {
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+        if (searchBtn) searchBtn.addEventListener('click', () => { applyFilters(); });
+        if (clearSearchBtn) clearSearchBtn.addEventListener('click', () => { 
+          if (searchInput) searchInput.value = '';
+          // clear filters and search
+          clearFilters();
+        });
+        if (searchInput) {
+          // Pressing Enter in the search box triggers the search
+          searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              applyFilters();
+            }
+          });
+          // Live debounced search while typing
+          const debouncedApply = debounce(applyFilters, 300);
+          searchInput.addEventListener('input', debouncedApply);
+        }
+      } catch (e) {
+        console.warn('Search wiring failed', e);
+      }
     });
 
     // Close modal when clicking outside
