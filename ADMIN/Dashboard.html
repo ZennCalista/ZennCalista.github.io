@@ -71,12 +71,12 @@
           <div class="charts-container" style="display: flex; gap: 1rem; align-items: center;">
             <div style="flex: 1;">
               <h4 style="text-align: center; margin-bottom: 0.5rem;">Programs by Department</h4>
-              <canvas id="programsByDeptChart" width="120" height="120" style="width: 120px; height: 120px; display: block; margin: 0 auto; position: relative; z-index: 2;"></canvas>
-              <p style="text-align:center;font-weight:bold; margin-top: 0.5rem;" id="totalProgramsLabel">-- Programs</p>
+              <canvas id="topDeptsChart" height="120" style="position: relative; z-index: 2;"></canvas>
             </div>
             <div style="flex: 1;">
               <h4 style="text-align: center; margin-bottom: 0.5rem;"></h4>
-              <canvas id="topDeptsChart" height="120" style="position: relative; z-index: 2;"></canvas>
+              <canvas id="programsByDeptChart" width="200" height="200" style="width: 200px; height: 200px; display: block; margin: 0 auto; position: relative; z-index: 2;"></canvas>
+              <p style="text-align:center;font-weight:bold; margin-top: 0.5rem;" id="totalProgramsLabel">-- Programs</p>
             </div>
           </div>
         </div>
@@ -183,17 +183,76 @@ async function loadDashboardStats() {
         '#0891B2'  // Cyan
       ];
 
-      // Calculate total programs
-      const totalPrograms = deptData.reduce((sum, count) => sum + count, 0);
-      document.getElementById('totalProgramsLabel').innerText = totalPrograms + " Programs";
+        // Calculate total programs (departments) and determine archived count
+        const deptSum = deptData.reduce((sum, count) => sum + count, 0);
+        // Prefer explicit archived count from backend, otherwise derive a fallback
+        const archivedCount = (typeof stats.archivedPrograms === 'number')
+          ? stats.archivedPrograms
+          : Math.max(0, (stats.programs || 0) - deptSum);
+        const totalPrograms = deptSum + archivedCount;
+        document.getElementById('totalProgramsLabel').innerText = totalPrograms + " Programs";
+
+      // External tooltip handler so long labels can display outside the canvas
+      function externalTooltipHandlerDept(context) {
+        // Tooltip Element
+        const tooltip = context.tooltip;
+        const chart = context.chart;
+        const parent = chart.canvas.parentNode;
+
+        let tooltipEl = parent.querySelector('.chartjs-tooltip');
+        if (!tooltipEl) {
+          tooltipEl = document.createElement('div');
+          tooltipEl.className = 'chartjs-tooltip';
+          tooltipEl.style.position = 'absolute';
+          tooltipEl.style.pointerEvents = 'none';
+          tooltipEl.style.background = 'rgba(0,0,0,0.85)';
+          tooltipEl.style.color = '#fff';
+          tooltipEl.style.padding = '6px 8px';
+          tooltipEl.style.borderRadius = '4px';
+          tooltipEl.style.fontSize = '13px';
+          tooltipEl.style.whiteSpace = 'nowrap';
+          tooltipEl.style.transform = 'translate(-50%, -100%)';
+          tooltipEl.style.zIndex = 10000;
+          parent.style.position = parent.style.position || 'relative';
+          parent.appendChild(tooltipEl);
+        }
+
+        // Hide if no tooltip
+        if (!tooltip || tooltip.opacity === 0) {
+          tooltipEl.style.opacity = '0';
+          return;
+        }
+
+        // Build tooltip content
+        const titleLines = tooltip.title || [];
+        const bodyLines = tooltip.body ? tooltip.body.map(b => b.lines).flat() : [];
+        const lines = titleLines.concat(bodyLines);
+        tooltipEl.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
+
+        // Position the tooltip
+        const canvasRect = chart.canvas.getBoundingClientRect();
+        const caretX = tooltip.caretX != null ? tooltip.caretX : (canvasRect.width / 2);
+        const caretY = tooltip.caretY != null ? tooltip.caretY : (canvasRect.height / 2);
+
+        // Place tooltip relative to parent
+        tooltipEl.style.left = (caretX) + 'px';
+        tooltipEl.style.top = (caretY - 8) + 'px';
+        tooltipEl.style.opacity = '1';
+      }
+
+      // Append an "archived" slice (gray) so archived programs are counted
+      const archivedLabel = 'archived';
+      const deptLabelsPlus = deptLabels.concat(archivedLabel);
+      const deptDataPlus = deptData.concat(archivedCount);
+      const deptColorsPlus = deptColors.concat('#6b7280'); // gray for archived
 
       new Chart(ctxDept, {
         type: 'doughnut',
         data: {
-          labels: deptLabels,
+          labels: deptLabelsPlus,
           datasets: [{
-            data: deptData,
-            backgroundColor: deptColors.slice(0, deptLabels.length),
+            data: deptDataPlus,
+            backgroundColor: deptLabelsPlus.map((lbl, i) => lbl === archivedLabel ? '#6b7280' : deptColors[i % deptColors.length]),
             borderWidth: 0
           }]
         },
@@ -201,41 +260,41 @@ async function loadDashboardStats() {
           cutout: '75%',
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: true }
+            tooltip: { enabled: false, external: externalTooltipHandlerDept }
           }
         }
       });
+
+      // Also render the bar chart here so both charts share the same colors/order
+      try {
+        const ctxTop = document.getElementById('topDeptsChart').getContext('2d');
+        const barLabels = deptLabelsPlus.slice();
+        const barData = deptDataPlus.slice();
+        new Chart(ctxTop, {
+          type: 'bar',
+          data: {
+            labels: barLabels,
+            datasets: [{
+              label: 'Programs',
+              data: barData,
+              backgroundColor: barLabels.map((lbl, i) => lbl === archivedLabel ? '#6b7280' : deptColors[i % deptColors.length])
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { display: false }, grid: { display: false } },
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      } catch (e) {
+        console.warn('Could not render topDeptsChart:', e);
+      }
     }
 
-    // Top 4 Departments (Bar Chart)
-    const ctxTop = document.getElementById('topDeptsChart').getContext('2d');
-    const topLabels = stats.topDepts?.labels || [];
-    const topData = stats.topDepts?.data || [];
-    if (topLabels.length > 0 && topData.length > 0) {
-      // Use the same color palette as the donut chart
-      const barColors = [
-        '#1B472B', // Dark green
-        '#2563EB', // Blue
-        '#DC2626'  // Red
-      ];
-
-      new Chart(ctxTop, {
-        type: 'bar',
-        data: {
-          labels: topLabels,
-          datasets: [{
-            label: 'Programs',
-            data: topData,
-            backgroundColor: barColors.slice(0, topLabels.length)
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
+    // (Bar chart is rendered alongside the donut when department data exists)
 
     // Program Trends Chart
     /*

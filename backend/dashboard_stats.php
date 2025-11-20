@@ -116,6 +116,12 @@ while ($row = $topRes->fetch_assoc()) {
     $topDepts['data'][] = (int)$row['count'];
 }
 
+// Archived programs count
+$archivedPrograms = $conn->query("SELECT COUNT(*) as total FROM programs WHERE is_archived = 1")->fetch_assoc()['total'];
+
+// Total programs (including archived)
+$totalPrograms = $conn->query("SELECT COUNT(*) as total FROM programs")->fetch_assoc()['total'];
+
 echo json_encode([
     'students' => (int)$students,
     'non_acad' => (int)$non_acad,
@@ -128,4 +134,6 @@ echo json_encode([
     'programTrends' => $trends,
     'programsByDept' => $deptPrograms,
     'topDepts' => $topDepts
+    ,'archivedPrograms' => (int)$archivedPrograms
+    ,'totalPrograms' => (int)$totalPrograms
 ]);
