@@ -313,10 +313,10 @@
               <div class="form-title text-green-800">${roleTitle}</div>
               <input type="text" id="contact-no" placeholder="Contact No." class="form-input" />
               <input type="text" id="emergency-contact" placeholder="Emergency Contact" class="form-input" />
-              <div class="flex items-center my-4">
+              <!-- <div class="flex items-center my-4">
                 <input type="checkbox" id="terms-student" class="mr-2 accent-green-800 transform scale-125" />
                 <label for="terms-student" class="text-sm text-gray-600">I have read and agree to the Terms and Condition</label>
-              </div>
+              </div> -->
               <div class="flex gap-4">
                 <button class="button" onclick="goBackToRoleSelection()" style="flex: 1; background-color: #6b7280;">BACK</button>
                 <button class="button" onclick="submitRoleSpecificForm()" style="flex: 2;">REGISTER</button>
@@ -331,10 +331,10 @@
                 <option value="" disabled selected>Loading departments...</option>
               </select>
               <input type="text" id="position" placeholder="Position" class="form-input" />
-              <div class="flex items-center my-4">
+              <!-- <div class="flex items-center my-4">
                 <input type="checkbox" id="terms-faculty" class="mr-2 accent-green-800 transform scale-125" />
                 <label for="terms-faculty" class="text-sm text-gray-600">I have read and agree to the Terms and Condition</label>
-              </div>
+              </div> -->
               <div class="button" onclick="submitRoleSpecificForm()">REGISTER</div>
             </div>
           `;
@@ -363,7 +363,7 @@
       if (userData.role === 'student' || userData.role === 'non_acad') {
         const contactNo = document.getElementById('contact-no').value;
         const emergencyContact = document.getElementById('emergency-contact').value;
-        const termsChecked = document.getElementById('terms-student').checked;
+        // const termsChecked = document.getElementById('terms-student').checked;
 
         // Validate required fields
         if (!contactNo || !emergencyContact) {
@@ -371,17 +371,17 @@
           return;
         }
 
-        if (!termsChecked) {
-          alert("Please agree to the Terms and Conditions.");
-          return;
-        }
+        // if (!termsChecked) {
+        //   alert("Please agree to the Terms and Conditions.");
+        //   return;
+        // }
 
         data.contact_no = contactNo;
         data.emergency_contact = emergencyContact;
       } else if (userData.role === 'faculty') {
         const department = document.getElementById('department').value;
         const position = document.getElementById('position').value;
-        const termsChecked = document.getElementById('terms-faculty').checked;
+        // const termsChecked = document.getElementById('terms-faculty').checked;
 
         // Validate required fields
         if (!department || !position) {
@@ -389,10 +389,10 @@
           return;
         }
 
-        if (!termsChecked) {
-          alert("Please agree to the Terms and Conditions.");
-          return;
-        }
+        // if (!termsChecked) {
+        //   alert("Please agree to the Terms and Conditions.");
+        //   return;
+        // }
 
         data.department = department;
         data.position = position;
