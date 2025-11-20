@@ -66,9 +66,23 @@
     <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
       <!-- Left Column -->
       <div style="flex:2; min-width:320px;">
-        <div class="panel" style="margin-bottom:1.5rem;">
+        <!-- <div class="panel" style="margin-bottom:1.5rem;">
           <h3>Program Trends</h3>
           <canvas id="programTrendsChart" height="180"></canvas>
+        </div> -->
+        <div class="panel" style="margin-bottom:1.5rem;">
+          <h3>Uploaded Programs</h3>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <div style="flex: 1;">
+              <h4 style="text-align: center; margin-bottom: 0.5rem;">Programs by Department</h4>
+              <canvas id="programsByDeptChart" width="120" height="120" style="width: 120px; height: 120px; display: block; margin: 0 auto;"></canvas>
+              <p style="text-align:center;font-weight:bold; margin-top: 0.5rem;" id="totalProgramsLabel">-- Programs</p>
+            </div>
+            <div style="flex: 1;">
+              <h4 style="text-align: center; margin-bottom: 0.5rem;">Top 3 Departments</h4>
+              <canvas id="topDeptsChart" height="120"></canvas>
+            </div>
+          </div>
         </div>
         <div class="panel" style="margin-bottom:1.5rem;">
           <h3>Upcoming Sessions</h3>
@@ -155,7 +169,81 @@ async function loadDashboardStats() {
     document.getElementById('feedbackHighlight').innerText =
       (stats.feedback && stats.feedback.length) ? stats.feedback[Math.floor(Math.random() * stats.feedback.length)] : 'No feedback yet.';
 
+    // Programs by Department (Donut Chart)
+    const ctxDept = document.getElementById('programsByDeptChart').getContext('2d');
+    const deptLabels = stats.programsByDept?.labels || [];
+    const deptData = stats.programsByDept?.data || [];
+    if (deptLabels.length > 0 && deptData.length > 0) {
+      // Create a diverse color palette for departments
+      const deptColors = [
+        '#1B472B', // Dark green
+        '#2563EB', // Blue
+        '#DC2626', // Red
+        '#EA580C', // Orange
+        '#7C3AED', // Purple
+        '#059669', // Emerald
+        '#DB2777', // Pink
+        '#D97706', // Amber
+        '#4F46E5', // Indigo
+        '#0891B2'  // Cyan
+      ];
+
+      // Calculate total programs
+      const totalPrograms = deptData.reduce((sum, count) => sum + count, 0);
+      document.getElementById('totalProgramsLabel').innerText = totalPrograms + " Programs";
+
+      new Chart(ctxDept, {
+        type: 'doughnut',
+        data: {
+          labels: deptLabels,
+          datasets: [{
+            data: deptData,
+            backgroundColor: deptColors.slice(0, deptLabels.length),
+            borderWidth: 0
+          }]
+        },
+        options: {
+          cutout: '75%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          }
+        }
+      });
+    }
+
+    // Top 4 Departments (Bar Chart)
+    const ctxTop = document.getElementById('topDeptsChart').getContext('2d');
+    const topLabels = stats.topDepts?.labels || [];
+    const topData = stats.topDepts?.data || [];
+    if (topLabels.length > 0 && topData.length > 0) {
+      // Use the same color palette as the donut chart
+      const barColors = [
+        '#1B472B', // Dark green
+        '#2563EB', // Blue
+        '#DC2626'  // Red
+      ];
+
+      new Chart(ctxTop, {
+        type: 'bar',
+        data: {
+          labels: topLabels,
+          datasets: [{
+            label: 'Programs',
+            data: topData,
+            backgroundColor: barColors.slice(0, topLabels.length)
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
     // Program Trends Chart
+    /*
     const ctxTrends = document.getElementById('programTrendsChart').getContext('2d');
     const labels = stats.programTrends?.labels || [];
     const data = stats.programTrends?.data || [];
@@ -184,6 +272,7 @@ async function loadDashboardStats() {
       ctx.font = '16px Arial';
       ctx.fillText('No enrollment data available', 10, 50);
     }
+    */
   } catch (error) {
     console.error('Error loading dashboard stats:', error);
     // Optionally show error in UI

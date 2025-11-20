@@ -50,8 +50,8 @@ $non_acad = $conn->query("SELECT COUNT(*) as total FROM users WHERE role='non_ac
 // Total Faculty
 $faculty = $conn->query("SELECT COUNT(*) as total FROM users WHERE role='faculty'")->fetch_assoc()['total'];
 
-// Ongoing Programs
-$programs = $conn->query("SELECT COUNT(*) as total FROM programs WHERE status='ongoing'")->fetch_assoc()['total'];
+// Ongoing Programs (now counting all non-archived programs)
+$programs = $conn->query("SELECT COUNT(*) as total FROM programs WHERE is_archived = 0")->fetch_assoc()['total'];
 
 // Certificates Issued (count all participants as issued)
 $certificates = $conn->query("SELECT COUNT(*) as total FROM participants")->fetch_assoc()['total'];
@@ -100,6 +100,22 @@ while ($row = $res->fetch_assoc()) {
     $trends['data'][] = (int)$row['enrolled'];
 }
 
+// Programs by Department (for donut chart - all departments)
+$deptPrograms = ['labels' => [], 'data' => []];
+$deptRes = $conn->query("SELECT p.department as department, COUNT(p.id) as count FROM programs p WHERE p.is_archived = 0 AND p.department IS NOT NULL AND p.department != '' GROUP BY p.department");
+while ($row = $deptRes->fetch_assoc()) {
+    $deptPrograms['labels'][] = $row['department'];
+    $deptPrograms['data'][] = (int)$row['count'];
+}
+
+// Top 3 Departments by program count (for bar chart)
+$topDepts = ['labels' => [], 'data' => []];
+$topRes = $conn->query("SELECT p.department as department, COUNT(p.id) as count FROM programs p WHERE p.is_archived = 0 AND p.department IS NOT NULL AND p.department != '' GROUP BY p.department ORDER BY count DESC LIMIT 3");
+while ($row = $topRes->fetch_assoc()) {
+    $topDepts['labels'][] = $row['department'];
+    $topDepts['data'][] = (int)$row['count'];
+}
+
 echo json_encode([
     'students' => (int)$students,
     'non_acad' => (int)$non_acad,
@@ -109,5 +125,7 @@ echo json_encode([
     'attendanceRate' => round($attendance),
     'upcomingSessions' => $sessions,
     'feedback' => $feedback,
-    'programTrends' => $trends
+    'programTrends' => $trends,
+    'programsByDept' => $deptPrograms,
+    'topDepts' => $topDepts
 ]);
