@@ -6,6 +6,85 @@
   <title>eTracker Admin Dashboard</title>
   <link rel="stylesheet" href="Document.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    .modal-content.large-modal {
+      width: 95vw !important;
+      height: 95vh !important;
+      max-width: 95vw !important;
+      max-height: 95vh !important;
+      box-sizing: border-box !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .modal-content.large-modal .modal-header {
+      flex: 0 0 auto !important;
+      padding: 8px 14px !important;
+    }
+    .modal-content.large-modal .modal-body {
+      flex: 1 1 auto !important;
+      height: auto !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: transparent !important;
+    }
+    #documentViewer {
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    #documentViewer .paper-wrap {
+      width: 95% !important;
+      height: 96% !important;
+      max-width: none !important;
+      background: #fff !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    #documentViewer iframe, #documentViewer img {
+      width: 100% !important;
+      height: 100% !important;
+      border: 0 !important;
+      display: block !important;
+    }
+    .modal-content.large-modal .view-controls span#viewFilename {
+      color: #fff;
+      opacity: 0.95;
+    }
+    .modal-content.large-modal .view-controls a#downloadLink:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    .modal-content.large-modal .view-controls a.download-btn {
+      background: #ffffff !important;
+      color: #114d2e !important;
+      border: 0 !important;
+      padding: 8px 12px !important;
+      border-radius: 6px !important;
+      text-decoration: none !important;
+      font-weight: 700 !important;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      cursor: pointer !important;
+    }
+    .modal-content.large-modal .view-controls a.download-btn i.fas {
+      color: #114d2e !important;
+      font-size: 1rem !important;
+    }
+    .modal-content.large-modal .view-controls a.download-btn:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
+    }
+  </style>
 </head>
 <body>
   <div class="sidebar">
@@ -150,6 +229,26 @@
           <i class="fas fa-times"></i> Reject
         </button>
         <button class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Document Modal -->
+  <div id="viewDocumentModal" class="modal" style="display: none;">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-eye"></i> View Document</h3>
+        <div class="view-controls" style="display:flex;align-items:center;gap:12px;">
+          <span id="viewFilename" style="font-weight:600; color:#fff; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;"></span>
+          <a id="downloadLink" class="download-btn" target="_blank" rel="noopener">
+            <i class="fas fa-download" aria-hidden="true"></i>
+            <span style="margin-left:6px;">Download</span>
+          </a>
+        </div>
+        <button class="close-btn" onclick="closeViewDocumentModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="documentViewer"></div>
       </div>
     </div>
   </div>
@@ -429,57 +528,106 @@
       }
     }
 
-    function viewDocument(path, docId) {
-      if (!docId) {
-        // Extract docId from the current row if not provided
-        const rows = document.querySelectorAll('.documents-table tbody tr');
-        for (let row of rows) {
-          if (row.innerHTML.includes(path)) {
-            const idMatch = row.innerHTML.match(/ID: (\d+)/);
-            if (idMatch) {
-              docId = idMatch[1];
-              break;
-            }
-          }
-        }
+    function showViewDocumentModal(path, docId) {
+      const viewer = document.getElementById('documentViewer');
+      const extension = path.split('.').pop().toLowerCase();
+      
+      let viewUrl;
+      if (docId) {
+        viewUrl = `view_document.php?id=${docId}`;
+      } else {
+        // Fallback to path, but construct proper URL
+        viewUrl = path.startsWith('/') ? path : `../${path}`;
       }
       
-      if (docId) {
-        // Use the dedicated view endpoint
-        const viewUrl = `view_document.php?id=${docId}`;
-        console.log('Opening document with ID:', docId);
-        window.open(viewUrl, '_blank');
-      } else if (path) {
-        console.log('Viewing document by path:', path);
-        
-        // Try different path combinations as fallback
-        const possiblePaths = [
-          path,
-          `../FACULTY/${path}`,
-          `../${path}`,
-          `/FACULTY/${path}`,
-          `/${path}`
-        ];
-        
-        // Try to open the first available path
-        let opened = false;
-        for (let tryPath of possiblePaths) {
-          try {
-            console.log('Trying path:', tryPath);
-            window.open(tryPath, '_blank');
-            opened = true;
-            break;
-          } catch (error) {
-            console.log('Failed to open:', tryPath, error);
-            continue;
-          }
-        }
-        
-        if (!opened) {
-          showErrorMessage('Unable to open document. File may not exist or path is incorrect.');
-        }
+      if (extension === 'pdf') {
+        // embed PDF to fill the paper-wrap area
+        viewer.innerHTML = `
+          <div class="paper-wrap">
+            <iframe src="${viewUrl}" allowfullscreen></iframe>
+          </div>
+        `;
+      } else if (extension === 'docx') {
+        // Use Google Docs viewer for DOCX, embed responsively
+        const fullUrl = window.location.origin + window.location.pathname.replace('Document.html', '') + viewUrl;
+        viewer.innerHTML = `
+          <div class="paper-wrap">
+            <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true" allowfullscreen></iframe>
+          </div>
+        `;
+      } else if (['jpg', 'png'].includes(extension)) {
+        viewer.innerHTML = `
+          <div class="paper-wrap" style="background:#f5f5f5;">
+            <img src="${viewUrl}" alt="Document Image" />
+          </div>
+        `;
+      }
+      
+      const modal = document.getElementById('viewDocumentModal');
+      // populate filename and download link
+      try {
+        const filenameEl = document.getElementById('viewFilename');
+        const downloadEl = document.getElementById('downloadLink');
+        const filename = (path && path.split('/').pop()) || (docId ? `document_${docId}` : 'document');
+        filenameEl.textContent = filename;
+        // prefer using the view endpoint if we have an id
+        const downloadHref = docId ? `view_document.php?id=${docId}` : (viewUrl || path);
+        downloadEl.href = downloadHref;
+        downloadEl.setAttribute('download', filename);
+      } catch (e) {
+        console.warn('Could not set filename/download link', e);
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closeViewDocumentModal() {
+      const modal = document.getElementById('viewDocumentModal');
+      modal.classList.remove('show');
+      document.getElementById('documentViewer').innerHTML = '';
+    }
+
+    function viewDocument(path, docId) {
+      const extension = path.split('.').pop().toLowerCase();
+      const supportedModalTypes = ['pdf', 'docx', 'jpg', 'png'];
+      
+      if (supportedModalTypes.includes(extension)) {
+        showViewDocumentModal(path, docId);
       } else {
-        showErrorMessage('Document path not available.');
+        // Original behavior for unsupported types
+        if (docId) {
+          const viewUrl = `view_document.php?id=${docId}`;
+          console.log('Opening document with ID:', docId);
+          window.open(viewUrl, '_blank');
+        } else if (path) {
+          console.log('Viewing document by path:', path);
+          const possiblePaths = [
+            path,
+            `../FACULTY/${path}`,
+            `../${path}`,
+            `/FACULTY/${path}`,
+            `/${path}`
+          ];
+          
+          let opened = false;
+          for (let tryPath of possiblePaths) {
+            try {
+              console.log('Trying path:', tryPath);
+              window.open(tryPath, '_blank');
+              opened = true;
+              break;
+            } catch (error) {
+              console.log('Failed to open:', tryPath, error);
+              continue;
+            }
+          }
+          
+          if (!opened) {
+            showErrorMessage('Unable to open document. File may not exist or path is incorrect.');
+          }
+        } else {
+          showErrorMessage('Document path not available.');
+        }
       }
     }
 
@@ -509,6 +657,13 @@
         modal.style.display = 'none'; // Double ensure it's hidden
       }
       
+      // Ensure view modal is hidden on page load
+      const viewModal = document.getElementById('viewDocumentModal');
+      if (viewModal) {
+        viewModal.classList.remove('show');
+        viewModal.style.display = 'none';
+      }
+      
       // Load documents
       await loadDocuments();
     });
@@ -527,6 +682,24 @@
         const modal = document.getElementById('reviewModal');
         if (modal && modal.classList.contains('show')) {
           closeReviewModal();
+        }
+      }
+    });
+
+    // Close view modal when clicking outside
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('viewDocumentModal');
+      if (e.target === modal) {
+        closeViewDocumentModal();
+      }
+    });
+
+    // Close view modal with Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('viewDocumentModal');
+        if (modal && modal.classList.contains('show')) {
+          closeViewDocumentModal();
         }
       }
     });
