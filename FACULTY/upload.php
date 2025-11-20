@@ -146,6 +146,72 @@ h2 {
   transform: translateY(-2px) scale(1.03);
 }
 
+.file-drop-zone {
+  border: 2px dashed #b2b2b2;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #fafafa;
+  transition: border-color 0.3s, background 0.3s;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.file-drop-zone:hover,
+.file-drop-zone.dragover {
+  border-color: #59a96a;
+  background: #eafbe7;
+}
+
+.file-drop-zone i {
+  font-size: 3rem;
+  color: #b2b2b2;
+  margin-bottom: 10px;
+}
+
+.file-drop-zone p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.file-select-link {
+  color: #247a37;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.file-preview {
+  margin-top: 10px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.file-item .file-name {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.file-item .file-size {
+  color: #666;
+  font-size: 0.8rem;
+  margin-left: 10px;
+}
+
+.file-item .remove-file {
+  color: #b30000;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
 .info-box {
   background: #eafbe7;
   color: #247a37;
@@ -308,7 +374,12 @@ h2 {
           </select>
 
           <label for="document-file">Select File</label>
-          <input type="file" name="document_file" id="document-file" required>
+          <div id="file-drop-zone" class="file-drop-zone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop files here or <span class="file-select-link">browse</span></p>
+            <input type="file" name="document_file[]" id="document-file" multiple style="display: none;">
+          </div>
+          <div id="file-preview" class="file-preview"></div>
 
           <button type="submit" class="submit"><i class="fas fa-upload"></i> Upload</button>
         </form>
@@ -316,7 +387,7 @@ h2 {
 
         <div class="info-box">
           <i class="fas fa-info-circle"></i>
-          Allowed file types: PDF, DOCX, JPG, PNG. Max size: 10MB per file.
+          Allowed file types: PDF, DOCX, JPG, PNG. Max size: 10MB per file. Multiple files allowed for images (JPG, PNG). PDF and DOCX limited to one file.
         </div>
       </div>
 
@@ -383,6 +454,104 @@ h2 {
 
 <!-- Modal JS (add before </body>) -->
 <script>
+const dropZone = document.getElementById('file-drop-zone');
+const fileInput = document.getElementById('document-file');
+const filePreview = document.getElementById('file-preview');
+const docTypeSelect = document.getElementById('document-type');
+let selectedFiles = [];
+
+// Update file input based on document type
+docTypeSelect.addEventListener('change', function() {
+  const isPhotos = this.value === 'photos';
+  fileInput.multiple = true; // Allow multiple for all types
+  dropZone.querySelector('p').innerHTML = 'Drag & drop files here or <span class="file-select-link">browse</span> (multiple allowed)';
+});
+
+// Handle file selection link
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.querySelector('.file-select-link').addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
+
+// Drag and drop events
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+  dropZone.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+  dropZone.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight() {
+  dropZone.classList.add('dragover');
+}
+
+function unhighlight() {
+  dropZone.classList.remove('dragover');
+}
+
+dropZone.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  handleFiles(files);
+}
+
+fileInput.addEventListener('change', function(e) {
+  handleFiles(e.target.files);
+});
+
+function handleFiles(files) {
+  const hasNonImages = Array.from(files).some(file => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ['pdf', 'docx'].includes(ext);
+  });
+  if (hasNonImages && files.length > 1) {
+    alert('Only one file allowed for PDF or DOCX. Multiple files are only allowed for images (JPG, PNG).');
+    return;
+  }
+  selectedFiles = Array.from(files);
+  updateFilePreview();
+}
+
+function updateFilePreview() {
+  filePreview.innerHTML = '';
+  selectedFiles.forEach((file, index) => {
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
+    fileItem.innerHTML = `
+      <span class="file-name">${file.name}</span>
+      <span class="file-size">${formatFileSize(file.size)}</span>
+      <span class="remove-file" onclick="removeFile(${index})">&times;</span>
+    `;
+    filePreview.appendChild(fileItem);
+  });
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  updateFilePreview();
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
 function openUploadsModal() {
   document.getElementById('uploadsModal').style.display = 'flex';
 }
@@ -397,7 +566,17 @@ window.addEventListener('click', function(e) {
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
   e.preventDefault();
   var form = e.target;
-  var data = new FormData(form);
+  var data = new FormData();
+  
+  // Append form fields
+  data.append('program_id', form.program_id.value);
+  data.append('document_type', form.document_type.value);
+  
+  // Append selected files
+  selectedFiles.forEach(file => {
+    data.append('document_file[]', file);
+  });
+  
   var msgDiv = document.getElementById('upload-message');
   msgDiv.textContent = 'Uploading...';
 
@@ -409,6 +588,8 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
   .then(text => {
     msgDiv.textContent = text;
     form.reset();
+    selectedFiles = [];
+    updateFilePreview();
   })
   .catch(() => {
     msgDiv.textContent = 'Upload failed. Please try again.';

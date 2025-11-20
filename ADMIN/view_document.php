@@ -56,7 +56,12 @@ try {
                 header('Content-Type: application/octet-stream');
         }
         
-        header('Content-Disposition: inline; filename="' . $filename . '"');
+        // Check if download is requested
+        if (isset($_GET['download']) && $_GET['download'] == '1') {
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+        } else {
+            header('Content-Disposition: inline; filename="' . $filename . '"');
+        }
         echo $doc['file_blob'];
     } 
     // If file_path exists, try to serve the file
@@ -105,7 +110,12 @@ try {
                     header('Content-Type: application/octet-stream');
             }
             
-            header('Content-Disposition: inline; filename="' . $filename . '"');
+            // Check if download is requested
+            if (isset($_GET['download']) && $_GET['download'] == '1') {
+                header('Content-Disposition: attachment; filename="' . $filename . '"');
+            } else {
+                header('Content-Disposition: inline; filename="' . $filename . '"');
+            }
             readfile($found_file);
         } else {
             die('File not found on server. Paths checked: ' . implode(', ', $possible_paths));
