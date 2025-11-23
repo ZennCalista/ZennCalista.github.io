@@ -127,18 +127,25 @@ if ($use_new_table) {
         
         while ($row = $projects_result->fetch_assoc()) {
             // Get participants count separately
-            $participants_sql = "SELECT COUNT(*) as count FROM session_participants sp 
-                                JOIN sessions s ON sp.session_id = s.id 
-                                WHERE s.program_id = ?";
-            $participants_stmt = $conn->prepare($participants_sql);
-            if ($participants_stmt) {
-                $participants_stmt->bind_param("i", $row['program_id']);
-                $participants_stmt->execute();
-                $participants_result = $participants_stmt->get_result();
-                $participants_row = $participants_result->fetch_assoc();
-                $participants_count = $participants_row['count'] ?? 0;
-                $participants_stmt->close();
+            $participants_count = 0;
+            
+            // Check if sessions table exists before trying to join with it
+            $sessions_table_check = $conn->query("SHOW TABLES LIKE 'sessions'");
+            if ($sessions_table_check && $sessions_table_check->num_rows > 0) {
+                $participants_sql = "SELECT COUNT(*) as count FROM session_participants sp 
+                                    JOIN sessions s ON sp.session_id = s.id 
+                                    WHERE s.program_id = ?";
+                $participants_stmt = $conn->prepare($participants_sql);
+                if ($participants_stmt) {
+                    $participants_stmt->bind_param("i", $row['program_id']);
+                    $participants_stmt->execute();
+                    $participants_result = $participants_stmt->get_result();
+                    $participants_row = $participants_result->fetch_assoc();
+                    $participants_count = $participants_row['count'] ?? 0;
+                    $participants_stmt->close();
+                }
             } else {
+                // If sessions table doesn't exist, use default count
                 $participants_count = 0;
             }
             
@@ -225,18 +232,27 @@ if (!$use_new_table) {
     while ($row = $programs_result->fetch_assoc()) {
         // Get participants count separately to avoid complex subqueries
         $participants_count = 0;
-        $participants_sql = "SELECT COUNT(*) as count FROM session_participants sp 
-                            JOIN sessions s ON sp.session_id = s.id 
-                            WHERE s.program_id = ?";
-        $participants_stmt = $conn->prepare($participants_sql);
-        if ($participants_stmt) {
-            $participants_stmt->bind_param("i", $row['program_id']);
-            $participants_stmt->execute();
-            $participants_result = $participants_stmt->get_result();
-            if ($participants_row = $participants_result->fetch_assoc()) {
-                $participants_count = $participants_row['count'];
+        
+        // Check if sessions table exists before trying to join with it
+        $sessions_table_check = $conn->query("SHOW TABLES LIKE 'sessions'");
+        if ($sessions_table_check && $sessions_table_check->num_rows > 0) {
+            $participants_sql = "SELECT COUNT(*) as count FROM session_participants sp 
+                                JOIN sessions s ON sp.session_id = s.id 
+                                WHERE s.program_id = ?";
+            $participants_stmt = $conn->prepare($participants_sql);
+            if ($participants_stmt) {
+                $participants_stmt->bind_param("i", $row['program_id']);
+                $participants_stmt->execute();
+                $participants_result = $participants_stmt->get_result();
+                if ($participants_row = $participants_result->fetch_assoc()) {
+                    $participants_count = $participants_row['count'];
+                }
+                $participants_stmt->close();
             }
-            $participants_stmt->close();
+        } else {
+            // If sessions table doesn't exist, try to get count from session_participants directly
+            // or just use max_students as a fallback
+            $participants_count = 0; // Default to 0 if we can't determine
         }
         
         if (!empty($row['project_titles'])) {
