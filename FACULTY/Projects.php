@@ -1,5 +1,12 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require_once 'db.php';
+
+// Check database connection
+if (!$conn) {
+    die('Database connection failed: ' . mysqli_connect_error());
+}
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -14,9 +21,15 @@ $user_email = 'unknown@cvsu.edu.ph';
 // Get user info
 $user_sql = "SELECT firstname, lastname, email FROM users WHERE id = ?";
 $user_stmt = $conn->prepare($user_sql);
+if (!$user_stmt) {
+    die('Prepare failed: ' . htmlspecialchars($conn->error));
+}
 $user_stmt->bind_param("i", $user_id);
 $user_stmt->execute();
 $user_result = $user_stmt->get_result();
+if (!$user_result) {
+    die('Query failed: ' . htmlspecialchars($conn->error));
+}
 if ($user_row = $user_result->fetch_assoc()) {
     $user_fullname = $user_row['firstname'] . ' ' . $user_row['lastname'];
     $user_email = $user_row['email'];
