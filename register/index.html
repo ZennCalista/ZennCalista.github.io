@@ -46,9 +46,9 @@
 
       // Wait for the exit animation to finish, then replace with new content
       setTimeout(() => {
-        // Replace the entire panel content
+        // Replace the entire panel content - moved NEXT below inputs and added BACK
         rightPanel.innerHTML = `
-          <div class="panel-content enter-start">
+          <div class="panel-content enter-start" id="panel-content">
             <div class="form-title">REGISTER</div>
             <input type="text" id="firstname" placeholder="Firstname" class="form-input" />
             <div class="name-row">
@@ -58,7 +58,10 @@
             <input type="email" id="email" placeholder="Email (@cvsu.edu.ph only)" class="form-input" />
             <input type="password" id="password" placeholder="Password" class="form-input" />
             <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
-            <img src="arrow.png" alt="Submit Arrow" class="submit-arrow" onclick="submitInitialForm()" />
+            <div class="flex gap-4 mt-4">
+              <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
+              <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
+            </div>
           </div>
         `;
 
@@ -81,7 +84,7 @@
       // Wait for the exit animation to finish, then replace with login form
       setTimeout(() => {
         rightPanel.innerHTML = `
-          <div class="panel-content enter-start">
+          <div class="panel-content enter-start" id="panel-content">
             <div class="form-title">LOG IN</div>
             <input type="email" id="login-email" placeholder="Email" class="form-input" />
             <input type="password" id="login-password" placeholder="Password" class="form-input" />
@@ -95,6 +98,22 @@
           newContent.classList.add('enter');
         }, 10);
       }, 600);
+    }
+
+    // Show the initial main panel with REGISTER / LOG IN buttons
+    function showMainPanel() {
+      const rightPanel = document.getElementById('right-panel');
+      rightPanel.innerHTML = `
+        <div class="panel-content enter-start" id="panel-content">
+          <div class="button" onclick="showRegisterForm()">REGISTER</div>
+          <div class="button" onclick="handleLogin()">LOG IN</div>
+        </div>
+      `;
+      const newContent = rightPanel.querySelector('.panel-content');
+      setTimeout(() => {
+        newContent.classList.remove('enter-start');
+        newContent.classList.add('enter');
+      }, 10);
     }
 
     function submitLoginForm() {
@@ -219,7 +238,7 @@
       // Wait for the exit animation to finish, then replace with OTP form
       setTimeout(() => {
         rightPanel.innerHTML = `
-          <div class="panel-content enter-start">
+          <div class="panel-content enter-start" id="panel-content">
             <div class="form-title">VERIFY EMAIL</div>
             <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
               We've sent a 6-digit verification code to your email.<br>
@@ -295,7 +314,7 @@
         if (userData.role === 'student' || userData.role === 'non_acad') {
           const roleTitle = userData.role === 'student' ? 'STUDENT' : 'NON-ACAD';
           newContentHTML = `
-            <div class="panel-content enter-start">
+            <div class="panel-content enter-start" id="panel-content">
               <div class="form-title text-green-800">${roleTitle}</div>
               <input type="text" id="student-id" placeholder="Student ID" class="form-input" />
               <input type="text" id="contact-no" placeholder="Contact No." class="form-input" />
@@ -312,7 +331,7 @@
           `;
         } else if (userData.role === 'faculty') {
           newContentHTML = `
-            <div class="panel-content enter-start">
+            <div class="panel-content enter-start" id="panel-content">
               <div class="form-title text-green-800">FACULTY</div>
               <select id="department" class="form-input">
                 <option value="" disabled selected>Loading departments...</option>
@@ -595,7 +614,10 @@
             <input type="email" id="email" placeholder="Email" class="form-input" />
             <input type="password" id="password" placeholder="Password" class="form-input" />
             <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
-            <img src="arrow.png" alt="Submit Arrow" class="submit-arrow" onclick="submitInitialForm()" />
+            <div class="flex gap-4 mt-4">
+              <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
+              <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
+            </div>
           </div>
         `;
 
@@ -627,7 +649,10 @@
             <input type="email" id="email" placeholder="Email" class="form-input" />
             <input type="password" id="password" placeholder="Password" class="form-input" />
             <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
-            <img src="arrow.png" alt="Submit Arrow" class="submit-arrow" onclick="submitInitialForm()" />
+            <div class="flex gap-4 mt-4">
+              <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
+              <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
+            </div>
           </div>
         `;
 
