@@ -50,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check if user is verified (for faculty and student roles only)
     if (($user['role'] === 'faculty' || $user['role'] === 'student' || $user['role'] === 'non_acad') && $user['verification_status'] !== 'verified') {
-        error_log("Login blocked for unverified user: {$user['email']} (role: {$user['role']})");
-        echo json_encode(['status' => 'error', 'message' => 'Your account is not verified. Please complete the registration process first.']);
+        error_log("Unverified user login attempt: {$user['email']} (role: {$user['role']})");
+        echo json_encode(['status' => 'unverified', 'user_id' => $user['id'], 'role' => $user['role'], 'email' => $user['email']]);
         exit;
     }
 

@@ -6,6 +6,13 @@ header('Content-Type: application/json; charset=utf-8');
 
 include 'db.php';
 
+// Hardcoded faculty emails
+$facultyEmails = [
+    'ic.mheladelnicole.defensor@cvsu.edu.ph',
+    'faculty2@cvsu.edu.ph',
+    // Add more as needed
+];
+
 // Get the raw POST data
 // Accept JSON body or traditional form POST
 $raw = file_get_contents("php://input");
@@ -35,7 +42,8 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     $lastname = $data['lastname'];
     $email = $data['email'];
     $password = password_hash($data['password'], PASSWORD_DEFAULT); // Hash the password
-    $role = $data['role'] ?? 'student';
+    // Determine role based on email
+    $role = in_array($email, $facultyEmails) ? 'faculty' : 'student';
 
     // Validate email format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -122,16 +130,37 @@ if (!empty($data['user_id']) && !empty($data['role'])) {
     $user_check->close();
 
     if ($role === 'student' || $role === 'non_acad') {
-        if (empty($data['contact_no']) || empty($data['emergency_contact'])) {
-            echo json_encode(["status" => "error", "message" => "Missing " . ($role === 'student' ? 'student' : 'non-academic') . " details"]);
-            $conn->close();
-            exit;
+        if ($role === 'student') {
+            if (empty($data['contact_no']) || empty($data['emergency_contact']) || empty($data['student_id'])) {
+                echo json_encode(["status" => "error", "message" => "Missing student details"]);
+                $conn->close();
+                exit;
+            }
+            $student_id = $data['student_id'];
+            // Check uniqueness of student_id
+            $sid_check = $conn->prepare("SELECT id FROM students WHERE student_id = ?");
+            $sid_check->bind_param("s", $student_id);
+            $sid_check->execute();
+            $sid_result = $sid_check->get_result();
+            if ($sid_result->num_rows > 0) {
+                echo json_encode(["status" => "error", "message" => "Student ID already exists"]);
+                $sid_check->close();
+                $conn->close();
+                exit;
+            }
+            $sid_check->close();
+        } elseif ($role === 'non_acad') {
+            if (empty($data['contact_no']) || empty($data['emergency_contact'])) {
+                echo json_encode(["status" => "error", "message" => "Missing non-academic details"]);
+                $conn->close();
+                exit;
+            }
+            $student_id = null;
         }
         $contact_no = $data['contact_no'];
         $emergency_contact = $data['emergency_contact'];
 
-        // For students and non_acad, insert into students table (student_id and course can be NULL)
-        $student_id = $data['student_id'] ?? null;
+        // For students and non_acad, insert into students table (course can be NULL)
         $course = $data['course'] ?? null;
 
         $sql = "INSERT INTO students (user_id, student_id, course, contact_no, emergency_contact) VALUES (?, ?, ?, ?, ?)";
