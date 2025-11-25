@@ -39,6 +39,24 @@ try {
         throw new Exception('Faculty record not found for this user');
     }
     
+    // Validate selected proposal
+    $selected_proposal = intval($_POST['selected_proposal'] ?? 0);
+    if ($selected_proposal <= 0) {
+        throw new Exception('Please select a valid approved proposal');
+    }
+    
+    // Verify the proposal belongs to this faculty and is approved
+    $proposal_check_sql = "SELECT id, status FROM program_proposals WHERE id = ? AND faculty_id = ? AND status = 'approved'";
+    $proposal_check_stmt = $conn->prepare($proposal_check_sql);
+    $proposal_check_stmt->bind_param("ii", $selected_proposal, $faculty_id);
+    $proposal_check_stmt->execute();
+    $proposal_check_result = $proposal_check_stmt->get_result();
+    
+    if ($proposal_check_result->num_rows === 0) {
+        throw new Exception('Selected proposal is not valid or not approved');
+    }
+    $proposal_check_stmt->close();
+    
     // Debug log
     error_log("Creating program for faculty_id: $faculty_id, user_id: $user_id");
     
@@ -145,16 +163,17 @@ try {
         created_at,
         faculty_id,
         user_id,
+        proposal_id,
         status,
         faculty_certificate_issued
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'beginner', 'extension', ?, ?, ?, ?, ?, 'pending', 'normal', ?, NOW(), ?, ?, 'ongoing', 0)";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'beginner', 'extension', ?, ?, ?, ?, ?, 'pending', 'normal', ?, NOW(), ?, ?, ?, 'ongoing', 0)";
     
     error_log("SQL: $sql");
     error_log("Parameters: " . json_encode([
         $program_name, $department, $start_date, $previous_date, $end_date, $location,
         $max_students, $male_count, $female_count, $description, $project_titles_json,
         $sessions_json, $sdg_goals_json, $program_type, $target_audience, $budget,
-        $faculty_id, $user_id
+        $faculty_id, $user_id, $selected_proposal
     ]));
     
     $stmt = $conn->prepare($sql);
@@ -163,7 +182,7 @@ try {
     }
     
     $stmt->bind_param(
-        "ssssssiiissssssdii",
+        "ssssssiiissssssdiii",
         $program_name,
         $department,
         $start_date,
@@ -181,7 +200,8 @@ try {
         $target_audience,
         $budget,
         $faculty_id,
-        $user_id
+        $user_id,
+        $selected_proposal
     );
     
     if (!$stmt->execute()) {

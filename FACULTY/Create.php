@@ -32,6 +32,31 @@ if ($faculty_row = $faculty_result->fetch_assoc()) {
     $faculty_department = $faculty_row['department'];
 }
 $faculty_stmt->close();
+
+// Fetch approved proposals for this faculty
+$approved_proposals = [];
+$faculty_id_query = $conn->prepare("SELECT id FROM faculty WHERE user_id = ?");
+$faculty_id_query->bind_param("i", $user_id);
+$faculty_id_query->execute();
+$faculty_id_result = $faculty_id_query->bind_result($faculty_id);
+$faculty_id_query->fetch();
+$faculty_id_query->close();
+
+if ($faculty_id) {
+    $proposals_sql = "SELECT id, proposal_title, description, submitted_at, reviewed_at 
+                     FROM program_proposals 
+                     WHERE faculty_id = ? AND status = 'approved' 
+                     ORDER BY reviewed_at DESC";
+    $proposals_stmt = $conn->prepare($proposals_sql);
+    $proposals_stmt->bind_param('i', $faculty_id);
+    $proposals_stmt->execute();
+    $proposals_result = $proposals_stmt->get_result();
+    
+    while ($row = $proposals_result->fetch_assoc()) {
+        $approved_proposals[] = $row;
+    }
+    $proposals_stmt->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,16 +115,64 @@ $faculty_stmt->close();
           <div class="form-header">
             <h3>Create a New Program</h3>
             <div class="progress-bar">
-              <div class="progress-step active" data-step="1">Basic Info</div>
-              <div class="progress-step" data-step="2">Program Details</div>
-              <div class="progress-step" data-step="3">Schedule</div>
-              <div class="progress-step" data-step="4">Impact & Goals</div>
+              <div class="progress-step active" data-step="1">Select Proposal</div>
+              <div class="progress-step" data-step="2">Basic Info</div>
+              <div class="progress-step" data-step="3">Program Details</div>
+              <div class="progress-step" data-step="4">Schedule</div>
+              <div class="progress-step" data-step="5">Impact & Goals</div>
             </div>
           </div>
           
           <form id="program-form" class="program-form" action="create_program.php" method="POST">
-            <!-- Step 1: Basic Information -->
+            <!-- Step 1: Select Approved Proposal -->
             <div class="form-step step-1" data-step="1">
+              <div class="step-header">
+                <h4>📋 Select Approved Proposal</h4>
+                <p>Choose from your approved proposals to create a program</p>
+              </div>
+              
+              <?php if (empty($approved_proposals)): ?>
+                <div class="no-proposals-message">
+                  <div class="message-content">
+                    <i class="fas fa-info-circle"></i>
+                    <h4>No Approved Proposals Found</h4>
+                    <p>You need at least one approved proposal to create a program.</p>
+                    <p>Please submit a proposal through the <a href="upload.php">Documents</a> section first.</p>
+                  </div>
+                </div>
+              <?php else: ?>
+                <div class="input-group">
+                  <label for="selected_proposal">Select Approved Proposal <span class="required">*</span></label>
+                  <div class="field-hint">Choose the approved proposal this program is based on</div>
+                  <select name="selected_proposal" id="selected_proposal" required>
+                    <option value="" disabled selected>Choose an approved proposal...</option>
+                    <?php foreach ($approved_proposals as $proposal): ?>
+                      <option value="<?php echo $proposal['id']; ?>" 
+                              data-title="<?php echo htmlspecialchars($proposal['proposal_title']); ?>"
+                              data-description="<?php echo htmlspecialchars($proposal['description']); ?>">
+                        <?php echo htmlspecialchars($proposal['proposal_title']); ?> 
+                        (Approved: <?php echo date('M j, Y', strtotime($proposal['reviewed_at'])); ?>)
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                
+                <div id="proposal-preview" class="proposal-preview" style="display: none;">
+                  <h5>Proposal Details</h5>
+                  <div class="proposal-info">
+                    <div class="proposal-title-display">
+                      <strong>Title:</strong> <span id="preview-title"></span>
+                    </div>
+                    <div class="proposal-description-display">
+                      <strong>Description:</strong> <span id="preview-description"></span>
+                    </div>
+                  </div>
+                </div>
+              <?php endif; ?>
+            </div>
+
+            <!-- Step 2: Basic Information -->
+            <div class="form-step step-2" data-step="2">
               <div class="step-header">
                 <h4>📋 Basic Program Information</h4>
                 <p>Let's start with the essential details of your program</p>
@@ -128,8 +201,8 @@ $faculty_stmt->close();
               </div>
             </div>
 
-            <!-- Step 2: Program Details -->
-            <div class="form-step step-2" data-step="2">
+            <!-- Step 3: Program Details -->
+            <div class="form-step step-3" data-step="3">
               <div class="step-header">
                 <h4>🎯 Program Details</h4>
                 <p>Define the scope and logistics of your program</p>
@@ -217,8 +290,8 @@ $faculty_stmt->close();
               </div>
             </div>
 
-            <!-- Step 3: Schedule & Timeline -->
-            <div class="form-step step-3" data-step="3">
+            <!-- Step 4: Schedule & Timeline -->
+            <div class="form-step step-4" data-step="4">
               <div class="step-header">
                 <h4>📅 Schedule & Timeline</h4>
                 <p>Set up your program dates and sessions</p>
@@ -262,8 +335,8 @@ $faculty_stmt->close();
               </div>
             </div>
 
-            <!-- Step 4: Impact & SDGs -->
-            <div class="form-step step-4" data-step="4">
+            <!-- Step 5: Impact & SDGs -->
+            <div class="form-step step-5" data-step="5">
               <div class="step-header">
                 <h4>🌍 Impact & Sustainable Development Goals</h4>
                 <p>Select which SDGs your program will address</p>
@@ -494,6 +567,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize SDG selection
   initializeSDGSelection();
   
+  // Initialize proposal selection preview
+  initializeProposalPreview();
+  
   // Event listeners
   const nextBtn = document.getElementById('next-btn');
   const prevBtn = document.getElementById('prev-btn');
@@ -502,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (nextBtn) {
     nextBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      if (validateCurrentStep() && currentStep < 4) {
+      if (validateCurrentStep() && currentStep < 5) {
         currentStep++;
         showStep(currentStep);
         updateNavigation();
@@ -975,11 +1051,11 @@ function updateNavigation() {
   }
   
   if (nextBtn) {
-    nextBtn.style.display = currentStep === 4 ? 'none' : 'flex';
+    nextBtn.style.display = currentStep === 5 ? 'none' : 'flex';
   }
   
   if (submitBtn) {
-    submitBtn.style.display = currentStep === 4 ? 'flex' : 'none';
+    submitBtn.style.display = currentStep === 5 ? 'flex' : 'none';
   }
 }
 
@@ -1004,8 +1080,8 @@ function validateCurrentStep() {
     }
   });
   
-  // Additional validation for step 4 (SDGs)
-  if (currentStep === 4 && selectedSDGs.length === 0) {
+  // Additional validation for step 5 (SDGs)
+  if (currentStep === 5 && selectedSDGs.length === 0) {
     alert('Please select at least one SDG for your program.');
     return false;
   }
@@ -1065,6 +1141,35 @@ function updateSelectedSDGsDisplay() {
   }
   
   console.log('Selected SDGs display updated:', selectedSDGs);
+}
+
+// PROPOSAL SELECTION FUNCTIONS
+function initializeProposalPreview() {
+  const proposalSelect = document.getElementById('selected_proposal');
+  if (proposalSelect) {
+    proposalSelect.addEventListener('change', updateProposalPreview);
+  }
+}
+
+function updateProposalPreview() {
+  const proposalSelect = document.getElementById('selected_proposal');
+  const previewDiv = document.getElementById('proposal-preview');
+  const titleSpan = document.getElementById('preview-title');
+  const descriptionSpan = document.getElementById('preview-description');
+  
+  if (!proposalSelect || !previewDiv || !titleSpan || !descriptionSpan) return;
+  
+  const selectedOption = proposalSelect.options[proposalSelect.selectedIndex];
+  if (selectedOption && selectedOption.value) {
+    const title = selectedOption.getAttribute('data-title') || 'N/A';
+    const description = selectedOption.getAttribute('data-description') || 'N/A';
+    
+    titleSpan.textContent = title;
+    descriptionSpan.textContent = description;
+    previewDiv.style.display = 'block';
+  } else {
+    previewDiv.style.display = 'none';
+  }
 }
 
 // GENDER DISTRIBUTION FUNCTIONS

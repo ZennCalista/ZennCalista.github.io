@@ -181,11 +181,11 @@ for ($i = 0; $i < $numFiles; $i++) {
     }
     $file_path = 'uploads/' . $unique_name; // Save relative path for DB
 
-    // Insert into DB
-    $sql = "INSERT INTO document_uploads (program_id, faculty_id, document_type, file_path, original_filename, file_blob, upload_date, status, uploaded_by)
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), 'pending', ?)";
+    // Insert into DB with proposal_id if it's a proposal
+    $sql = "INSERT INTO document_uploads (program_id, faculty_id, document_type, file_path, original_filename, file_blob, upload_date, status, uploaded_by, proposal_id)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), 'pending', ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('iisssbi', $program_id, $faculty_id, $document_type, $file_path, $original_filename, $file_content, $user_id);
+    $stmt->bind_param('iisssbii', $program_id, $faculty_id, $document_type, $file_path, $original_filename, $file_content, $user_id, $proposal_id);
     $stmt->send_long_data(5, $file_content); // 5 is the index of file_blob (0-based)
     $stmt->execute();
     $stmt->close();
