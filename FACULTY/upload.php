@@ -352,13 +352,15 @@ h2 {
         </p>
 
         <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
-          <label for="program">Program</label>
-          <select name="program_id" id="program" required>
-            <option value="" disabled selected>Select Program</option>
-            <?php foreach ($programs as $p): ?>
-              <option value="<?php echo $p['id']; ?>"><?php echo htmlspecialchars($p['name']); ?></option>
-            <?php endforeach; ?>
-          </select>
+          <div id="program-field">
+            <label for="program">Program</label>
+            <select name="program_id" id="program" required>
+              <option value="" disabled selected>Select Program</option>
+              <?php foreach ($programs as $p): ?>
+                <option value="<?php echo $p['id']; ?>"><?php echo htmlspecialchars($p['name']); ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
 
           <label for="document-type">Document Type</label>
           <select name="document_type" id="document-type" required>
@@ -372,6 +374,14 @@ h2 {
             <option value="accomplishments">Summary of Accomplishments</option>
             <option value="other">Other Supporting Documents</option>
           </select>
+
+          <div id="proposal-fields" style="display: none;">
+            <label for="proposal-title">Proposal Title</label>
+            <input type="text" id="proposal-title" name="proposal_title" placeholder="Enter proposal title">
+
+            <label for="proposal-description">Proposal Description</label>
+            <textarea id="proposal-description" name="proposal_description" rows="4" placeholder="Describe your extension activity proposal"></textarea>
+          </div>
 
           <label for="document-file">Select File</label>
           <div id="file-drop-zone" class="file-drop-zone">
@@ -462,7 +472,26 @@ let selectedFiles = [];
 
 // Update file input based on document type
 docTypeSelect.addEventListener('change', function() {
+  const isProposal = this.value === 'proposal';
   const isPhotos = this.value === 'photos';
+  const programField = document.getElementById('program-field');
+  const proposalFields = document.getElementById('proposal-fields');
+  const programSelect = document.getElementById('program');
+
+  if (isProposal) {
+    // Hide program selection, show proposal fields
+    programField.style.display = 'none';
+    proposalFields.style.display = 'block';
+    programSelect.required = false;
+    document.getElementById('proposal-title').required = true;
+  } else {
+    // Show program selection, hide proposal fields
+    programField.style.display = 'block';
+    proposalFields.style.display = 'none';
+    programSelect.required = true;
+    document.getElementById('proposal-title').required = false;
+  }
+
   fileInput.multiple = true; // Allow multiple for all types
   dropZone.querySelector('p').innerHTML = 'Drag & drop files here or <span class="file-select-link">browse</span> (multiple allowed)';
 });
@@ -567,16 +596,26 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
   e.preventDefault();
   var form = e.target;
   var data = new FormData();
-  
+
   // Append form fields
-  data.append('program_id', form.program_id.value);
+  if (form.program_id.value) {
+    data.append('program_id', form.program_id.value);
+  }
   data.append('document_type', form.document_type.value);
-  
+
+  // Append proposal fields if this is a proposal
+  if (form.document_type.value === 'proposal') {
+    data.append('proposal_title', form.proposal_title.value);
+    if (form.proposal_description.value) {
+      data.append('proposal_description', form.proposal_description.value);
+    }
+  }
+
   // Append selected files
   selectedFiles.forEach(file => {
     data.append('document_file[]', file);
   });
-  
+
   var msgDiv = document.getElementById('upload-message');
   msgDiv.textContent = 'Uploading...';
 
@@ -590,6 +629,11 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     form.reset();
     selectedFiles = [];
     updateFilePreview();
+    // Reset form visibility
+    document.getElementById('program-field').style.display = 'block';
+    document.getElementById('proposal-fields').style.display = 'none';
+    document.getElementById('program').required = true;
+    document.getElementById('proposal-title').required = false;
   })
   .catch(() => {
     msgDiv.textContent = 'Upload failed. Please try again.';

@@ -38,15 +38,19 @@ if ($faculty_row = $faculty_result->fetch_assoc()) {
 }
 $faculty_stmt->close();
 
-// Check if faculty_id is found
-if (!$faculty_id) {
-    // Instead of dying, show a user-friendly message
-    $error_message = "Faculty record not found. Please contact your administrator to set up your faculty profile.";
-    $show_error = true;
-    $active_programs = [];
-    $ended_programs = [];
-    $notifications = [];
-} else {
+// Check if faculty has approved proposals for creating new programs
+$has_approved_proposals = false;
+if ($faculty_id) {
+    $proposal_check_sql = "SELECT COUNT(*) as count FROM program_proposals WHERE faculty_id = ? AND status = 'approved'";
+    $proposal_check_stmt = $conn->prepare($proposal_check_sql);
+    $proposal_check_stmt->bind_param('i', $faculty_id);
+    $proposal_check_stmt->execute();
+    $proposal_check_result = $proposal_check_stmt->get_result();
+    $approved_count = $proposal_check_result->fetch_assoc()['count'];
+    $has_approved_proposals = $approved_count > 0;
+    $proposal_check_stmt->close();
+}
+
     $show_error = false;
 
 // Search handling
@@ -172,9 +176,7 @@ if ($notifications_result) {
     }
     $notifications_result->free();
 }
-} // End of else block
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -262,6 +264,16 @@ if ($notifications_result) {
 }
 .create-btn:active {
   transform: scale(0.98);
+}
+.create-btn:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.create-btn:disabled:hover {
+  background-color: #cccccc;
+  transform: none;
 }
 @media (max-width: 768px) {
   .create-search-container {
@@ -419,7 +431,7 @@ if ($notifications_result) {
     </div>
     <button onclick="applySearch()" class="search-btn">Search</button>
   </div>
-  <button class="create-btn" onclick="window.location.href='Create.php'">Create New Program</button>
+  <button class="create-btn" onclick="window.location.href='Create.php'" <?php echo !$has_approved_proposals ? 'disabled title="You need at least one approved proposal to create a new program"' : ''; ?>>Create New Program</button>
 </div>
         <div class="tab-container">
           <div class="tab active" data-tab="active">Active Programs</div>
@@ -1041,4 +1053,6 @@ if ($notifications_result) {
 }
   </script>
 </body>
-</html>
+</html>< ? p h p   e n d i f ;   ? > 
+ 
+ 
