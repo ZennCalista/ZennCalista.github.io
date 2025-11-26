@@ -800,10 +800,12 @@ $unique_sdgs = count(array_unique($all_sdgs));
                     <li><a href="Programs.php"><i class="fas fa-tasks"></i> Program</a></li>
                     <li class="active"><a href="Projects.php"><i class="fas fa-project-diagram"></i> Projects</a></li>
                       <li><a href="Attendance.php"><i class="fas fa-calendar-check"></i> Attendance</a></li>
-                      <li><a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a></li>
+                      
                     <li><a href="Evaluation.php"><i class="fas fa-star-half-alt"></i> Evaluation</a></li>
                     <li><a href="certificates.php"><i class="fas fa-certificate"></i> Certificate</a></li>
+                    <li><a href="upload.php"><i class="fas fa-upload"></i> Documents </a></li> 
                     <li><a href="reports.php"><i class="fas fa-chart-line"></i> Reports</a></li>
+                    <li><a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a></li>
                 </ul>
                 <div class="sign-out" style="position: absolute; bottom: 30px; left: 0; width: 100%; text-align: center;">
                     <a href="../register/logout.php" style="color: inherit; text-decoration: none; display: block; padding: 12px 0;">Sign Out</a>

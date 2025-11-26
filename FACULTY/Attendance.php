@@ -225,6 +225,7 @@ if ($selected_program_id != 'all') {
           <li><a href="certificates.php"><i class="fas fa-certificate"></i> Certificate</a></li>
           <li><a href="upload.php"><i class="fas fa-upload"></i> Documents </a></li>  
           <li><a href="reports.PHP"><i class="fas fa-chart-line"></i> Reports</a></li>
+          <li><a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a></li>
         </ul>
  <div class="sign-out" style="position: absolute; bottom: 30px; left: 0; width: 100%; text-align: center;">
           <a href="../register/logout.php" style="color: inherit; text-decoration: none; display: block; padding: 12px 0;">Sign Out</a>
