@@ -25,16 +25,67 @@ if (!$faculty_id) {
 } else {
     $show_error = false;
 
-// Fetch uploads for this faculty
-$sql = "SELECT du.*, p.program_name 
-        FROM document_uploads du
-        JOIN programs p ON du.program_id = p.id
-        WHERE du.faculty_id = ?
-        ORDER BY du.upload_date DESC";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $faculty_id);
-$stmt->execute();
-$result = $stmt->get_result();
+    // Fetch all uploads for this faculty - both proposals and documents
+    $uploads = [];
+
+    // First, get all proposals
+    $proposals_sql = "SELECT pp.id, pp.proposal_title as title, pp.description, pp.status, pp.submitted_at as upload_date,
+                             'proposal' as upload_type, NULL as file_path, NULL as original_filename,
+                             NULL as program_name, pp.review_notes as admin_remarks
+                      FROM program_proposals pp
+                      WHERE pp.faculty_id = ?
+                      ORDER BY pp.submitted_at DESC";
+    $stmt = $conn->prepare($proposals_sql);
+    $stmt->bind_param("i", $faculty_id);
+    $stmt->execute();
+    $proposals_result = $stmt->get_result();
+
+    while ($row = $proposals_result->fetch_assoc()) {
+        $uploads[] = $row;
+    }
+    $stmt->close();
+
+    // Then, get all document uploads (including those linked to proposals)
+    $documents_sql = "SELECT du.id, 
+                             CASE 
+                               WHEN du.proposal_id IS NOT NULL THEN CONCAT('Proposal Document: ', pp.proposal_title)
+                               WHEN du.program_id IS NOT NULL THEN p.program_name
+                               ELSE 'General Document'
+                             END as title,
+                             du.document_type as description,
+                             du.status,
+                             du.upload_date,
+                             CASE 
+                               WHEN du.proposal_id IS NOT NULL THEN 'proposal_document'
+                               ELSE 'document'
+                             END as upload_type,
+                             du.file_path,
+                             du.original_filename,
+                             CASE 
+                               WHEN du.proposal_id IS NOT NULL THEN CONCAT('Proposal: ', pp.proposal_title)
+                               WHEN du.program_id IS NOT NULL THEN p.program_name
+                               ELSE 'General'
+                             END as program_name,
+                             NULL as admin_remarks
+                      FROM document_uploads du
+                      LEFT JOIN programs p ON du.program_id = p.id
+                      LEFT JOIN program_proposals pp ON du.proposal_id = pp.id
+                      WHERE du.faculty_id = ?
+                      ORDER BY du.upload_date DESC";
+    $stmt = $conn->prepare($documents_sql);
+    $stmt->bind_param("i", $faculty_id);
+    $stmt->execute();
+    $documents_result = $stmt->get_result();
+
+    while ($row = $documents_result->fetch_assoc()) {
+        $uploads[] = $row;
+    }
+    $stmt->close();
+
+    // Sort all uploads by date (most recent first)
+    usort($uploads, function($a, $b) {
+        return strtotime($b['upload_date']) - strtotime($a['upload_date']);
+    });
 }
 ?>
 
@@ -73,8 +124,9 @@ $result = $stmt->get_result();
   <table class="uploads-table">
     <thead>
       <tr>
-        <th>Program</th>
         <th>Type</th>
+        <th>Title/Description</th>
+        <th>Program/Proposal</th>
         <th>File</th>
         <th>Uploaded</th>
         <th>Status</th>
@@ -82,27 +134,53 @@ $result = $stmt->get_result();
       </tr>
     </thead>
     <tbody>
-      <?php if ($result->num_rows === 0): ?>
-        <tr><td colspan="6" style="text-align:center;">No uploads found.</td></tr>
+      <?php if (empty($uploads)): ?>
+        <tr><td colspan="7" style="text-align:center;">No uploads found.</td></tr>
       <?php else: ?>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php foreach ($uploads as $upload): ?>
           <tr>
-            <td><?php echo htmlspecialchars($row['program_name']); ?></td>
-            <td><?php echo ucfirst(htmlspecialchars($row['document_type'])); ?></td>
             <td>
-              <a class="download-link" href="uploads/<?php echo urlencode($row['file_path']); ?>" target="_blank">
-                <i class="fas fa-file"></i> <?php echo htmlspecialchars($row['original_filename']); ?>
-              </a>
+              <?php 
+              if ($upload['upload_type'] === 'proposal') {
+                echo '<i class="fas fa-file-alt" style="color:#247a37;"></i> Proposal';
+              } elseif ($upload['upload_type'] === 'proposal_document') {
+                echo '<i class="fas fa-file" style="color:#59a96a;"></i> Proposal Doc';
+              } else {
+                echo '<i class="fas fa-file-upload" style="color:#59a96a;"></i> Document';
+              }
+              ?>
             </td>
-            <td><?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($row['upload_date']))); ?></td>
             <td>
-              <span class="status <?php echo htmlspecialchars($row['status']); ?>">
-                <?php echo ucfirst($row['status']); ?>
+              <?php 
+              if ($upload['upload_type'] === 'proposal') {
+                echo htmlspecialchars($upload['title']);
+                if (!empty($upload['description'])) {
+                  echo '<br><small style="color:#666;">' . htmlspecialchars(substr($upload['description'], 0, 100)) . (strlen($upload['description']) > 100 ? '...' : '') . '</small>';
+                }
+              } else {
+                echo ucfirst(htmlspecialchars($upload['description']));
+              }
+              ?>
+            </td>
+            <td><?php echo htmlspecialchars($upload['program_name'] ?? 'N/A'); ?></td>
+            <td>
+              <?php if (!empty($upload['file_path']) && !empty($upload['original_filename'])): ?>
+                <a class="download-link" href="<?php echo htmlspecialchars($upload['file_path']); ?>" target="_blank">
+                  <i class="fas fa-download"></i> <?php echo htmlspecialchars($upload['original_filename']); ?>
+                </a>
+              <?php else: ?>
+                <span style="color:#999;">No file attached</span>
+              <?php endif; ?>
+            </td>
+            <td><?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($upload['upload_date']))); ?></td>
+            <td>
+              <span class="status <?php echo htmlspecialchars($upload['status']); ?>">
+                <?php echo ucfirst($upload['status']); ?>
               </span>
             </td>
-            <td class="remarks"><?php echo htmlspecialchars($row['admin_remarks']); ?></td>
+            <td class="remarks"><?php echo htmlspecialchars($upload['admin_remarks'] ?? ''); ?></td>
           </tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
       <?php endif; ?>
     </tbody>
   </table>

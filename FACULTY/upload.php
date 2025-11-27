@@ -366,7 +366,7 @@ h2 {
           <label for="document-type">Document Type</label>
           <select name="document_type" id="document-type" required>
             <option value="" disabled selected>Select Document Type</option>
-            <option value="proposal">Approved Extension Activity Proposal</option>
+            <option value="proposal">Extension Activity Proposal</option>
             <option value="report">Activity and Implementation Report</option>
             <option value="attendance">Attendance Sheet</option>
             <option value="photos">Photo Documentation</option>

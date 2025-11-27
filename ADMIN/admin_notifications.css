@@ -1,0 +1,366 @@
+/* Admin Notifications Module Styles */
+
+/* Floating Notification Button */
+.notification-float {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: #1B472B;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    border: none;
+    color: white;
+    font-size: 18px;
+}
+
+.notification-float:hover {
+    background: #2e7d32;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.notification-float:active {
+    transform: scale(0.95);
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.notification-badge.hidden {
+    display: none;
+}
+
+/* Modal Overlay */
+.notification-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.notification-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Content */
+.notification-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.notification-modal-overlay.show .notification-modal {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.notification-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.notification-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.notification-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.notification-modal-close:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* Modal Body */
+.notification-modal-body {
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.notification-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f1f3f4;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-message {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #2c3e50;
+}
+
+.notification-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.notification-priority {
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.notification-priority.high {
+    background: #fee;
+    color: #c53030;
+}
+
+.notification-priority.medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.notification-priority.low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.notification-date {
+    font-style: italic;
+}
+
+/* Modal Footer */
+.notification-modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-clear-all, .btn-mark-read {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-clear-all {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-clear-all:hover {
+    background: #c82333;
+}
+
+.btn-mark-read {
+    background: #28a745;
+    color: white;
+}
+
+.btn-mark-read:hover {
+    background: #218838;
+}
+
+.notification-count {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Empty State */
+.notification-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.notification-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.notification-empty-text {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Loading State */
+.notification-loading {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.notification-loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1B472B;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.notification-error {
+    padding: 20px;
+    text-align: center;
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    margin: 10px;
+}
+
+.notification-error-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.notification-error-text {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .notification-float {
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+    }
+
+    .notification-modal {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .notification-modal-header,
+    .notification-modal-body,
+    .notification-modal-footer {
+        padding: 15px;
+    }
+
+    .notification-item {
+        padding: 12px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-float {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .notification-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        top: -6px;
+        right: -6px;
+    }
+}

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>eTracker Admin Dashboard</title>
   <link rel="stylesheet" href="Programs.css" />
+  <link rel="stylesheet" href="admin_notifications.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <style>
     .modal {
@@ -164,6 +165,7 @@
       border-radius: 3px;
     }
   </style>
+
 
 </head>
 <body>
@@ -1727,8 +1729,15 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-  
- 
-  
+
+<script src="admin_notifications.js"></script>
+<script>
+  // Initialize admin notifications when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    initAdminNotifications();
+  });
+</script>
+
+
 </body>
 </html>

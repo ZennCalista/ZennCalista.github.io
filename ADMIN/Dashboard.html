@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>eTracker Admin Dashboard</title>
   <link rel="stylesheet" href="Dashboard.css" />
+  <link rel="stylesheet" href="admin_notifications.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -34,10 +35,10 @@
   <div class="main">
     <div class="main-header" style="margin-bottom:2rem;">
       <h1>Dashboard Overview</h1>
-      <input class="search" type="text" placeholder="Search..." />
-      <div class="header-icons">
+      <!-- <input class="search" type="text" placeholder="Search..." /> -->
+      <!-- <div class="header-icons">
         <span class="notif"><i class="fas fa-bell"></i></span>
-      </div>
+      </div> -->
     </div>
 
     <!-- Dashboard Cards -->
@@ -340,5 +341,13 @@ async function loadDashboardStats() {
 
 window.addEventListener('DOMContentLoaded', loadDashboardStats);
   </script>
+
+<script src="admin_notifications.js"></script>
+<script>
+  // Initialize admin notifications when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    initAdminNotifications();
+  });
+</script>
 </body>
 </html>

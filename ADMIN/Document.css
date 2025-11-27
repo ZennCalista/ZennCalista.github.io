@@ -477,6 +477,22 @@ body {
   animation: modalSlideIn 0.3s ease-out;
 }
 
+.modal-content.large-modal {
+  max-width: 90vw;
+  width: 90vw;
+  max-height: 90vh;
+  height: 90vh;
+}
+
+.paper-wrap {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
 @keyframes modalSlideIn {
   from {
     transform: translateY(-50px) scale(0.9);

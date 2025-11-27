@@ -90,6 +90,7 @@ if ($proposals_result) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proposal Approvals - Admin</title>
     <link rel="stylesheet" href="Document.css">
+    <link rel="stylesheet" href="admin_notifications.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .status-badge {
@@ -628,5 +629,13 @@ if ($proposals_result) {
             }
         });
     </script>
+
+<script src="admin_notifications.js"></script>
+<script>
+  // Initialize admin notifications when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    initAdminNotifications();
+  });
+</script>
 </body>
 </html>

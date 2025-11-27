@@ -47,6 +47,14 @@ if ($document_type === 'proposal') {
     $proposal_id = $conn->insert_id;
     $proposal_stmt->close();
 
+    // Create notification for admin
+    $notification_message = "New proposal submitted: \"$proposal_title\" by faculty member. Awaiting approval.";
+    $notification_sql = "INSERT INTO notifications (message, priority, audience, is_active, created_at) VALUES (?, 'medium', 'admin', 1, NOW())";
+    $notification_stmt = $conn->prepare($notification_sql);
+    $notification_stmt->bind_param('s', $notification_message);
+    $notification_stmt->execute();
+    $notification_stmt->close();
+
     echo "Proposal submitted successfully! Waiting for admin approval.\n";
 } else {
     // Regular document upload - requires program_id
@@ -122,6 +130,24 @@ for ($i = 0; $i < $numFiles; $i++) {
 }
 
 if ($document_type !== 'proposal') {
+    // Create notification for admin about document upload
+    $program_name = "Unknown Program";
+    if ($program_id) {
+        $prog_stmt = $conn->prepare("SELECT program_name FROM programs WHERE id = ?");
+        $prog_stmt->bind_param("i", $program_id);
+        $prog_stmt->execute();
+        $prog_stmt->bind_result($program_name);
+        $prog_stmt->fetch();
+        $prog_stmt->close();
+    }
+
+    $notification_message = "New document uploaded: $document_type for program \"$program_name\" by faculty member.";
+    $notification_sql = "INSERT INTO notifications (message, priority, audience, is_active, created_at) VALUES (?, 'low', 'admin', 1, NOW())";
+    $notification_stmt = $conn->prepare($notification_sql);
+    $notification_stmt->bind_param('s', $notification_message);
+    $notification_stmt->execute();
+    $notification_stmt->close();
+
     echo "Upload successful!";
 }
 ?>
