@@ -251,6 +251,86 @@ if ($proposals_result) {
             border-left: 4px solid #dc3545;
         }
     </style>
+        <style>
+            /* Viewer modal overrides (copied from Document.html) to ensure consistent look */
+            .modal-content.large-modal {
+                width: 95vw !important;
+                height: 95vh !important;
+                max-width: 95vw !important;
+                max-height: 95vh !important;
+                box-sizing: border-box !important;
+                padding: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .modal-content.large-modal .modal-header {
+                flex: 0 0 auto !important;
+                padding: 8px 14px !important;
+            }
+            .modal-content.large-modal .modal-body {
+                flex: 1 1 auto !important;
+                height: auto !important;
+                overflow: hidden !important;
+                padding: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: transparent !important;
+            }
+            #documentViewer {
+                width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            #documentViewer .paper-wrap {
+                width: 95% !important;
+                height: 96% !important;
+                max-width: none !important;
+                background: #fff !important;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow: hidden !important;
+            }
+            #documentViewer iframe, #documentViewer img {
+                width: 100% !important;
+                height: 100% !important;
+                border: 0 !important;
+                display: block !important;
+            }
+            .modal-content.large-modal .view-controls span#viewFilename {
+                color: #fff;
+                opacity: 0.95;
+            }
+            .modal-content.large-modal .view-controls a#downloadLink:hover {
+                background: rgba(255,255,255,0.05);
+            }
+            .modal-content.large-modal .view-controls a.download-btn {
+                background: #ffffff !important;
+                color: #114d2e !important;
+                border: 0 !important;
+                padding: 8px 12px !important;
+                border-radius: 6px !important;
+                text-decoration: none !important;
+                font-weight: 700 !important;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                cursor: pointer !important;
+            }
+            .modal-content.large-modal .view-controls a.download-btn i.fas {
+                color: #114d2e !important;
+                font-size: 1rem !important;
+            }
+            .modal-content.large-modal .view-controls a.download-btn:hover {
+                transform: translateY(-1px) !important;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
+            }
+        </style>
 </head>
 <body>
     <div class="sidebar">
@@ -426,14 +506,19 @@ if ($proposals_result) {
     <div id="documentsModal" class="modal" style="display: none;">
         <div class="modal-content large-modal">
             <div class="modal-header">
-                <span class="modal-title">Proposal Documents</span>
-                <button class="modal-close" onclick="closeDocumentsModal()">&times;</button>
+                <h3><i class="fas fa-eye"></i> View Document</h3>
+                <div class="view-controls" style="display:flex;align-items:center;gap:12px;">
+                  <span id="viewFilename" style="font-weight:600; color:#fff; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;"></span>
+                  <a id="downloadLink" class="download-btn" target="_blank" rel="noopener">
+                    <i class="fas fa-download" aria-hidden="true"></i>
+                    <span style="margin-left:6px;">Download</span>
+                  </a>
+                </div>
+                <button class="close-btn" onclick="closeViewDocumentModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="documentViewer">
-                    <div class="paper-wrap">
-                        <iframe id="documentFrame" style="width: 100%; height: 100%; border: none;"></iframe>
-                    </div>
+                    <!-- content injected dynamically -->
                 </div>
             </div>
         </div>
@@ -461,18 +546,9 @@ if ($proposals_result) {
                 .then(response => response.json())
                 .then(documents => {
                     if (documents.length > 0) {
-                        // For now, just show the first document
+                        // Show the first document using the shared viewer UI
                         const doc = documents[0];
-                        const modal = document.getElementById('documentsModal');
-                        const iframe = document.getElementById('documentFrame');
-
-                        if (doc.file_path) {
-                            iframe.src = `../backend/view_document.php?id=${doc.id}`;
-                        } else {
-                            iframe.src = `../backend/view_document.php?id=${doc.id}`;
-                        }
-
-                        modal.style.display = 'block';
+                        showViewDocumentModal(doc.file_path, doc.id);
                     } else {
                         alert('No documents found for this proposal.');
                     }
@@ -483,9 +559,64 @@ if ($proposals_result) {
                 });
         }
 
+        // Reusable viewer adapted from Document.html
+        function showViewDocumentModal(path, docId) {
+            const viewer = document.getElementById('documentViewer');
+            const extension = (path || '').split('.').pop().toLowerCase();
+
+            let viewUrl;
+            if (docId) {
+                viewUrl = `view_document.php?id=${docId}`;
+            } else {
+                viewUrl = path && path.startsWith('/') ? path : `../${path}`;
+            }
+
+            if (extension === 'pdf') {
+                viewer.innerHTML = `\n                  <div class="paper-wrap">\n                    <iframe src="${viewUrl}" allowfullscreen></iframe>\n                  </div>\n                `;
+            } else if (extension === 'docx') {
+                // Use Google viewer as fallback
+                const fullUrl = window.location.origin + window.location.pathname.replace('proposal_approvals.php', '') + viewUrl;
+                viewer.innerHTML = `\n                  <div class="paper-wrap">\n                    <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true" allowfullscreen></iframe>\n                  </div>\n                `;
+            } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+                viewer.innerHTML = `\n                  <div class="paper-wrap" style="background:#f5f5f5;">\n                    <img src="${viewUrl}" alt="Document Image" style="max-width:100%; height:auto; display:block; margin:0 auto;"/>\n                  </div>\n                `;
+            } else {
+                // For unknown types, open in a new tab
+                if (docId) {
+                    window.open(viewUrl, '_blank');
+                    return;
+                }
+                viewer.innerHTML = `<div class="paper-wrap">Unsupported preview for this file type.</div>`;
+            }
+
+            // populate filename and download link in header
+            try {
+                const filenameEl = document.getElementById('viewFilename');
+                const downloadEl = document.getElementById('downloadLink');
+                const filename = (path && path.split('/').pop()) || (docId ? `document_${docId}` : 'document');
+                if (filenameEl) filenameEl.textContent = filename;
+                const downloadHref = docId ? `view_document.php?id=${docId}` : (viewUrl || path);
+                if (downloadEl) {
+                    downloadEl.href = downloadHref;
+                    downloadEl.setAttribute('download', filename);
+                }
+            } catch (e) {
+                console.warn('Could not set filename/download link', e);
+            }
+
+            const modal = document.getElementById('documentsModal');
+            if (modal) modal.classList.add('show');
+        }
+
+        function closeViewDocumentModal() {
+            const modal = document.getElementById('documentsModal');
+            if (modal) modal.classList.remove('show');
+            const viewer = document.getElementById('documentViewer');
+            if (viewer) viewer.innerHTML = '';
+        }
+
         function closeDocumentsModal() {
             const modal = document.getElementById('documentsModal');
-            modal.style.display = 'none';
+            modal.classList.remove('show');
             document.getElementById('documentFrame').src = '';
         }
 
