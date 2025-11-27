@@ -330,7 +330,10 @@ if ($notifications_result) {
           <div class="email"><?php echo htmlspecialchars($user_email); ?></div>
         </div>
         <div class="notifications">
-          <h3>🔔 Notifications</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3>🔔 Notifications</h3>
+            <button id="clear-notifications-btn" style="background: #b30000; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; font-weight: bold;">Clear All</button>
+          </div>
           <?php if (empty($notifications)): ?>
             <div class="note no-notifications">No notifications at this time.</div>
           <?php else: ?>
@@ -771,6 +774,33 @@ if ($notifications_result) {
       
       return tips;
     }
+
+    // Clear notifications handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const clearBtn = document.getElementById('clear-notifications-btn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+          if (confirm('Are you sure you want to clear all notifications?')) {
+            fetch('clear_notifications.php')
+              .then(response => response.text())
+              .then(text => {
+                if (text === 'Notifications cleared successfully') {
+                  // Hide all notification notes
+                  document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
+                  // Show no notifications message if not already present
+                  if (!document.querySelector('.no-notifications')) {
+                    const noNotif = document.createElement('div');
+                    noNotif.className = 'note no-notifications';
+                    noNotif.textContent = 'No notifications at this time.';
+                    document.querySelector('.notifications').appendChild(noNotif);
+                  }
+                } else {
+                  alert('Failed to clear notifications: ' + text);
+                }
+              })
+              .catch(error => alert('Error clearing notifications: ' + error.message));
+          }
+        });
+      }
+    });
   </script>
-</body>
-</html>

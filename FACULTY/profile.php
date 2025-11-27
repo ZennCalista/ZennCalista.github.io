@@ -153,7 +153,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
           </div>
         </div>
         <div class="notifications">
-          <h3>🔔 Notifications</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3>🔔 Notifications</h3>
+            <button id="clear-notifications-btn" style="background: #b30000; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; font-weight: bold;">Clear All</button>
+          </div>
           <?php if (empty($notifications)) { ?>
             <p class="no-notifications">No notifications at this time.</p>
           <?php } else { ?>
@@ -264,6 +267,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
     // Optional: Close modal when clicking outside the card
     document.getElementById('editPersonalModal').addEventListener('click', function(e) {
       if (e.target === this) closeEditModal();
+    });
+
+    // Clear notifications handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const clearBtn = document.getElementById('clear-notifications-btn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+          if (confirm('Are you sure you want to clear all notifications?')) {
+            fetch('clear_notifications.php')
+              .then(response => response.text())
+              .then(text => {
+                if (text === 'Notifications cleared successfully') {
+                  // Hide all notification notes
+                  document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
+                  // Show no notifications message if not already present
+                  if (!document.querySelector('.no-notifications')) {
+                    const noNotif = document.createElement('p');
+                    noNotif.className = 'no-notifications';
+                    noNotif.textContent = 'No notifications at this time.';
+                    document.querySelector('.notifications').appendChild(noNotif);
+                  }
+                } else {
+                  alert('Failed to clear notifications: ' + text);
+                }
+              })
+              .catch(error => alert('Error clearing notifications: ' + error.message));
+          }
+        });
+      }
     });
   </script>
 </body>

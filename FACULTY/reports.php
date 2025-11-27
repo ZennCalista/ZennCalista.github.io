@@ -353,7 +353,10 @@ $stmt->close();
           <div class="email"><?php echo htmlspecialchars($user_email); ?></div>
         </div>
         <div class="notifications">
-          <h3>🔔 Notifications</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3>🔔 Notifications</h3>
+            <button id="clear-notifications-btn" style="background: #b30000; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; font-weight: bold;">Clear All</button>
+          </div>
           <?php if (empty($notifications)): ?>
             <div class="note no-notifications">No notifications at this time.</div>
           <?php else: ?>
@@ -423,6 +426,49 @@ $stmt->close();
         responsive: true,
         plugins: { legend: { display: false } },
         scales: { y: { beginAtZero: true, max: 5 } }
+      }
+    });
+
+    // Clear notifications functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const clearBtn = document.getElementById('clear-notifications-btn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+          if (confirm('Are you sure you want to clear all notifications?')) {
+            fetch('clear_notifications.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                // Hide all notification notes and show no notifications message
+                const notes = document.querySelectorAll('.note');
+                notes.forEach(note => note.style.display = 'none');
+                const noNotifs = document.querySelector('.no-notifications');
+                if (noNotifs) {
+                  noNotifs.style.display = 'block';
+                } else {
+                  // Create no notifications message if it doesn't exist
+                  const notificationsDiv = document.querySelector('.notifications');
+                  const newNoNotifs = document.createElement('div');
+                  newNoNotifs.className = 'note no-notifications';
+                  newNoNotifs.textContent = 'No notifications at this time.';
+                  notificationsDiv.appendChild(newNoNotifs);
+                }
+                alert('Notifications cleared successfully!');
+              } else {
+                alert('Failed to clear notifications: ' + data.message);
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('An error occurred while clearing notifications.');
+            });
+          }
+        });
       }
     });
   </script>
