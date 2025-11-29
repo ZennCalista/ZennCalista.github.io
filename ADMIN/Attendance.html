@@ -118,6 +118,7 @@
       </table>
     </div>
 
+    <!--
     <div class="role-insights">
       <h2>Role-Based Attendance Insights</h2>
       <div class="insight-cards">
@@ -136,6 +137,7 @@
         </div>
       </div>
     </div>
+    -->
       
       <!-- <canvas id="attendanceChart" width="400" height="120" style="margin:30px 0;"></canvas> -->
 </div>
@@ -149,10 +151,10 @@
         <label for="participantRole">Role</label>
         <select id="participantRole" name="participantRole" required>
           <option value="">Select Role</option>
-          <option value="Student">Student</option>
+          <option value="Student">Non-Academic</option>
           <option value="Faculty">Faculty</option>
-          <option value="Partner">Partner</option>
-          <option value="Stakeholder">Stakeholder</option>
+          <!-- <option value="Partner">Partner</option>
+          <option value="Stakeholder">Stakeholder</option> -->
         </select>
 
         <label for="studentId">ID Number</label>
@@ -225,6 +227,19 @@
     <script>
 let currentSessionId = null;
 
+// Toast notification function
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 100);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => document.body.removeChild(toast), 300);
+  }, 3000);
+}
+
 // Modal functions
 function openModal() {
   document.getElementById('manualEntryModal').style.display = 'block';
@@ -241,7 +256,7 @@ function closeBulkModal() {
 
 function openQuickCheckinModal() {
   if (!currentSessionId) {
-    alert('Please select a session first');
+    showToast('Please select a session first.', 'info');
     return;
   }
   document.getElementById('quickCheckinModal').style.display = 'block';
@@ -372,11 +387,11 @@ function updateParticipantStatus(attendanceId, studentName, newStatus) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert('Status updated successfully');
+        showToast('Status updated successfully', 'success');
         initializeBulkAttendance(); // Refresh the modal
         loadSessionInfo(currentSessionId); // Refresh session info
       } else {
-        alert('Failed to update status: ' + (data.error || 'Unknown error'));
+        showToast('Failed to update status: ' + (data.error || 'Unknown error'), 'error');
       }
     });
 }
@@ -395,11 +410,11 @@ function markAllAbsent() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
+        showToast(data.message, 'success');
         loadSessionInfo(currentSessionId);
         loadAttendanceLogs();
       } else {
-        alert('Failed to mark absents: ' + (data.error || 'Unknown error'));
+        showToast('Failed to mark absents: ' + (data.error || 'Unknown error'), 'error');
       }
     });
 }
@@ -419,12 +434,12 @@ document.getElementById('quickCheckinForm').addEventListener('submit', function(
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
+        showToast(data.message, 'success');
         closeQuickCheckinModal();
         loadSessionInfo(currentSessionId);
         loadAttendanceLogs();
       } else {
-        alert('Failed to check in: ' + (data.error || 'Unknown error'));
+        showToast('Failed to check in: ' + (data.error || 'Unknown error'), 'error');
       }
     });
 });
@@ -445,11 +460,11 @@ document.getElementById('manualEntryForm').addEventListener('submit', function(e
     .then(res => res.json())
     .then(res => {
       if (res.success) {
-        alert('Attendance saved!');
+        showToast('Attendance saved successfully!', 'success');
         closeModal();
         loadAttendanceLogs();
       } else {
-        alert('Failed to save attendance.');
+        showToast('Failed to save attendance.', 'error');
       }
     });
 });
@@ -551,7 +566,7 @@ function loadProgramAttendanceOverview() {
 
 // Export function placeholder
 function exportAttendanceSummary() {
-  alert('Export functionality would be implemented here');
+  showToast('Export functionality would be implemented here', 'info');
 }
     </script>
       
