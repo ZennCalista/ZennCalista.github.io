@@ -520,21 +520,22 @@
   <div class="sidebar">
     <h2>eTracker Admin</h2>
     <a href="Dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="Reports.html"><i class="fas fa-chart-bar"></i> Reports & Analytics</a>
     <a href="User.html"><i class="fas fa-users"></i> User Management</a>
     <a href="Programs.html"><i class="fas fa-calendar-alt"></i> Project Management</a>
+    <a href="ProjectEvaluation.html"><i class="fas fa-clipboard-check"></i> Project Evaluation</a>
     <a href="proposal_approvals.php"><i class="fas fa-check-circle"></i> Proposal Approvals</a>
     <a href="Attendance.html"><i class="fas fa-check-square"></i> Attendance Tracker</a>
     <a href="Evaluation.html"><i class="fas fa-poll"></i> Evaluation & Feedback</a>
-    <a href="Reports.html"><i class="fas fa-chart-bar"></i> Reports & Analytics</a>
     <a href="Document.html"><i class="fas fa-folder"></i> Document Management</a>
     <a href="Certificates.html"><i class="fas fa-certificate"></i> Certificates</a>
     <a href="Notifications.html" class="active"><i class="fas fa-bell"></i> Notifications</a>
+    <a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a>
     
-     <div style="margin-top: auto; padding-top: 20px;">
-      <a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a>
-      <a href="../register/logout.php" style="color: none; text-decoration: none; display: block; padding: 12px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
-          <i class="fas fa-sign-out-alt"></i> Sign Out
-        </a>
+    <div style="margin-top: auto; padding-top: 20px;">
+    <a href="../register/logout.php" style="color: none; text-decoration: none; display: block; padding: 12px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </a>
     </div>
   </div>
 
@@ -572,9 +573,9 @@
           <div class="input-icon">
             <select id="notifAudience" name="audience" required>
               <option value="all">All Users</option>
-              <option value="admin">Admin Only</option>
+              <!-- <option value="admin">Admin Only</option> -->
               <option value="faculty">Faculty Only</option>
-              <option value="student">Students Only</option>
+              <option value="student">Non-Academic Only</option>
             </select>
             <i class="fas fa-users"></i>
           </div>
