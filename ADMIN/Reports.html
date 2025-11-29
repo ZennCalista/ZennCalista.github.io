@@ -80,6 +80,104 @@
       </div>
     </div>
 
+    <!-- Analytics Dashboard -->
+    <div class="analytics-section">
+      <div class="section-header">
+        <h2><i class="fas fa-chart-pie"></i> Analytics Dashboard</h2>
+        <p>Visual insights and data trends</p>
+      </div>
+
+      <div class="charts-grid">
+        <!-- Program Popularity Chart -->
+        <div class="chart-container wide">
+          <div class="chart-header">
+            <h3>Uploaded Programs</h3>
+            <div class="chart-controls">
+              <select id="period-filter">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+          </div>
+          <canvas id="programPopularityChart"></canvas>
+        </div>
+
+        <!-- Attendance Trends Chart - COMMENTED OUT -->
+        <!--
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Attendance Trends</h3>
+            <div class="chart-controls">
+              <select id="attendance-period">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+          </div>
+          <canvas id="attendanceTrendsChart"></canvas>
+        </div>
+        -->
+
+        <!-- Attendance Rate Chart -->
+        <div class="chart-container" style="flex: 1;">
+          <div class="chart-header">
+            <h3>Overall Attendance Rate</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; padding: 2rem;">
+            <canvas id="attendanceRateChart" width="120" height="120" style="max-width: 150px; max-height: 150px;"></canvas>
+            <p style="text-align: center; font-weight: bold; font-size: 1.5rem; margin-top: 1rem; color: #10b981;" id="attendanceRateLabel">--%</p>
+          </div>
+        </div>
+
+        <!-- Feedback Ratings Distribution -->
+        <div class="chart-container" style="flex: 1;">
+          <div class="chart-header">
+            <h3>Feedback Ratings</h3>
+            <div class="chart-controls">
+              <span class="chart-legend">
+                <span class="legend-item excellent">■ Excellent (4.5-5.0)</span>
+                <span class="legend-item good">■ Good (3.5-4.4)</span>
+                <span class="legend-item average">■ Average (2.5-3.4)</span>
+                <span class="legend-item poor">■ Poor (1.0-2.4)</span>
+              </span>
+            </div>
+          </div>
+          <canvas id="feedbackRatingsChart"></canvas>
+        </div>
+
+        <!-- Department Participation Chart - COMMENTED OUT -->
+        <!--
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Department Participation</h3>
+            <div class="chart-controls">
+              <button class="view-toggle active" data-view="students">Students</button>
+              <button class="view-toggle" data-view="faculty">Faculty</button>
+            </div>
+          </div>
+          <canvas id="departmentChart"></canvas>
+        </div>
+        -->
+
+        <!-- Monthly Program Performance - COMMENTED OUT -->
+        <!--
+        <div class="chart-container wide">
+          <div class="chart-header">
+            <h3>Monthly Program Performance</h3>
+            <div class="chart-controls">
+              <select id="year-filter">
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+            </div>
+          </div>
+          <canvas id="monthlyPerformanceChart"></canvas>
+        </div>
+        -->
+      </div>
+    </div>
+
     <!-- Report Generation Section -->
     <div class="report-generation-section">
       <div class="section-header">
@@ -200,87 +298,6 @@
           <button class="generate-btn" onclick="generateReport('faculty')">
             <i class="fas fa-play"></i> Generate
           </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Analytics Dashboard -->
-    <div class="analytics-section">
-      <div class="section-header">
-        <h2><i class="fas fa-chart-pie"></i> Analytics Dashboard</h2>
-        <p>Visual insights and data trends</p>
-      </div>
-
-      <div class="charts-grid">
-        <!-- Program Popularity Chart -->
-        <div class="chart-container">
-          <div class="chart-header">
-            <h3>Program Popularity</h3>
-            <div class="chart-controls">
-              <select id="period-filter">
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
-          </div>
-          <canvas id="programPopularityChart"></canvas>
-        </div>
-
-        <!-- Attendance Trends Chart -->
-        <div class="chart-container">
-          <div class="chart-header">
-            <h3>Attendance Trends</h3>
-            <div class="chart-controls">
-              <select id="attendance-period">
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-          </div>
-          <canvas id="attendanceTrendsChart"></canvas>
-        </div>
-
-        <!-- Feedback Ratings Distribution -->
-        <div class="chart-container">
-          <div class="chart-header">
-            <h3>Feedback Ratings</h3>
-            <div class="chart-controls">
-              <span class="chart-legend">
-                <span class="legend-item excellent">■ Excellent (4.5-5.0)</span>
-                <span class="legend-item good">■ Good (3.5-4.4)</span>
-                <span class="legend-item average">■ Average (2.5-3.4)</span>
-                <span class="legend-item poor">■ Poor (1.0-2.4)</span>
-              </span>
-            </div>
-          </div>
-          <canvas id="feedbackRatingsChart"></canvas>
-        </div>
-
-        <!-- Department Participation Chart -->
-        <div class="chart-container">
-          <div class="chart-header">
-            <h3>Department Participation</h3>
-            <div class="chart-controls">
-              <button class="view-toggle active" data-view="students">Students</button>
-              <button class="view-toggle" data-view="faculty">Faculty</button>
-            </div>
-          </div>
-          <canvas id="departmentChart"></canvas>
-        </div>
-
-        <!-- Monthly Program Performance -->
-        <div class="chart-container wide">
-          <div class="chart-header">
-            <h3>Monthly Program Performance</h3>
-            <div class="chart-controls">
-              <select id="year-filter">
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-              </select>
-            </div>
-          </div>
-          <canvas id="monthlyPerformanceChart"></canvas>
         </div>
       </div>
     </div>
@@ -432,16 +449,16 @@
     async function initializeCharts() {
       try {
         // Program Popularity Chart
-        const popularityData = await fetchChartData('program_popularity');
+        const popularityData = await fetchChartData('programs_by_department');
         if (popularityData.success && popularityData.data && popularityData.data.length > 0) {
           const data = popularityData.data;
           charts.programPopularity = new Chart(document.getElementById('programPopularityChart'), {
             type: 'bar',
             data: {
-              labels: data.map(item => item.program_name || 'Unknown'),
+              labels: data.map(item => item.department || 'Unknown'),
               datasets: [{
-                label: 'Participants',
-                data: data.map(item => item.participants || 0),
+                label: 'Programs',
+                data: data.map(item => item.program_count || 0),
                 backgroundColor: [
                   '#10b981', '#059669', '#047857', '#065f46', '#064e3b', '#052e16'
                 ],
@@ -452,16 +469,18 @@
             options: {
               responsive: true,
               maintainAspectRatio: false,
+              indexAxis: 'y',
               plugins: { legend: { display: false } },
               scales: {
-                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                x: { grid: { display: false } }
+                y: { grid: { display: false } },
+                x: { beginAtZero: true, grid: { color: '#f1f5f9' } }
               }
             }
           });
         }
 
-        // Attendance Trends Chart
+        // Attendance Trends Chart - COMMENTED OUT
+        /*
         const attendanceData = await fetchChartData('attendance_trends');
         if (attendanceData.success && attendanceData.data && attendanceData.data.length > 0) {
           const data = attendanceData.data;
@@ -494,6 +513,30 @@
             }
           });
         }
+        */
+
+        // Attendance Rate Chart
+        const attendanceRate = parseFloat(document.getElementById('avg-attendance-stat').textContent.replace('%', '')) || 0;
+        document.getElementById('attendanceRateLabel').innerText = attendanceRate + "%";
+        const ctxAttendance = document.getElementById('attendanceRateChart').getContext('2d');
+        charts.attendanceRate = new Chart(ctxAttendance, {
+          type: 'doughnut',
+          data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{
+              data: [attendanceRate, 100 - attendanceRate],
+              backgroundColor: ['#10b981', '#e5e7eb'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            cutout: '75%',
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            }
+          }
+        });
 
         // Feedback Ratings Chart
         const feedbackData = await fetchChartData('feedback_ratings');
@@ -523,7 +566,8 @@
           });
         }
 
-        // Department Participation Chart
+        // Department Participation Chart - COMMENTED OUT
+        /*
         const deptData = await fetchChartData('department_participation');
         if (deptData.success) {
           const data = deptData.data;
@@ -550,8 +594,10 @@
             }
           });
         }
+        */
 
-        // Monthly Performance Chart
+        // Monthly Performance Chart - COMMENTED OUT
+        /*
         const monthlyData = await fetchChartData('monthly_performance');
         if (monthlyData.success) {
           const data = monthlyData.data;
@@ -588,6 +634,7 @@
             }
           });
         }
+        */
 
       } catch (error) {
         console.error('Error initializing charts:', error);

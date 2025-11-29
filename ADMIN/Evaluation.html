@@ -399,7 +399,8 @@ function renderEvaluationsTable(evaluations) {
           <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
             <button onclick="showEvaluationDetails(${ev.id})" style="background:#17a2b8;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.8em;width:60px;">View</button>
             ${!ev.reviewed ? `<button onclick="markReviewed(${ev.id})" style="background:#28a745;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.8em;width:60px;">Review</button>` : ''}
-            ${needsAttention ? `<button onclick="addAdminSuggestion(${ev.id}, '${ev.program_name}')" style="background:#e74c3c;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.8em;width:60px;">Suggest</button>` : ''}
+            <!-- ${needsAttention ? `<button onclick="addAdminSuggestion(${ev.id}, '${ev.program_name}')" style="background:#e74c3c;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.8em;width:60px;">Suggest</button>` : ''} -->
+          </div>
           </div>
         </td>
       </tr>
