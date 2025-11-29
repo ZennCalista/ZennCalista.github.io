@@ -59,8 +59,8 @@ function createNotificationElements() {
             <div class="notification-modal-footer">
                 <div class="notification-count">0 notifications</div>
                 <div class="notification-actions">
-                    <button class="btn-mark-read" onclick="markAllAsRead()">Mark All Read</button>
-                    <button class="btn-clear-all" onclick="clearAllNotifications()">Clear All</button>
+                    <button class="btn-mark-read" onclick="showMarkReadModal()">Mark All Read</button>
+                    <button class="btn-clear-all" onclick="showClearAllModal()">Clear All</button>
                 </div>
             </div>
         </div>
@@ -70,8 +70,60 @@ function createNotificationElements() {
     document.body.appendChild(notificationButton);
     document.body.appendChild(modalOverlay);
 
+    // Create confirmation modals
+    createConfirmationModals();
+
     // Get modal reference
     notificationModal = modalOverlay;
+}
+
+// Create confirmation modals for mark all read and clear all actions
+function createConfirmationModals() {
+    // Mark All Read confirmation modal
+    const markReadModal = document.createElement('div');
+    markReadModal.className = 'confirmation-modal-overlay';
+    markReadModal.id = 'markReadConfirmationModal';
+    markReadModal.innerHTML = `
+        <div class="confirmation-modal">
+            <div class="confirmation-modal-header">
+                <h3 class="confirmation-modal-title">
+                    <i class="fas fa-check-circle"></i> Mark All as Read
+                </h3>
+            </div>
+            <div class="confirmation-modal-body">
+                <p>Are you sure you want to mark all notifications as read? This will reset the notification badge.</p>
+            </div>
+            <div class="confirmation-modal-footer">
+                <button class="btn-cancel" onclick="hideMarkReadModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmMarkAllAsRead()">Mark as Read</button>
+            </div>
+        </div>
+    `;
+
+    // Clear All confirmation modal
+    const clearAllModal = document.createElement('div');
+    clearAllModal.className = 'confirmation-modal-overlay';
+    clearAllModal.id = 'clearAllConfirmationModal';
+    clearAllModal.innerHTML = `
+        <div class="confirmation-modal">
+            <div class="confirmation-modal-header">
+                <h3 class="confirmation-modal-title">
+                    <i class="fas fa-trash-alt"></i> Clear All Notifications
+                </h3>
+            </div>
+            <div class="confirmation-modal-body">
+                <p>Are you sure you want to clear all notifications? This action cannot be undone.</p>
+            </div>
+            <div class="confirmation-modal-footer">
+                <button class="btn-cancel" onclick="hideClearAllModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmClearAllNotifications()">Clear All</button>
+            </div>
+        </div>
+    `;
+
+    // Add to page
+    document.body.appendChild(markReadModal);
+    document.body.appendChild(clearAllModal);
 }
 
 // Set up event listeners
@@ -90,6 +142,24 @@ function setupEventListeners() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && notificationModal.classList.contains('show')) {
             closeNotificationModal();
+        }
+        // Close confirmation modals on Escape
+        if (e.key === 'Escape') {
+            hideMarkReadModal();
+            hideClearAllModal();
+        }
+    });
+
+    // Close confirmation modals when clicking overlay
+    document.getElementById('markReadConfirmationModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideMarkReadModal();
+        }
+    });
+
+    document.getElementById('clearAllConfirmationModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideClearAllModal();
         }
     });
 }
@@ -262,54 +332,123 @@ function createNotificationItem(notification) {
     return listItem;
 }
 
-// Mark all notifications as read
-function markAllAsRead() {
-    if (confirm('Mark all notifications as read?')) {
-        // Mark as read by resetting the badge count
-        markedAsRead = true;
-        localStorage.setItem('adminNotificationsMarkedAsRead', 'true');
-        unreadCount = 0;
-        // Manually update badge without fetching
-        if (notificationBadge) {
-            notificationBadge.classList.add('hidden');
-            notificationBadge.textContent = '0';
-        }
-        closeNotificationModal();
-        alert('All notifications marked as read.');
+// Show mark all read confirmation modal
+function showMarkReadModal() {
+    const modal = document.getElementById('markReadConfirmationModal');
+    if (modal) {
+        modal.classList.add('show');
     }
 }
 
-// Clear all notifications
-function clearAllNotifications() {
-    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
-        // This would typically call a clear API endpoint
-        // For now, we'll simulate it
-        fetch('api_notifications.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'action=clear_all'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                notificationsData = [];
-                unreadCount = 0;
-                markedAsRead = false;
-                localStorage.setItem('adminNotificationsMarkedAsRead', 'false');
-                updateNotificationBadge();
-                loadNotifications(); // Refresh modal
-                alert('All notifications cleared successfully.');
-            } else {
-                alert('Failed to clear notifications: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(error => {
-            console.error('Error clearing notifications:', error);
-            alert('Network error. Please try again.');
-        });
+// Hide mark all read confirmation modal
+function hideMarkReadModal() {
+    const modal = document.getElementById('markReadConfirmationModal');
+    if (modal) {
+        modal.classList.remove('show');
     }
+}
+
+// Show clear all confirmation modal
+function showClearAllModal() {
+    const modal = document.getElementById('clearAllConfirmationModal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+// Hide clear all confirmation modal
+function hideClearAllModal() {
+    const modal = document.getElementById('clearAllConfirmationModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+// Confirm mark all as read
+function confirmMarkAllAsRead() {
+    // Mark as read by resetting the badge count
+    markedAsRead = true;
+    localStorage.setItem('adminNotificationsMarkedAsRead', 'true');
+    unreadCount = 0;
+    // Manually update badge without fetching
+    if (notificationBadge) {
+        notificationBadge.classList.add('hidden');
+        notificationBadge.textContent = '0';
+    }
+    hideMarkReadModal();
+    closeNotificationModal();
+    showSuccessMessage('All notifications marked as read.');
+}
+
+// Confirm clear all notifications
+function confirmClearAllNotifications() {
+    // This would typically call a clear API endpoint
+    // For now, we'll simulate it
+    fetch('api_notifications.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=clear_all'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            notificationsData = [];
+            unreadCount = 0;
+            markedAsRead = false;
+            localStorage.setItem('adminNotificationsMarkedAsRead', 'false');
+            updateNotificationBadge();
+            loadNotifications(); // Refresh modal
+            hideClearAllModal();
+            closeNotificationModal();
+            showSuccessMessage('All notifications cleared successfully.');
+        } else {
+            showErrorMessage('Failed to clear notifications: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error clearing notifications:', error);
+        showErrorMessage('Network error. Please try again.');
+    });
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification-toast success';
+    notification.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Show error message
+function showErrorMessage(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification-toast error';
+    notification.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Mark all notifications as read (legacy function - now uses modal)
+function markAllAsRead() {
+    showMarkReadModal();
+}
+
+// Clear all notifications (legacy function - now uses modal)
+function clearAllNotifications() {
+    showClearAllModal();
 }
 
 // Utility function to escape HTML
@@ -324,3 +463,9 @@ window.initAdminNotifications = initAdminNotifications;
 window.closeNotificationModal = closeNotificationModal;
 window.markAllAsRead = markAllAsRead;
 window.clearAllNotifications = clearAllNotifications;
+window.showMarkReadModal = showMarkReadModal;
+window.hideMarkReadModal = hideMarkReadModal;
+window.showClearAllModal = showClearAllModal;
+window.hideClearAllModal = hideClearAllModal;
+window.confirmMarkAllAsRead = confirmMarkAllAsRead;
+window.confirmClearAllNotifications = confirmClearAllNotifications;

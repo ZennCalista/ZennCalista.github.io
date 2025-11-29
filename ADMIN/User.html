@@ -288,6 +288,54 @@
       <p><strong>Status:</strong> <span id="profile-status">-</span></p>
     </div>
   </div>
+
+<!-- Verify User Confirmation Modal -->
+<div id="verify-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Verify User</h2>
+    <span class="close-modal" onclick="closeModal('verify-user-modal')">&times;</span>
+  </div>
+  <div class="modal-body">
+    <div class="confirmation-content">
+      <div class="confirmation-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <p>Are you sure you want to verify this user? This will grant them full access to the system.</p>
+      <div class="user-info-preview">
+        <p><strong>User:</strong> <span id="verify-user-name">-</span></p>
+        <p><strong>Role:</strong> <span id="verify-user-role">-</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-secondary" onclick="closeModal('verify-user-modal')">Cancel</button>
+    <button class="btn-primary" onclick="confirmVerifyUser()">Verify User</button>
+  </div>
+</div>
+
+<!-- Unverify User Confirmation Modal -->
+<div id="unverify-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Unverify User</h2>
+    <span class="close-modal" onclick="closeModal('unverify-user-modal')">&times;</span>
+  </div>
+  <div class="modal-body">
+    <div class="confirmation-content">
+      <div class="confirmation-icon warning">
+        <i class="fas fa-user-times"></i>
+      </div>
+      <p>Are you sure you want to unverify this user? This will restrict their access to the system.</p>
+      <div class="user-info-preview">
+        <p><strong>User:</strong> <span id="unverify-user-name">-</span></p>
+        <p><strong>Role:</strong> <span id="unverify-user-role">-</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-secondary" onclick="closeModal('unverify-user-modal')">Cancel</button>
+    <button class="btn-danger" onclick="confirmUnverifyUser()">Unverify User</button>
+  </div>
+</div>
   
       
   
@@ -397,7 +445,7 @@
   
 
   document.getElementById('modal-overlay').addEventListener('click', function () {
-  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal'].forEach(id => closeModal(id));
+  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal', 'verify-user-modal', 'unverify-user-modal'].forEach(id => closeModal(id));
 });
 
 
@@ -490,10 +538,10 @@ function createUserCard(user) {
           <i class="fas fa-edit"></i>
         </button>
         ${isVerified ? 
-          `<button class="btn-unverify" onclick="unverifyUser(${user.id})" title="Unverify User">
+          `<button class="btn-unverify" onclick="showUnverifyModal(${user.id}, '${user.firstname} ${user.lastname}', '${user.role}')" title="Unverify User">
             <i class="fas fa-user-times"></i>
           </button>` :
-          `<button class="btn-verify" onclick="verifyUser(${user.id})" title="Verify User">
+          `<button class="btn-verify" onclick="showVerifyModal(${user.id}, '${user.firstname} ${user.lastname}', '${user.role}')" title="Verify User">
             <i class="fas fa-user-check"></i>
           </button>`
         }
@@ -870,48 +918,125 @@ function submitEditUser(e) {
   return false;
 }
 
-function verifyUser(id) {
-  if (confirm('Are you sure you want to verify this user?')) {
-    fetch('api_users.php', {
-      method: 'POST',
-      body: new URLSearchParams({
-        action: 'verify_user',
-        id: id
-      })
+// Show verify user confirmation modal
+function showVerifyModal(userId, userName, userRole) {
+  document.getElementById('verify-user-name').textContent = userName;
+  document.getElementById('verify-user-role').textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  window.pendingVerifyUserId = userId;
+  openModal('verify-user-modal');
+}
+
+// Show unverify user confirmation modal
+function showUnverifyModal(userId, userName, userRole) {
+  document.getElementById('unverify-user-name').textContent = userName;
+  document.getElementById('unverify-user-role').textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  window.pendingUnverifyUserId = userId;
+  openModal('unverify-user-modal');
+}
+
+// Confirm verify user action
+function confirmVerifyUser() {
+  const userId = window.pendingVerifyUserId;
+  if (!userId) return;
+
+  fetch('api_users.php', {
+    method: 'POST',
+    body: new URLSearchParams({
+      action: 'verify_user',
+      id: userId
     })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      closeModal('verify-user-modal');
+      loadStudents();
+      loadNonAcad();
+      loadFaculty();
+      showToast('User verified successfully!', 'success');
+    } else {
+      showToast('Failed to verify user: ' + (res.message || 'Unknown error'), 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('An error occurred while verifying the user.', 'error');
+  });
+}
+
+// Confirm unverify user action
+function confirmUnverifyUser() {
+  const userId = window.pendingUnverifyUserId;
+  if (!userId) return;
+
+  fetch('api_users.php', {
+    method: 'POST',
+    body: new URLSearchParams({
+      action: 'unverify_user',
+      id: userId
+    })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      closeModal('unverify-user-modal');
+      loadStudents();
+      loadNonAcad();
+      loadFaculty();
+      showToast('User unverified successfully!', 'success');
+    } else {
+      showToast('Failed to unverify user: ' + (res.message || 'Unknown error'), 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('An error occurred while unverifying the user.', 'error');
+  });
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  setTimeout(() => toast.classList.add('show'), 10);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Legacy functions (now use modals)
+function verifyUser(id) {
+  // Fetch user data first to show in modal
+  fetch('api_users.php?id=' + id)
     .then(res => res.json())
-    .then(res => {
-      if (res.success) {
-        loadStudents();
-        loadNonAcad();
-        loadFaculty();
-      } else {
-        alert('Failed to verify user.');
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        const user = data.data[0];
+        showVerifyModal(id, user.firstname + ' ' + user.lastname, user.role);
       }
     });
-  }
 }
 
 function unverifyUser(id) {
-  if (confirm('Are you sure you want to unverify this user?')) {
-    fetch('api_users.php', {
-      method: 'POST',
-      body: new URLSearchParams({
-        action: 'unverify_user',
-        id: id
-      })
-    })
+  // Fetch user data first to show in modal
+  fetch('api_users.php?id=' + id)
     .then(res => res.json())
-    .then(res => {
-      if (res.success) {
-        loadStudents();
-        loadNonAcad();
-        loadFaculty();
-      } else {
-        alert('Failed to unverify user.');
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        const user = data.data[0];
+        showUnverifyModal(id, user.firstname + ' ' + user.lastname, user.role);
       }
     });
-  }
 }
 
 // Load initial data

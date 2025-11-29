@@ -56,7 +56,7 @@ try {
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => 'backend/get_image.php?image_id=' . $image_id
+                            'image_url' => '/Etracker/portal/home/backend/get_image.php?image_id=' . $image_id
                         ];
                     }
                 }

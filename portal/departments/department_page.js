@@ -465,15 +465,6 @@ function openProgramModal(program) {
     adminActions.className = 'admin-actions';
     adminActions.style.cssText = 'display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;';
     
-    // Edit button
-    const editBtn = document.createElement('button');
-    editBtn.id = 'edit-program-btn';
-    editBtn.className = 'edit-btn';
-    editBtn.textContent = 'Edit Program';
-    editBtn.style.cssText = 'flex: 1; padding: 10px 20px; background: #054634; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.3s;';
-    editBtn.onmouseover = () => editBtn.style.background = '#07624a';
-    editBtn.onmouseout = () => editBtn.style.background = '#054634';
-    
     // Archive button
     const archiveBtn = document.createElement('button');
     archiveBtn.id = 'archive-program-btn';
@@ -483,7 +474,6 @@ function openProgramModal(program) {
     archiveBtn.onmouseover = () => archiveBtn.style.background = '#e0a800';
     archiveBtn.onmouseout = () => archiveBtn.style.background = '#ffc107';
     
-    adminActions.appendChild(editBtn);
     adminActions.appendChild(archiveBtn);
     
     // Append to modal body
@@ -548,83 +538,6 @@ window.addEventListener('popstate', function(e) {
 
 // Event delegation for edit and delete buttons
 document.addEventListener('click', function(e) {
-  if (e.target.id === 'edit-program-btn') {
-    // Get current program data from modal
-    const programId = modalState.programId;
-    
-    // Close the program modal
-    closeProgramModal();
-    
-    // Wait a bit for modal to close, then open upload form in edit mode
-    setTimeout(() => {
-      // Fetch full program data including department
-      fetch(`../home/backend/get_program_details.php?id=${programId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            const program = data.program;
-            
-            // Open the upload modal
-            const uploadModal = document.getElementById('upload-modal');
-            if (uploadModal) {
-              uploadModal.classList.add('active');
-              document.body.style.overflow = 'hidden';
-              
-              // Populate form fields with correct IDs from fab_upload.html
-              document.getElementById('program_name').value = program.title;
-              document.getElementById('description').value = program.description;
-              document.getElementById('department').value = program.department_id;
-              document.getElementById('project_titles').value = program.project_titles || '';
-              document.getElementById('location').value = program.location || '';
-              document.getElementById('start_date').value = program.start_date || '';
-              document.getElementById('end_date').value = program.end_date || '';
-              document.getElementById('status').value = program.status || '';
-              document.getElementById('max_students').value = program.max_students || '';
-              document.getElementById('sdg_goals').value = program.sdg_goals || '';
-              
-              // Store edit mode data
-              window.editMode = {
-                programId: programId,
-                existingImages: program.images || [],
-                imagesToRemove: []
-              };
-              
-              // Change submit button text
-              const submitBtn = document.getElementById('submit-btn');
-              if (submitBtn) {
-                submitBtn.textContent = 'Update Program';
-              }
-              
-              // Change modal header
-              const modalHeader = document.querySelector('.upload-modal-header h2');
-              if (modalHeader) {
-                modalHeader.textContent = 'Edit Program';
-              }
-              
-              // Show existing images in the preview container
-              const imagePreviewContainer = document.getElementById('image-preview-container');
-              if (imagePreviewContainer && program.images && program.images.length > 0) {
-                const existingImagesHTML = program.images.map(img => `
-                  <div class="image-preview" data-image-id="${img.id}">
-                    <img src="${img.image_url}" alt="${img.image_desc || 'Program image'}">
-                    <button type="button" class="remove-btn" onclick="removeExistingImage(${img.id})">&times;</button>
-                    <input type="text" class="desc-input" placeholder="Image description" value="${img.image_desc || ''}" disabled>
-                  </div>
-                `).join('');
-                imagePreviewContainer.innerHTML = existingImagesHTML;
-              }
-            }
-          } else {
-            showNotification('Error loading program details: ' + data.error, 'error');
-          }
-        })
-        .catch(err => {
-          console.error('Error loading program details:', err);
-          showNotification('Error loading program details', 'error');
-        });
-    }, 300);
-  }
-  
   if (e.target.id === 'archive-program-btn') {
     const programId = modalState.programId;
     
@@ -658,23 +571,6 @@ document.addEventListener('click', function(e) {
     }
   }
 });
-
-// Function to remove existing images during edit
-function removeExistingImage(imageId) {
-  if (!window.editMode) return;
-  
-  // Add to removal list
-  if (!window.editMode.imagesToRemove) {
-    window.editMode.imagesToRemove = [];
-  }
-  window.editMode.imagesToRemove.push(imageId);
-  
-  // Remove from preview
-  const previewItem = document.querySelector(`.image-preview[data-image-id="${imageId}"]`);
-  if (previewItem) {
-    previewItem.remove();
-  }
-}
 
 // Notification function (if not already defined)
 function showNotification(message, type) {
