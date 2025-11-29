@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Segoe UI", sans-serif;
+    font-family: 'Segoe UI', sans-serif;
   }
   
   body {
@@ -264,7 +264,7 @@
   }
 
   .cert-title {
-    font-family: 'Georgia', serif;
+    font-family: 'Segoe UI', sans-serif;
     font-size: 1.2rem;
     color: #bfa600;
     font-weight: bold;
@@ -303,7 +303,7 @@
     font-weight: 500;
   }
   .cert-date-value {
-    font-family: monospace;
+    font-family: 'Segoe UI', sans-serif;
   }
 
   .cert-status {
@@ -395,3 +395,4 @@
     .main-content, .cert-table, .cert-summary { padding: 10px; }
     .cert-summary { flex-direction: column; gap: 18px; }
   }
+

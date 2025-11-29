@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', 'Roboto', 'Montserrat', Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #f4fdf5 0%, #e6f6e6 100%);
     min-height: 100vh;
 }
@@ -1506,3 +1506,4 @@ body {
         justify-content: center;
     }
 }
+

@@ -18,7 +18,7 @@
   
   body {
     display: flex;
-    font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
@@ -339,3 +339,4 @@
   position: relative;
   z-index: 9999;
 }
+

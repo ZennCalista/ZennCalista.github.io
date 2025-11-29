@@ -6,7 +6,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   display: flex;
   height: 100vh;
   background-color: #f8fafc;
@@ -877,3 +877,4 @@ canvas {
 .export-btn.print:hover {
   box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
 }
+

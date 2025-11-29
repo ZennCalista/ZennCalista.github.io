@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Segoe UI", sans-serif;
+    font-family: 'Segoe UI', sans-serif;
   }
   
   body {
@@ -418,3 +418,4 @@
   gap: 18px;
 }
 .timeline-details i { margin-right: 4px; }
+

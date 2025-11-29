@@ -14,7 +14,7 @@
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   width: 100vw;
   height: 100vh;
   background-color: var(--bg-color);
@@ -206,3 +206,4 @@ a {
 .container.right-panel-active .overlay-right {
   transform: translateX(20%);
 }
+

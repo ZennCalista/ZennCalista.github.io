@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 body {
@@ -96,7 +96,7 @@ body {
   color: #4b5600;
   box-shadow: 0 5px 20px rgba(60, 72, 88, 0.08);
   border-radius: 40px;
-  font-family: 'Verdana', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: bold;
   font-size: 2rem;
   animation: fadeInDown 0.8s;
@@ -485,7 +485,7 @@ body {
 
 .content-header h1 {
   color: #257a1c;
-  font-family: 'Segoe UI', Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: bold;
   font-size: 2.2rem;
   margin: 0;
@@ -537,3 +537,4 @@ body {
   background: #fce373;
   color: #257a1c;
 }
+

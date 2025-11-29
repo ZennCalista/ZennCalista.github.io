@@ -1,12 +1,18 @@
 /* Submission Form Page Styles - v1.0 - Based on UAE Page */
 /* Submission Form Page Styles v1.0 - Consistent with Home Page Design */
 
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+
 /* Reset and Base Styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: playfair display, serif;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Newsreader', serif;
 }
 
 body {
@@ -838,3 +844,4 @@ body {
     font-size: 18px;
   }
 }
+
