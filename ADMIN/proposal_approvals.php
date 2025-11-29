@@ -49,10 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $message .= " Notes: " . $review_notes;
             }
 
-            $notif_sql = "INSERT INTO notifications (message, priority, is_active, created_at) VALUES (?, ?, 1, NOW())";
+            $notif_sql = "INSERT INTO notifications (message, priority, audience, recipient_id, is_active, created_at) VALUES (?, ?, 'faculty', ?, 1, NOW())";
             $priority = ($status === 'approved') ? 'low' : 'medium';
             $notif_stmt = $conn->prepare($notif_sql);
-            $notif_stmt->bind_param('ss', $message, $priority);
+            $notif_stmt->bind_param('ssis', $message, $priority, $faculty_id);
             $notif_stmt->execute();
             $notif_stmt->close();
 
