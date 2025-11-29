@@ -263,6 +263,58 @@
       <div id="imageViewerDesc" style="color: #fff; margin-top: 10px; text-align: center; max-width: 90vw;"></div>
     </div>
   </div>
+
+  <!-- Archive Program Confirmation Modal -->
+  <div id="archive-program-modal" class="modal" onclick="if(event.target===this)closeModal('archive-program-modal')">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 style="margin:0; color:#1f2937; font-size:18px;">Archive Program</h2>
+        <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeModal('archive-program-modal')">&times;</span>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:48px; color:#f59e0b; margin-bottom:16px;">
+            <i class="fas fa-archive"></i>
+          </div>
+          <p style="margin:0; color:#374151; line-height:1.5;">Are you sure you want to archive this program? It will be moved to the archived programs section and can be restored later.</p>
+          <div style="background:#f8fafc; border-radius:8px; padding:16px; margin-top:16px; text-align:left;">
+            <p style="margin:4px 0; font-size:14px;"><strong>Program:</strong> <span id="archive-program-name">-</span></p>
+            <p style="margin:4px 0; font-size:14px;"><strong>Department:</strong> <span id="archive-program-dept">-</span></p>
+          </div>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:1px solid #d1d5db; background:white; color:#374151; border-radius:6px; cursor:pointer;" onclick="closeModal('archive-program-modal')">Cancel</button>
+        <button style="padding:8px 16px; border:none; background:#f59e0b; color:white; border-radius:6px; cursor:pointer;" onclick="confirmArchiveProgram()">Archive Program</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore Program Confirmation Modal -->
+  <div id="restore-program-modal" class="modal" onclick="if(event.target===this)closeModal('restore-program-modal')">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 style="margin:0; color:#1f2937; font-size:18px;">Restore Program</h2>
+        <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeModal('restore-program-modal')">&times;</span>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:48px; color:#10b981; margin-bottom:16px;">
+            <i class="fas fa-undo"></i>
+          </div>
+          <p style="margin:0; color:#374151; line-height:1.5;">Are you sure you want to restore this program? It will be moved back to the active programs list.</p>
+          <div style="background:#f8fafc; border-radius:8px; padding:16px; margin-top:16px; text-align:left;">
+            <p style="margin:4px 0; font-size:14px;"><strong>Program:</strong> <span id="restore-program-name">-</span></p>
+            <p style="margin:4px 0; font-size:14px;"><strong>Department:</strong> <span id="restore-program-dept">-</span></p>
+          </div>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:1px solid #d1d5db; background:white; color:#374151; border-radius:6px; cursor:pointer;" onclick="closeModal('restore-program-modal')">Cancel</button>
+        <button style="padding:8px 16px; border:none; background:#10b981; color:white; border-radius:6px; cursor:pointer;" onclick="confirmRestoreProgram()">Restore Program</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -968,29 +1020,86 @@ async function showEditProgramForm(programId) {
 
 // --- Archive Program ---
 async function archiveProgram(programId) {
-  if (confirm('Archive this program? It will be moved to the archived programs section and can be restored later.')) {
-    try {
-      const response = await fetch(`../backend/archive_program.php`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `id=${programId}`
-      });
+  // Fetch program data first to show in modal
+  const prog = programsData.find(p => p.id == programId);
+  if (prog) {
+    showArchiveModal(programId, prog.program_name, prog.department_name || prog.department || 'Not specified');
+  }
+}
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+// Show archive program confirmation modal
+function showArchiveModal(programId, programName, departmentName) {
+  document.getElementById('archive-program-name').textContent = programName;
+  document.getElementById('archive-program-dept').textContent = departmentName;
+  window.pendingArchiveProgramId = programId;
+  document.getElementById('archive-program-modal').classList.add('show');
+}
 
-      const result = await response.json();
-      if (result.success) {
-        alert('Program archived successfully!');
-        renderProgramsTable();
-      } else {
-        alert('Error archiving program: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error archiving program:', error);
-      alert('Error archiving program: ' + error.message);
+// Confirm archive program action
+async function confirmArchiveProgram() {
+  const programId = window.pendingArchiveProgramId;
+  if (!programId) return;
+
+  try {
+    const response = await fetch(`../backend/archive_program.php`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `id=${programId}`
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
+    if (result.success) {
+      closeModal('archive-program-modal');
+      renderProgramsTable();
+      showToast('Program archived successfully!', 'success');
+    } else {
+      showToast('Error archiving program: ' + (result.error || 'Unknown error'), 'error');
+    }
+  } catch (error) {
+    console.error('Error archiving program:', error);
+    showToast('Error archiving program: ' + error.message, 'error');
+  }
+}
+
+// Show restore program confirmation modal
+function showRestoreModal(programId, programName, departmentName) {
+  document.getElementById('restore-program-name').textContent = programName;
+  document.getElementById('restore-program-dept').textContent = departmentName;
+  window.pendingRestoreProgramId = programId;
+  document.getElementById('restore-program-modal').classList.add('show');
+}
+
+// Confirm restore program action
+async function confirmRestoreProgram() {
+  const programId = window.pendingRestoreProgramId;
+  if (!programId) return;
+
+  try {
+    const response = await fetch(`../backend/restore_program.php`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `id=${programId}`
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.success) {
+      closeModal('restore-program-modal');
+      renderProgramsTable();
+      showToast('Program restored successfully!', 'success');
+    } else {
+      showToast('Error restoring program: ' + (result.error || 'Unknown error'), 'error');
+    }
+  } catch (error) {
+    console.error('Error restoring program:', error);
+    showToast('Error restoring program: ' + error.message, 'error');
   }
 }
 
@@ -1035,29 +1144,10 @@ async function viewArchivedProgramDetails(archiveId) {
 
 // --- Restore Program ---
 async function restoreProgram(archiveId) {
-  if (confirm('Restore this program? It will be moved back to the active programs list.')) {
-    try {
-      const response = await fetch(`../backend/restore_program.php`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `id=${archiveId}`
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        alert('Program restored successfully!');
-        renderProgramsTable();
-      } else {
-        alert('Error restoring program: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error restoring program:', error);
-      alert('Error restoring program: ' + error.message);
-    }
+  // Fetch archived program data first to show in modal
+  const prog = archivedProgramsData.find(p => p.id == archiveId);
+  if (prog) {
+    showRestoreModal(archiveId, prog.program_name, prog.department_name || prog.department || 'Not specified');
   }
 }
 
@@ -1198,7 +1288,11 @@ function closeModal(id) {
   const modal = document.getElementById(id);
   if (modal) {
     modal.classList.remove('show');
-    // Clear modal content after animation
+    // For static modals, don't clear content
+    if (id === 'archive-program-modal' || id === 'restore-program-modal') {
+      return;
+    }
+    // Clear modal content after animation for dynamic modals
     setTimeout(() => {
       if (!modal.classList.contains('show')) {
         modal.innerHTML = '';
@@ -1704,6 +1798,41 @@ async function loadDepartmentListForEdit(selectedDeptId) {
   } catch (error) {
     console.error('Error loading departments for edit:', error);
   }
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 300px;
+  `;
+  toast.innerHTML = `
+    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  setTimeout(() => toast.style.transform = 'translateX(0)', 10);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 // --- Initial Render ---
