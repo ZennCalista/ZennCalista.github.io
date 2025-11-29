@@ -831,6 +831,10 @@ body {
   color: #f59e0b;
 }
 
+.confirmation-icon.danger {
+  color: #ef4444;
+}
+
 .user-info-preview {
   background: #f8fafc;
   border-radius: 8px;
