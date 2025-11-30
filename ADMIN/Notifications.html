@@ -438,6 +438,21 @@
       }
     }
 
+    /* Edit mode animation */
+    .notif-edit-highlight {
+      animation: notifEditPulse 0.6s ease-in-out;
+      border-color: #3bb77e !important;
+      box-shadow: 0 0 0 3px rgba(59, 183, 126, 0.2) !important;
+    }
+    @keyframes notifEditPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 183, 126, 0);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(59, 183, 126, 0.3);
+      }
+    }
+
     /* Button hover animation */
     #notificationForm button, .notif-card-actions button {
       transition: background 0.18s, color 0.18s, transform 0.18s;
@@ -717,6 +732,17 @@
       form.expires_at.value = expires_at;
       form.id.value = id;
       form.scrollIntoView({behavior: "smooth"});
+      
+      // Add animation to highlight edit mode
+      setTimeout(() => {
+        const fields = [form.message, form.type, form.priority, form.audience, form.expires_at];
+        fields.forEach((field, index) => {
+          setTimeout(() => {
+            field.classList.add('notif-edit-highlight');
+            setTimeout(() => field.classList.remove('notif-edit-highlight'), 600);
+          }, index * 100);
+        });
+      }, 300);
     };
 
     window.addEventListener('DOMContentLoaded', fetchAndRenderNotifications);
