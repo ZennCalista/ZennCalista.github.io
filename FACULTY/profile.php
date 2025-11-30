@@ -258,8 +258,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
               <span>Faculty Profile</span>
             </div>
             <div class="section-content">
-              <div class="info-row"><span>Faculty Name:</span> <?php echo htmlspecialchars($faculty_profile['faculty_name'] ?? ''); ?></div>
-              <div class="info-row"><span>Faculty ID:</span> <?php echo htmlspecialchars($faculty_profile['faculty_id'] ?? ''); ?></div>
+              <!-- <div class="info-row"><span>Faculty Name:</span> <?php echo htmlspecialchars($faculty_profile['faculty_name'] ?? ''); ?></div> -->
+              <!-- <div class="info-row"><span>Faculty ID:</span> <?php echo htmlspecialchars($faculty_profile['faculty_id'] ?? ''); ?></div> -->
               <div class="info-row"><span>Department:</span> <?php echo htmlspecialchars($faculty_profile['faculty_department'] ?? ''); ?></div>
               <div class="info-row"><span>Position:</span> <?php echo htmlspecialchars($faculty_profile['position'] ?? ''); ?></div>
             </div>

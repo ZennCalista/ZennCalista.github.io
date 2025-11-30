@@ -281,18 +281,105 @@ if ($notifications_result) {
   to { opacity: 1; }
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -60%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
 
-.create-search-container {
+    /* End Program Modal */
+    .end-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .end-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .end-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .end-modal-header i {
+      font-size: 2rem;
+      color: #e53935;
+    }
+
+    .end-modal-header h3 {
+      font-size: 1.4rem;
+      color: #1b472b;
+      margin: 0;
+    }
+
+    .end-modal-body {
+      margin-bottom: 24px;
+      font-size: 1.05rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .end-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .end-modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .end-modal-btn-cancel {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .end-modal-btn-cancel:hover {
+      background: #d0d0d0;
+    }
+
+    .end-modal-btn-confirm {
+      background: #b30000;
+      color: #fff;
+    }
+
+    .end-modal-btn-confirm:hover {
+      background: #990000;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(179, 0, 0, 0.3);
+    }.create-search-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -496,6 +583,23 @@ if ($notifications_result) {
       <div class="clear-modal-actions">
         <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
         <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Program Modal -->
+  <div class="end-modal-overlay" id="endModalOverlay">
+    <div class="end-modal">
+      <div class="end-modal-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>End Program?</h3>
+      </div>
+      <div class="end-modal-body">
+        Are you sure you want to end this program? This action cannot be undone and will mark the program as completed.
+      </div>
+      <div class="end-modal-actions">
+        <button class="end-modal-btn end-modal-btn-cancel" onclick="closeEndModal()">Cancel</button>
+        <button class="end-modal-btn end-modal-btn-confirm" onclick="confirmEndProgram()">End Program</button>
       </div>
     </div>
   </div>
@@ -951,25 +1055,9 @@ if ($notifications_result) {
       const endButton = card.querySelector('.end');
       if (endButton) {
         endButton.addEventListener('click', () => {
-          if (confirm(`Are you sure you want to end program ID ${programId}?`)) {
-            fetch('end_program.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ program_id: programId })
-            })
-            .then(response => response.json())
-            .then(data => {
-              showNotification(data.message, data.status);
-              if (data.status === 'success') {
-                setTimeout(() => {
-                  window.location.reload();
-                }, 3000);
-              }
-            })
-            .catch(error => {
-              showNotification('Error ending program: ' + error.message, 'error');
-            });
-          }
+          // Store the program ID for the modal
+          window.currentProgramId = programId;
+          showEndModal();
         });
       }
     });
@@ -1235,6 +1323,57 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closeClearModal();
+    }
+  });
+});
+
+// End Program Modal functions
+function showEndModal() {
+  document.getElementById('endModalOverlay').style.display = 'block';
+}
+
+function closeEndModal() {
+  document.getElementById('endModalOverlay').style.display = 'none';
+}
+
+function confirmEndProgram() {
+  const programId = window.currentProgramId;
+  fetch('end_program.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ program_id: programId })
+  })
+  .then(response => response.json())
+  .then(data => {
+    showNotification(data.message, data.status);
+    closeEndModal();
+    if (data.status === 'success') {
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    }
+  })
+  .catch(error => {
+    showNotification('Error ending program: ' + error.message, 'error');
+    closeEndModal();
+  });
+}
+
+// Close end modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+  const endOverlay = document.getElementById('endModalOverlay');
+  if (endOverlay) {
+    endOverlay.addEventListener('click', function(e) {
+      if (e.target === endOverlay) {
+        closeEndModal();
+      }
+    });
+  }
+
+  // Close end modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeEndModal();
     }
   });
 });

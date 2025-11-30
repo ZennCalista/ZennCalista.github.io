@@ -821,9 +821,6 @@ $unique_sdgs = count(array_unique($all_sdgs));
                     <h1><i class="fas fa-project-diagram"></i> Projects Management</h1>
                     <p>Manage individual project objectives, track progress, and measure outcomes</p>
                     <div style="display: flex; gap: 15px; margin-top: 20px;">
-                        <a href="Create.php" class="create-project-btn">
-                            <i class="fas fa-plus"></i> Create New Program
-                        </a>
                         <?php if ($use_new_table): ?>
                         <button onclick="openProjectModal()" class="create-project-btn" style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);">
                             <i class="fas fa-tasks"></i> Add Individual Project
@@ -971,10 +968,10 @@ $unique_sdgs = count(array_unique($all_sdgs));
                                         <i class="fas fa-map-marker-alt"></i>
                                         <span><?php echo htmlspecialchars($project['location']); ?></span>
                                     </div>
-                                    <div class="project-detail">
+                                    <!-- <div class="project-detail">
                                         <i class="fas fa-users"></i>
                                         <span><?php echo $project['participants_count']; ?>/<?php echo $project['max_students']; ?> participants</span>
-                                    </div>
+                                    </div> -->
                                     <div class="project-detail">
                                         <i class="fas fa-calendar"></i>
                                         <span>
@@ -982,12 +979,12 @@ $unique_sdgs = count(array_unique($all_sdgs));
                                             <?php echo $project['project_end_date'] ? date('M j, Y', strtotime($project['project_end_date'])) : 'No end date'; ?>
                                         </span>
                                     </div>
-                                    <?php if ($days_remaining): ?>
+                                    <!-- <?php if ($days_remaining): ?>
                                         <div class="project-detail">
                                             <i class="fas fa-clock"></i>
                                             <span><?php echo $days_remaining; ?></span>
                                         </div>
-                                    <?php endif; ?>
+                                    <?php endif; ?> -->
                                 </div>
 
                                 <!-- Project Objectives -->
@@ -1084,9 +1081,9 @@ $unique_sdgs = count(array_unique($all_sdgs));
                                 <?php endif; ?>
 
                                 <div class="project-actions">
-                                    <button onclick="viewProjectDetails('<?php echo $project['project_id']; ?>')" class="action-btn btn-primary">
+                                    <!-- <button onclick="viewProjectDetails('<?php echo $project['project_id']; ?>')" class="action-btn btn-primary">
                                         <i class="fas fa-eye"></i> View Details
-                                    </button>
+                                    </button> -->
                                     <?php if ($use_new_table): ?>
                                     <button onclick="editProject('<?php echo $project['project_id']; ?>')" class="action-btn btn-secondary">
                                         <i class="fas fa-edit"></i> Edit
