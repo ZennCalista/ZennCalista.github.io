@@ -118,8 +118,131 @@ if ($notifications_result) {
   <title>eTracker Faculty Certificates</title>
   <link rel="stylesheet" href="sample.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Clear Notifications Modal */
+    .clear-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .clear-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .clear-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .clear-modal-header i {
+      font-size: 2rem;
+      color: #e53935;
+    }
+
+    .clear-modal-header h3 {
+      font-size: 1.4rem;
+      color: #1b472b;
+      margin: 0;
+    }
+
+    .clear-modal-body {
+      margin-bottom: 24px;
+      font-size: 1.05rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .clear-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .clear-modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-modal-btn-cancel {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .clear-modal-btn-cancel:hover {
+      background: #d0d0d0;
+    }
+
+    .clear-modal-btn-confirm {
+      background: #b30000;
+      color: #fff;
+    }
+
+    .clear-modal-btn-confirm:hover {
+      background: #990000;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(179, 0, 0, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- Clear Notifications Modal -->
+  <div class="clear-modal-overlay" id="clearModalOverlay">
+    <div class="clear-modal">
+      <div class="clear-modal-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Clear All Notifications?</h3>
+      </div>
+      <div class="clear-modal-body">
+        Are you sure you want to clear all notifications? This action cannot be undone.
+      </div>
+      <div class="clear-modal-actions">
+        <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
+        <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -299,33 +422,65 @@ if ($notifications_result) {
   </style>
 
   <script>
+    // Modal functions
+    function showClearModal() {
+      document.getElementById('clearModalOverlay').style.display = 'block';
+    }
+
+    function closeClearModal() {
+      document.getElementById('clearModalOverlay').style.display = 'none';
+    }
+
+    function confirmClearNotifications() {
+      fetch('clear_notifications.php')
+        .then(response => response.text())
+        .then(text => {
+          if (text === 'Notifications cleared successfully') {
+            // Hide all notification notes
+            document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
+            // Show no notifications message if not already present
+            if (!document.querySelector('.no-notifications')) {
+              const noNotif = document.createElement('div');
+              noNotif.className = 'note no-notifications';
+              noNotif.textContent = 'No notifications at this time.';
+              document.querySelector('.notifications').appendChild(noNotif);
+            }
+            closeClearModal();
+            alert('Notifications cleared successfully!');
+          } else {
+            closeClearModal();
+            alert('Failed to clear notifications: ' + text);
+          }
+        })
+        .catch(error => {
+          closeClearModal();
+          alert('Error clearing notifications: ' + error.message);
+        });
+    }
+
     // Clear notifications handler
     document.addEventListener('DOMContentLoaded', function() {
       const clearBtn = document.getElementById('clear-notifications-btn');
       if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-          if (confirm('Are you sure you want to clear all notifications?')) {
-            fetch('clear_notifications.php')
-              .then(response => response.text())
-              .then(text => {
-                if (text === 'Notifications cleared successfully') {
-                  // Hide all notification notes
-                  document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
-                  // Show no notifications message if not already present
-                  if (!document.querySelector('.no-notifications')) {
-                    const noNotif = document.createElement('div');
-                    noNotif.className = 'note no-notifications';
-                    noNotif.textContent = 'No notifications at this time.';
-                    document.querySelector('.notifications').appendChild(noNotif);
-                  }
-                } else {
-                  alert('Failed to clear notifications: ' + text);
-                }
-              })
-              .catch(error => alert('Error clearing notifications: ' + error.message));
+        clearBtn.addEventListener('click', showClearModal);
+      }
+
+      // Close modal when clicking outside
+      const overlay = document.getElementById('clearModalOverlay');
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) {
+            closeClearModal();
           }
         });
       }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeClearModal();
+        }
+      });
     });
   </script>
 </body>

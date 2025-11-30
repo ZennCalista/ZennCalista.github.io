@@ -278,8 +278,131 @@ $stmt->close();
       background: linear-gradient(90deg, #247a37 60%, #59a96a 100%);
       transform: translateY(-2px) scale(1.03);
     }
+
+    /* Clear Notifications Modal */
+    .clear-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .clear-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .clear-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .clear-modal-header i {
+      font-size: 2rem;
+      color: #e53935;
+    }
+
+    .clear-modal-header h3 {
+      font-size: 1.4rem;
+      color: #1b472b;
+      margin: 0;
+    }
+
+    .clear-modal-body {
+      margin-bottom: 24px;
+      font-size: 1.05rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .clear-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .clear-modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-modal-btn-cancel {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .clear-modal-btn-cancel:hover {
+      background: #d0d0d0;
+    }
+
+    .clear-modal-btn-confirm {
+      background: #b30000;
+      color: #fff;
+    }
+
+    .clear-modal-btn-confirm:hover {
+      background: #990000;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(179, 0, 0, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
   </style>
 </head>
+<body>
+  <!-- Clear Notifications Modal -->
+  <div class="clear-modal-overlay" id="clearModalOverlay">
+    <div class="clear-modal">
+      <div class="clear-modal-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Clear All Notifications?</h3>
+      </div>
+      <div class="clear-modal-body">
+        Are you sure you want to clear all notifications? This action cannot be undone.
+      </div>
+      <div class="clear-modal-actions">
+        <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
+        <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
 <body>
   <div class="container">
     <!-- Sidebar (unchanged) -->
@@ -429,47 +552,76 @@ $stmt->close();
       }
     });
 
+    // Modal functions
+    function showClearModal() {
+      document.getElementById('clearModalOverlay').style.display = 'block';
+    }
+
+    function closeClearModal() {
+      document.getElementById('clearModalOverlay').style.display = 'none';
+    }
+
+    function confirmClearNotifications() {
+      fetch('clear_notifications.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Hide all notification notes and show no notifications message
+          const notes = document.querySelectorAll('.note');
+          notes.forEach(note => note.style.display = 'none');
+          const noNotifs = document.querySelector('.no-notifications');
+          if (noNotifs) {
+            noNotifs.style.display = 'block';
+          } else {
+            // Create no notifications message if it doesn't exist
+            const notificationsDiv = document.querySelector('.notifications');
+            const newNoNotifs = document.createElement('div');
+            newNoNotifs.className = 'note no-notifications';
+            newNoNotifs.textContent = 'No notifications at this time.';
+            notificationsDiv.appendChild(newNoNotifs);
+          }
+          closeClearModal();
+          alert('Notifications cleared successfully!');
+        } else {
+          closeClearModal();
+          alert('Failed to clear notifications: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        closeClearModal();
+        alert('An error occurred while clearing notifications.');
+      });
+    }
+
     // Clear notifications functionality
     document.addEventListener('DOMContentLoaded', function() {
       const clearBtn = document.getElementById('clear-notifications-btn');
       if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-          if (confirm('Are you sure you want to clear all notifications?')) {
-            fetch('clear_notifications.php', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success) {
-                // Hide all notification notes and show no notifications message
-                const notes = document.querySelectorAll('.note');
-                notes.forEach(note => note.style.display = 'none');
-                const noNotifs = document.querySelector('.no-notifications');
-                if (noNotifs) {
-                  noNotifs.style.display = 'block';
-                } else {
-                  // Create no notifications message if it doesn't exist
-                  const notificationsDiv = document.querySelector('.notifications');
-                  const newNoNotifs = document.createElement('div');
-                  newNoNotifs.className = 'note no-notifications';
-                  newNoNotifs.textContent = 'No notifications at this time.';
-                  notificationsDiv.appendChild(newNoNotifs);
-                }
-                alert('Notifications cleared successfully!');
-              } else {
-                alert('Failed to clear notifications: ' + data.message);
-              }
-            })
-            .catch(error => {
-              console.error('Error:', error);
-              alert('An error occurred while clearing notifications.');
-            });
+        clearBtn.addEventListener('click', showClearModal);
+      }
+
+      // Close modal when clicking outside
+      const overlay = document.getElementById('clearModalOverlay');
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) {
+            closeClearModal();
           }
         });
       }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeClearModal();
+        }
+      });
     });
   </script>
 </body>

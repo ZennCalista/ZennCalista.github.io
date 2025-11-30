@@ -514,6 +514,8 @@
 
     .input-icon {
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
     .input-icon textarea,
     .input-icon select,
@@ -521,7 +523,15 @@
       width: 100%;
       padding-right: 36px;
     }
-    .input-icon i {
+    .input-icon textarea ~ i {
+      position: absolute;
+      right: 12px;
+      top: 20px;
+      color: #3bb77e;
+      pointer-events: none;
+    }
+    .input-icon select ~ i,
+    .input-icon input[type="date"] ~ i {
       position: absolute;
       right: 12px;
       top: 50%;
@@ -563,7 +573,7 @@
           <label for="notifMessage"><i class="fas fa-comment-dots"></i> Message</label>
           <div class="input-icon">
             <textarea id="notifMessage" name="message" placeholder="Notification message" required></textarea>
-            <i class="fas fa-comment"></i>
+            <!-- <i class="fas fa-comment"></i> -->
           </div>
           <label for="notifType"><i class="fas fa-bullhorn"></i> Type</label>
           <div class="input-icon">
@@ -573,7 +583,7 @@
               <option value="reminder">Reminder</option>
               <option value="event">Event</option>
             </select>
-            <i class="fas fa-bell"></i>
+            <!-- <i class="fas fa-bell"></i> -->
           </div>
           <label for="notifPriority"><i class="fas fa-flag"></i> Priority</label>
           <div class="input-icon">
@@ -582,7 +592,7 @@
               <option value="medium">Medium</option>
               <option value="low">Low</option>
             </select>
-            <i class="fas fa-exclamation"></i>
+            <!-- <i class="fas fa-exclamation"></i> -->
           </div>
           <label for="notifAudience"><i class="fas fa-users"></i> Audience</label>
           <div class="input-icon">
@@ -592,12 +602,12 @@
               <option value="faculty">Faculty Only</option>
               <option value="student">Non-Academic Only</option>
             </select>
-            <i class="fas fa-users"></i>
+            <!-- <i class="fas fa-users"></i> -->
           </div>
           <label for="notifDate"><i class="fas fa-calendar-alt"></i> Expires At</label>
           <div class="input-icon">
             <input id="notifDate" type="date" name="expires_at" required>
-            <i class="fas fa-calendar"></i>
+            <!-- <i class="fas fa-calendar"></i> -->
           </div>
 
           <input type="hidden" name="id" value="">
