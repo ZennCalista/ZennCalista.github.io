@@ -8,7 +8,7 @@ $sql = "CREATE TABLE IF NOT EXISTS program_proposals (
     faculty_id INT NOT NULL,
     proposal_title VARCHAR(255) NOT NULL,
     description TEXT,
-    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    status ENUM('pending', 'approved', 'rejected', 'used') DEFAULT 'pending',
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     reviewed_at TIMESTAMP NULL,
     reviewed_by INT NULL,

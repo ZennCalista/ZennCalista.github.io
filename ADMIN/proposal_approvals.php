@@ -66,11 +66,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // Fetch all proposals with faculty details
 $proposals_sql = "SELECT pp.*, f.department, u.firstname, u.lastname, u.email,
-                         COUNT(du.id) as document_count
+                         COUNT(du.id) as document_count,
+                         p.program_name
                   FROM program_proposals pp
                   JOIN faculty f ON pp.faculty_id = f.id
                   JOIN users u ON f.user_id = u.id
                   LEFT JOIN document_uploads du ON du.proposal_id = pp.id
+                  LEFT JOIN programs p ON pp.program_id = p.id
                   GROUP BY pp.id
                   ORDER BY pp.submitted_at DESC";
 
@@ -103,6 +105,7 @@ if ($proposals_result) {
         .status-pending { background: #fff3cd; color: #856404; }
         .status-approved { background: #d4edda; color: #155724; }
         .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-used { background: #e2e3e5; color: #383d41; }
 
         .proposal-card {
             background: #fff;
@@ -479,6 +482,12 @@ if ($proposals_result) {
                                 <?php if (!empty($proposal['review_notes'])): ?>
                                     <div style="margin-left: 10px; color: #6c757d; font-size: 0.9rem;">
                                         <strong>Review Notes:</strong> <?php echo htmlspecialchars($proposal['review_notes']); ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ($proposal['status'] === 'used' && !empty($proposal['program_name'])): ?>
+                                    <div style="margin-left: 10px; color: #28a745; font-size: 0.9rem;">
+                                        <strong>Used for Program:</strong> <?php echo htmlspecialchars($proposal['program_name']); ?>
                                     </div>
                                 <?php endif; ?>
 

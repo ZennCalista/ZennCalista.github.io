@@ -211,6 +211,15 @@ try {
     $program_id = $conn->insert_id;
     $stmt->close();
     
+    // Mark proposal as used and link to created program
+    $update_proposal_sql = "UPDATE program_proposals SET status = 'used', program_id = ? WHERE id = ?";
+    $update_stmt = $conn->prepare($update_proposal_sql);
+    $update_stmt->bind_param("ii", $program_id, $selected_proposal);
+    if (!$update_stmt->execute()) {
+        throw new Exception('Failed to update proposal status: ' . $conn->error);
+    }
+    $update_stmt->close();
+    
     // Commit transaction
     $conn->commit();
     
