@@ -17,6 +17,7 @@ try {
     // OPTIMIZED: Query to get programs with department name AND all images in ONE query
     // This eliminates the N+1 query problem by using GROUP_CONCAT
     // Exclude programs that have been soft-archived (is_archived = 1)
+    // Filter to only show ended programs
     $sql = "SELECT 
             p.id, p.program_name, p.project_titles, d.department_name as department, p.location, 
             p.start_date, p.end_date, p.status, p.max_students, p.description, p.sdg_goals,
@@ -26,6 +27,7 @@ try {
         LEFT JOIN departments d ON p.department_id = d.department_id
         LEFT JOIN images i ON p.id = i.program_id
         WHERE (p.is_archived = 0 OR p.is_archived IS NULL)
+        AND p.status = 'ended'
         GROUP BY p.id, p.program_name, p.project_titles, d.department_name, p.location, 
                  p.start_date, p.end_date, p.status, p.max_students, p.description, p.sdg_goals
         ORDER BY p.id DESC";
