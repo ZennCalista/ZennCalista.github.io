@@ -26,7 +26,7 @@ if ($action === 'programs') {
 
 // Get all programs (no filter)
 if ($action === 'all_programs') {
-    $result = $conn->query("SELECT * FROM programs ORDER BY program_name ASC");
+    $result = $conn->query("SELECT id, program_name, project_titles, department_id, department, program_type, location, target_audience, start_date, previous_date, end_date, status, max_students, male_count, female_count, requirements, budget, description, sdg_goals, faculty_id, created_at, updated_at, is_archived, archived_at, program_level, program_category, sessions_data, dept_approval, priority, user_id, proposal_id, faculty_certificate_issued, faculty_certificate_issued_on, faculty_certificate_file FROM programs ORDER BY program_name ASC");
     $programs = [];
     while ($row = $result->fetch_assoc()) {
         $programs[] = $row;

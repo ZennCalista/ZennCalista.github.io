@@ -21,7 +21,7 @@ try {
         die("Database connection failed. Please try again later.");
     }
     $conn->set_charset('utf8mb4');
-    error_log("Database connected successfully to $host");
+    // error_log("Database connected successfully to $host"); // Commented out to prevent output in API responses
 } catch (Exception $e) {
     error_log("Database error: " . $e->getMessage());
     // For register page that expects JSON

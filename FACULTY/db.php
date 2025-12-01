@@ -39,7 +39,7 @@ try {
 
 // If primary failed, try fallback
 if ($primary_failed) {
-    error_log("Attempting fallback to local XAMPP database.");
+    // error_log("Attempting fallback to local XAMPP database."); // Commented out to prevent output in API responses
 
     try {
         $conn = new mysqli($host_fallback, $user_fallback, $pass_fallback, $dbname_fallback);
@@ -47,7 +47,7 @@ if ($primary_failed) {
             error_log("Fallback database connection also failed: " . $conn->connect_error);
             die("Database connection failed: " . $conn->connect_error);
         } else {
-            error_log("Successfully connected to fallback local database.");
+            // error_log("Successfully connected to fallback local database."); // Commented out to prevent output in API responses
         }
     } catch (Exception $e) {
         error_log("Fallback database connection exception: " . $e->getMessage());
