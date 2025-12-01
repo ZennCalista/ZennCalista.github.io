@@ -24,6 +24,17 @@ if ($action === 'programs') {
     exit;
 }
 
+// Get all programs (no filter)
+if ($action === 'all_programs') {
+    $result = $conn->query("SELECT * FROM programs ORDER BY program_name ASC");
+    $programs = [];
+    while ($row = $result->fetch_assoc()) {
+        $programs[] = $row;
+    }
+    echo json_encode($programs);
+    exit;
+}
+
 // Get all students or faculty
 if ($action === 'users') {
     $role = $_GET['role'] ?? '';
@@ -47,7 +58,7 @@ if ($action === 'eligible_for_certificate') {
     $sql_students = "
         SELECT 
             p.id AS cert_id,
-            p.student_name AS name,
+            CONCAT(u.firstname, ' ', u.lastname) AS name,
             pr.program_name,
             p.certificate_issued,
             p.issued_on,
@@ -57,6 +68,7 @@ if ($action === 'eligible_for_certificate') {
             p.evaluated
         FROM participants p
         JOIN programs pr ON p.program_id = pr.id
+        JOIN users u ON p.user_id = u.id
         WHERE p.status = 'accepted'
           AND pr.id = ?
           AND pr.status = 'ended'
@@ -131,9 +143,10 @@ if ($action === 'issue_certificate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Get participant and program info
     $stmt = $conn->prepare("
-        SELECT p.student_name, pr.program_name
+        SELECT CONCAT(u.firstname, ' ', u.lastname) as student_name, pr.program_name
         FROM participants p
         JOIN programs pr ON p.program_id = pr.id
+        JOIN users u ON p.user_id = u.id
         WHERE p.id = ?
     ");
     $stmt->bind_param("i", $participant_id);
@@ -324,24 +337,17 @@ if ($action === 'issue_certificate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetTextColor(80, 80, 80);
     $pdf->Cell(0, 5, 'Chair, Department of Computer Studies', 0, 1, 'C');
 
-    // Save PDF
-    $certDir = __DIR__ . '/../certificates/';
-    if (!is_dir($certDir)) mkdir($certDir, 0777, true);
-    $file_path = "certificates/certificate_{$participant_id}.pdf";
-    $pdf->Output('F', __DIR__ . '/../' . $file_path);
+    // Get PDF as binary string
+    $pdf_content = $pdf->Output('S');
+    $file_path = "certificate_{$participant_id}.pdf";
 
-    // Update DB with file path
-    $stmt = $conn->prepare("UPDATE participants SET certificate_issued = 1, issued_on = NOW(), certificate_file = ? WHERE id = ?");
+    // Update DB with BLOB data
+    $stmt = $conn->prepare("UPDATE participants SET certificate_issued = 1, issued_on = NOW(), certificate_file = ?, certificate_blob = ? WHERE id = ?");
     if (!$stmt) {
         echo json_encode(['error' => 'Prepare failed', 'sql' => $conn->error]);
         exit;
     }
-    $stmt->bind_param("si", $file_path, $participant_id);
-    $stmt->execute();
-
-    // Update program's faculty certificate status
-    $stmt = $conn->prepare("UPDATE programs SET faculty_certificate_issued = 1, faculty_certificate_file = ?, faculty_certificate_issued_on = NOW() WHERE id = ?");
-    $stmt->bind_param("si", $file_path, $program_id);
+    $stmt->bind_param("ssi", $file_path, $pdf_content, $participant_id);
     $stmt->execute();
 
     echo json_encode(['message' => 'Certificate issued!', 'file' => $file_path]);
@@ -541,15 +547,17 @@ if ($action === 'issue_faculty_certificate' && $_SERVER['REQUEST_METHOD'] === 'P
     $pdf->SetFont('Arial', '', 10);
     $pdf->Cell(0, 5, 'Chair, Department of Computer Studies', 0, 1, 'C');
 
-    // Save PDF with unique name per program
-    $certDir = __DIR__ . '/../certificates/';
-    if (!is_dir($certDir)) mkdir($certDir, 0777, true);
-    $file_path = "certificates/faculty_certificate_{$program_id}.pdf";
-    $pdf->Output('F', __DIR__ . '/../' . $file_path);
+    // Get PDF as binary string
+    $pdf_content = $pdf->Output('S');
+    $file_path = "faculty_certificate_{$program_id}.pdf";
 
-    // Update DB with file path and new issued_on date
-    $stmt = $conn->prepare("UPDATE programs SET faculty_certificate_issued = 1, faculty_certificate_file = ?, faculty_certificate_issued_on = NOW() WHERE id = ?");
-    $stmt->bind_param("si", $file_path, $program_id);
+    // Update DB with BLOB data and new issued_on date
+    $stmt = $conn->prepare("UPDATE programs SET faculty_certificate_issued = 1, faculty_certificate_file = ?, faculty_certificate_blob = ?, faculty_certificate_issued_on = NOW() WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['error' => 'Prepare failed', 'sql' => $conn->error]);
+        exit;
+    }
+    $stmt->bind_param("ssi", $file_path, $pdf_content, $program_id);
     $stmt->execute();
 
     echo json_encode(['message' => 'Faculty certificate issued!', 'file' => $file_path]);
@@ -561,7 +569,7 @@ if ($action === 'list_certificates') {
     $sql = "
         SELECT 
             p.id AS cert_id,
-            p.student_name AS name,
+            CONCAT(u.firstname, ' ', u.lastname) AS name,
             pr.program_name,
             p.certificate_issued,
             p.issued_on,
@@ -569,6 +577,7 @@ if ($action === 'list_certificates') {
             pr.id AS program_id
         FROM participants p
         JOIN programs pr ON p.program_id = pr.id
+        JOIN users u ON p.user_id = u.id
         WHERE p.status = 'accepted'
         AND pr.status = 'ended'
 
@@ -589,6 +598,12 @@ if ($action === 'list_certificates') {
         AND pr.status = 'ended'
     ";
     $result = $conn->query($sql);
+    
+    if (!$result) {
+        echo json_encode(['error' => 'Database query failed: ' . $conn->error]);
+        exit;
+    }
+    
     $certs = [];
     while ($row = $result->fetch_assoc()) {
         $certs[] = $row;
@@ -759,9 +774,10 @@ if ($action === 'regenerate_certificate' && $_SERVER['REQUEST_METHOD'] === 'POST
 
     // Get participant and program info
     $stmt = $conn->prepare("
-        SELECT p.student_name, pr.program_name
+        SELECT CONCAT(u.firstname, ' ', u.lastname) as student_name, pr.program_name
         FROM participants p
         JOIN programs pr ON p.program_id = pr.id
+        JOIN users u ON p.user_id = u.id
         WHERE p.id = ?
     ");
     $stmt->bind_param("i", $participant_id);
@@ -847,15 +863,17 @@ if ($action === 'regenerate_certificate' && $_SERVER['REQUEST_METHOD'] === 'POST
     $pdf->SetFont('Arial', '', 12);
     $pdf->Cell(0, 8, 'Chair, Department of Computer Studies', 0, 1, 'C');
 
-    // Save PDF
-    $certDir = __DIR__ . '/../certificates/';
-    if (!is_dir($certDir)) mkdir($certDir, 0777, true);
-    $file_path = "certificates/certificate_{$participant_id}.pdf";
-    $pdf->Output('F', __DIR__ . '/../' . $file_path);
+    // Get PDF as binary string
+    $pdf_content = $pdf->Output('S');
+    $file_path = "certificate_{$participant_id}.pdf";
 
-    // Update DB with file path and new issued_on date
-    $stmt = $conn->prepare("UPDATE participants SET certificate_issued = 1, issued_on = NOW(), certificate_file = ? WHERE id = ?");
-    $stmt->bind_param("si", $file_path, $participant_id);
+    // Update DB with BLOB data and new issued_on date
+    $stmt = $conn->prepare("UPDATE participants SET certificate_issued = 1, issued_on = NOW(), certificate_file = ?, certificate_blob = ? WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['error' => 'Prepare failed', 'sql' => $conn->error]);
+        exit;
+    }
+    $stmt->bind_param("ssi", $file_path, $pdf_content, $participant_id);
     $stmt->execute();
 
     echo json_encode(['message' => 'Certificate regenerated!', 'file' => $file_path]);
@@ -974,18 +992,80 @@ if ($action === 'regenerate_faculty_certificate' && $_SERVER['REQUEST_METHOD'] =
     $pdf->SetFont('Arial', '', 11);
     $pdf->Cell(0, 7, 'Chair, Department of Computer Studies', 0, 1, 'C');
 
-    // Save PDF with unique name per program
-    $certDir = __DIR__ . '/../certificates/';
-    if (!is_dir($certDir)) mkdir($certDir, 0777, true);
-    $file_path = "certificates/faculty_certificate_{$program_id}.pdf";
-    $pdf->Output('F', __DIR__ . '/../' . $file_path);
+    // Get PDF as binary string
+    $pdf_content = $pdf->Output('S');
+    $file_path = "faculty_certificate_{$program_id}.pdf";
 
-    // Update DB with file path and new issued_on date
-    $stmt = $conn->prepare("UPDATE programs SET faculty_certificate_issued = 1, faculty_certificate_file = ?, faculty_certificate_issued_on = NOW() WHERE id = ?");
-    $stmt->bind_param("si", $file_path, $program_id);
+    // Update DB with BLOB data and new issued_on date
+    $stmt = $conn->prepare("UPDATE programs SET faculty_certificate_issued = 1, faculty_certificate_file = ?, faculty_certificate_blob = ?, faculty_certificate_issued_on = NOW() WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['error' => 'Prepare failed', 'sql' => $conn->error]);
+        exit;
+    }
+    $stmt->bind_param("ssi", $file_path, $pdf_content, $program_id);
     $stmt->execute();
 
     echo json_encode(['message' => 'Faculty certificate regenerated!', 'file' => $file_path]);
+    exit;
+}
+
+// Stream student certificate PDF from BLOB
+if ($action === 'get_certificate' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $participant_id = $_GET['participant_id'];
+    
+    $stmt = $conn->prepare("SELECT certificate_blob, certificate_file FROM participants WHERE id = ?");
+    if (!$stmt) {
+        http_response_code(500);
+        echo "Database error";
+        exit;
+    }
+    
+    $stmt->bind_param("i", $participant_id);
+    $stmt->execute();
+    $stmt->bind_result($pdf_content, $filename);
+    $stmt->fetch();
+    $stmt->close();
+    
+    if (!$pdf_content) {
+        http_response_code(404);
+        echo "Certificate not found";
+        exit;
+    }
+    
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: inline; filename="' . ($filename ?: "certificate_{$participant_id}.pdf") . '"');
+    header('Content-Length: ' . strlen($pdf_content));
+    echo $pdf_content;
+    exit;
+}
+
+// Stream faculty certificate PDF from BLOB
+if ($action === 'get_faculty_certificate' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $program_id = $_GET['program_id'];
+    
+    $stmt = $conn->prepare("SELECT faculty_certificate_blob, faculty_certificate_file FROM programs WHERE id = ?");
+    if (!$stmt) {
+        http_response_code(500);
+        echo "Database error";
+        exit;
+    }
+    
+    $stmt->bind_param("i", $program_id);
+    $stmt->execute();
+    $stmt->bind_result($pdf_content, $filename);
+    $stmt->fetch();
+    $stmt->close();
+    
+    if (!$pdf_content) {
+        http_response_code(404);
+        echo "Certificate not found";
+        exit;
+    }
+    
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: inline; filename="' . ($filename ?: "faculty_certificate_{$program_id}.pdf") . '"');
+    header('Content-Length: ' . strlen($pdf_content));
+    echo $pdf_content;
     exit;
 }
 

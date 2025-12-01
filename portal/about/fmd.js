@@ -107,7 +107,7 @@ async function loadSession() {
     if (!res.ok) throw new Error('Not authenticated');
     const data = await res.json();
     if (data && data.authenticated && data.user) {
-      const name = `(${data.user.firstname || ''} ${data.user.lastname || ''}).trim() || data.user.email`;
+      const name = `${data.user.firstname || ''} ${data.user.lastname || ''}`.trim() || data.user.email;
       document.getElementById('user-name').textContent = name;
       document.getElementById('user-role').textContent = data.user.role || 'Online';
       window.userRole = data.user.role;

@@ -67,7 +67,7 @@ function displayContent() {
   
   container.innerHTML = `
     <div class="content-card">
-      <img src="uea.jpg" alt="University Extension Agenda" class="uae-image">
+      <img src="uea.jpg" alt="University Extension Agenda" class="uae-image" style="cursor: pointer;" onclick="openImageModal(this.src)">
       <div class="content-text">
         ${contentHTML}
       </div>
@@ -76,6 +76,35 @@ function displayContent() {
   
   // Initialize scroll animations
   initScrollAnimations();
+}
+
+// Open image in modal
+function openImageModal(imageSrc) {
+  // Create modal if it doesn't exist
+  let modal = document.getElementById('image-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'image-modal';
+    modal.className = 'image-modal';
+    modal.innerHTML = `
+      <div class="image-modal-content">
+        <span class="image-modal-close">&times;</span>
+        <img src="" alt="Full size image" id="modal-image">
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Close modal on click
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal || e.target.classList.contains('image-modal-close')) {
+        modal.style.display = 'none';
+      }
+    });
+  }
+  
+  // Set image and show modal
+  document.getElementById('modal-image').src = imageSrc;
+  modal.style.display = 'flex';
 }
 
 // Initialize scroll animations for divisions
@@ -104,7 +133,7 @@ async function loadSession() {
     if (!res.ok) throw new Error('Not authenticated');
     const data = await res.json();
     if (data && data.authenticated && data.user) {
-      const name = `(${data.user.firstname || ''} ${data.user.lastname || ''}).trim() || data.user.email`;
+      const name = `${data.user.firstname || ''} ${data.user.lastname || ''}`.trim() || data.user.email;
       document.getElementById('user-name').textContent = name;
       document.getElementById('user-role').textContent = data.user.role || 'Online';
       window.userRole = data.user.role;

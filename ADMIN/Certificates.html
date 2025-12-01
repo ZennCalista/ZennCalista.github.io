@@ -123,16 +123,34 @@ document.addEventListener('DOMContentLoaded', function() {
     loadPendingCertificates();
     
     // Load programs dropdown
-    fetch('/backend/api.php?action=programs')
-        .then(res => res.json())
+    fetch('../backend/api.php?action=all_programs')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
         .then(programs => {
+            console.log('Programs loaded:', programs);
             const sel = document.getElementById('programs');
-            programs.forEach(p => {
+            if (programs && programs.length > 0) {
+                programs.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.program_name;
+                    sel.appendChild(opt);
+                });
+            } else {
+                console.warn('No programs available');
                 const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = p.program_name;
+                opt.textContent = 'No programs available';
+                opt.disabled = true;
                 sel.appendChild(opt);
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading programs:', error);
+            alert('Error loading programs. Please check the console for details.');
         });
 });
 
@@ -145,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         document.getElementById('eligible-section').style.display = 'block'; // Show section
 
-        fetch('/backend/api.php?action=eligible_for_certificate&program_id=' + program_id)
+        fetch('../backend/api.php?action=eligible_for_certificate&program_id=' + program_id)
             .then(res => res.json())
             .then(data => {
                 console.log('Received data:', data); // Debug log
@@ -212,26 +230,41 @@ document.addEventListener('DOMContentLoaded', function() {
     function issueCert(participant_id, program_id, btn) {
       const formData = new FormData();
       formData.append('participant_id', participant_id);
-      fetch('/backend/api.php?action=issue_certificate', {
+      fetch('../backend/api.php?action=issue_certificate', {
         method: 'POST',
         body: formData
       })
-      .then(res => res.json())
+      .then(res => res.text())
+      .then(text => {
+        console.log('Issue cert response:', text);
+        return JSON.parse(text);
+      })
       .then(resp => {
         alert(resp.message);
         // Do NOT replace the button, just reload both tables:
         loadCertificates();
         loadPendingCertificates();
         document.getElementById('load-eligible').click();
+      })
+      .catch(error => {
+        console.error('Error issuing certificate:', error);
+        alert('Error issuing certificate. Check console for details.');
       });
     }
 
     // Load certificate records (ISSUED only)
 function loadCertificates() {
-    fetch('/backend/api.php?action=list_certificates')
-        .then(res => res.json())
+    fetch('../backend/api.php?action=list_certificates')
+        .then(res => res.text())
+        .then(text => {
+            console.log('Raw response:', text);
+            return JSON.parse(text);
+        })
         .then(certs => {
-            console.log('Certificates:', certs); // <--- Add this line
+            console.log('Certificates:', certs);
+            if (certs.error) {
+                throw new Error(certs.error);
+            }
             const tbody = document.querySelector('#records-table tbody');
             tbody.innerHTML = '';
             
@@ -239,10 +272,10 @@ function loadCertificates() {
                 .filter(cert => cert.certificate_issued == 1)
                 .forEach(cert => {
                     const tr = document.createElement('tr');
-                    // Determine the correct certificate path
-                    const certPath = cert.type === 'faculty' 
-                        ? `certificates/faculty_certificate_${cert.program_id}.pdf`
-                        : `certificates/certificate_${cert.cert_id}.pdf`;
+                    // Use streaming endpoints for PDF viewing
+                    const certUrl = cert.type === 'faculty' 
+                        ? `../backend/api.php?action=get_faculty_certificate&program_id=${cert.program_id}`
+                        : `../backend/api.php?action=get_certificate&participant_id=${cert.cert_id}`;
                     
                     tr.innerHTML = `
                         <td>${cert.name}</td>
@@ -251,10 +284,9 @@ function loadCertificates() {
                         <td><span class="status-badge status-issued">Issued</span></td>
                         <td>
                             <div class="action-buttons">
-                                <a href="/${certPath}" 
+                                <a href="${certUrl}" 
                                    class="btn" 
-                                   target="_blank"
-                                   onclick="return checkCertificateExists('${certPath}')">
+                                   target="_blank">
                                     View Certificate
                                 </a>
                                 <button class="btn" onclick="regenerateCert(${cert.cert_id}, ${cert.program_id}, '${cert.type}', this)">Regenerate</button>
@@ -273,20 +305,10 @@ function downloadCert(participant_id) {
   // Implement actual download logic if you have certificate files
 }
 
-// 5. Search certificates
-document.querySelectorAll('.btn')[3].onclick = function() {
-  const query = document.querySelector('input[type="text"]').value.toLowerCase();
-  document.querySelectorAll('table tbody tr').forEach(row => {
-    const name = row.cells[0].innerText.toLowerCase();
-    const program = row.cells[1].innerText.toLowerCase();
-    row.style.display = (name.includes(query) || program.includes(query)) ? '' : 'none';
-  });
-};
-
 function issueFacultyCert(program_id, btn) {
   const formData = new FormData();
   formData.append('program_id', program_id);
-  fetch('/backend/api.php?action=issue_faculty_certificate', {
+  fetch('../backend/api.php?action=issue_faculty_certificate', {
     method: 'POST',
     body: formData
   })
@@ -303,9 +325,16 @@ function issueFacultyCert(program_id, btn) {
 // Load pending certificates (if any)
 function loadPendingCertificates() {
     const program_id = document.getElementById('programs').value;
-    fetch('/backend/api.php?action=list_certificates')
-        .then(res => res.json())
+    fetch('../backend/api.php?action=list_certificates')
+        .then(res => res.text())
+        .then(text => {
+            console.log('Pending certs raw response:', text);
+            return JSON.parse(text);
+        })
         .then(certificates => {
+            if (certificates.error) {
+                throw new Error(certificates.error);
+            }
             const tbody = document.querySelector('#pending-table tbody');
             tbody.innerHTML = '';
             let pendingCerts = certificates.filter(cert =>
@@ -351,22 +380,6 @@ function loadPendingCertificates() {
         });
 }
 
-// Check if certificate file exists
-function checkCertificateExists(path) {
-    fetch('/' + path, {
-        method: 'HEAD'
-    }).then(response => {
-        if (!response.ok) {
-            alert('Certificate file not found. Please try regenerating the certificate.');
-            return false;
-        }
-        return true;
-    }).catch(error => {
-        alert('Error accessing certificate. Please try again.');
-        return false;
-    });
-}
-
 document.getElementById('programs').onchange = function() {
     loadPendingCertificates();
     // Optionally hide eligible section when program changes
@@ -379,10 +392,10 @@ function regenerateCert(cert_id, program_id, type, btn) {
     let url = '';
     if (type === 'faculty') {
         formData.append('program_id', program_id);
-        url = '/backend/api.php?action=regenerate_faculty_certificate';
+        url = '../backend/api.php?action=regenerate_faculty_certificate';
     } else {
         formData.append('participant_id', cert_id);
-        url = '/backend/api.php?action=regenerate_certificate';
+        url = '../backend/api.php?action=regenerate_certificate';
     }
     fetch(url, {
         method: 'POST',
