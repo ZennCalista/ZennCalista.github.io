@@ -5,7 +5,367 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>eTracker Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="design.css" />
+  <style>
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: modalFadeIn 0.3s ease-out;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .modal-header h3 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover {
+      color: #374151;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-body p {
+      margin: 0;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid #e5e5e5;
+      text-align: right;
+    }
+    .modal-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .modal-btn:hover {
+      background: #059669;
+    }
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    /* Password Toggle Styles */
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .password-wrapper input {
+      padding-right: 40px !important;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #d1d5db;
+      cursor: pointer;
+      color: #1f2937;
+      font-size: 1.1rem;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 200;
+      pointer-events: auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+    }
+    .password-toggle:hover {
+      color: #10b981;
+      background: #f9fafb;
+      border-color: #10b981;
+    }
+    .password-toggle i {
+      display: block;
+      line-height: 1;
+    }
+    
+    /* Password Requirements Styles - Left Side Tooltip */
+    .password-requirements {
+      position: absolute;
+      right: calc(100% + 16px);
+      top: 50%;
+      transform: translateY(-50%) translateX(10px);
+      width: 260px;
+      padding: 14px;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      font-size: 0.8rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease-out;
+      z-index: 150;
+    }
+    .password-requirements::before {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 6px solid white;
+      filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.05));
+    }
+    .password-requirements.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-50%) translateX(0);
+    }
+    .password-requirements.all-met {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-50%) translateX(10px);
+    }
+    .password-requirements-title {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .password-requirements-title i {
+      color: #10b981;
+    }
+    .requirement-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      color: #6b7280;
+      transition: all 0.15s;
+      padding: 5px 6px;
+      border-radius: 5px;
+      font-size: 0.85rem;
+    }
+    .requirement-item:hover {
+      background: #f3f4f6;
+    }
+    .requirement-item i {
+      font-size: 0.9rem;
+      width: 16px;
+      flex-shrink: 0;
+    }
+    .requirement-met {
+      color: #10b981;
+    }
+    .requirement-met i {
+      color: #10b981;
+    }
+    .requirement-unmet {
+      color: #ef4444;
+    }
+    .requirement-unmet i {
+      color: #ef4444;
+    }
+
+    /* Password Mismatch Tooltip - Left Side */
+    .password-mismatch {
+      position: absolute;
+      right: calc(100% + 16px);
+      top: 50%;
+      transform: translateY(-50%) translateX(10px);
+      width: 240px;
+      padding: 12px 14px;
+      background: #fef2f2;
+      border-radius: 10px;
+      border: 1px solid #fca5a5;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+      font-size: 0.85rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease-out;
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #991b1b;
+    }
+    .password-mismatch::before {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 6px solid #fef2f2;
+      filter: drop-shadow(2px 0 2px rgba(239, 68, 68, 0.1));
+    }
+    .password-mismatch.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-50%) translateX(0);
+    }
+    .password-mismatch i {
+      color: #dc2626;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    
+    /* Right card overflow handling for tooltips */
+    .right-card {
+      overflow: visible !important;
+    }
+    .right-card .panel-content {
+      overflow: visible !important;
+    }
+    
+    /* Mobile responsive - show below on small screens */
+    @media (max-width: 900px) {
+      .password-requirements {
+        position: absolute;
+        left: 0;
+        right: auto;
+        top: calc(100% + 8px);
+        width: 100%;
+        max-width: 100%;
+        transform: translateY(-5px);
+      }
+      .password-requirements::before {
+        right: auto;
+        left: 20px;
+        top: -6px;
+        transform: none;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 6px solid white;
+        border-top: none;
+        filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.05));
+      }
+      .password-requirements.show {
+        transform: translateY(0);
+      }
+      .password-requirements.all-met {
+        transform: translateY(-5px);
+      }
+      .password-mismatch {
+        position: absolute;
+        left: 0;
+        right: auto;
+        top: calc(100% + 8px);
+        width: 100%;
+        max-width: 100%;
+        transform: translateY(-5px);
+      }
+      .password-mismatch::before {
+        right: auto;
+        left: 20px;
+        top: -6px;
+        transform: none;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 6px solid #fef2f2;
+        border-top: none;
+        filter: drop-shadow(0 -2px 2px rgba(239, 68, 68, 0.1));
+      }
+      .password-mismatch.show {
+        transform: translateY(0);
+      }
+    }
+    
+    /* Enhanced Modal Types */
+    .modal-success .modal-header {
+      background: #d1fae5;
+      border-bottom: 1px solid #10b981;
+    }
+    .modal-success .modal-header h3 {
+      color: #065f46;
+    }
+    .modal-success .modal-btn {
+      background: #10b981;
+    }
+    .modal-success .modal-btn:hover {
+      background: #059669;
+    }
+    .modal-error .modal-header {
+      background: #fee2e2;
+      border-bottom: 1px solid #ef4444;
+    }
+    .modal-error .modal-header h3 {
+      color: #991b1b;
+    }
+    .modal-error .modal-btn {
+      background: #ef4444;
+    }
+    .modal-error .modal-btn:hover {
+      background: #dc2626;
+    }
+    .modal-warning .modal-header {
+      background: #fef3c7;
+      border-bottom: 1px solid #f59e0b;
+    }
+    .modal-warning .modal-header h3 {
+      color: #92400e;
+    }
+    .modal-warning .modal-btn {
+      background: #f59e0b;
+    }
+    .modal-warning .modal-btn:hover {
+      background: #d97706;
+    }
+  </style>
 </head>
 <body>
   <div class="card-container">
@@ -26,6 +386,22 @@
         <!-- <img src="etracker.png" alt="eTracker Icon" class="w-42 h-32 mb-4" /> -->
         <div class="button" onclick="showRegisterForm()">REGISTER</div>
         <div class="button" onclick="handleLogin()">LOG IN</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Modal -->
+  <div id="custom-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Notification</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn" onclick="closeModal()">OK</button>
       </div>
     </div>
   </div>
@@ -56,8 +432,44 @@
               <input type="text" id="mi" placeholder="M.I." class="form-input mi" />
             </div>
             <input type="email" id="email" placeholder="Email (@cvsu.edu.ph only)" class="form-input" />
-            <input type="password" id="password" placeholder="Password" class="form-input" />
-            <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+            <div class="password-wrapper">
+              <input type="password" id="password" placeholder="Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password')" id="toggle-password">
+                <i class="fas fa-eye"></i>
+              </button>
+              <div id="password-requirements" class="password-requirements">
+                <div class="password-requirements-title">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>Password Requirements</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-length">
+                  <i class="fas fa-times-circle"></i>
+                  <span>At least 8 characters</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-uppercase">
+                  <i class="fas fa-times-circle"></i>
+                  <span>One uppercase letter</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-lowercase">
+                  <i class="fas fa-times-circle"></i>
+                  <span>One lowercase letter</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-number">
+                  <i class="fas fa-times-circle"></i>
+                  <span>One number</span>
+                </div>
+              </div>
+            </div>
+            <div class="password-wrapper">
+              <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'toggle-confirm-password')" id="toggle-confirm-password">
+                <i class="fas fa-eye"></i>
+              </button>
+              <div id="password-mismatch" class="password-mismatch">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Passwords do not match</span>
+              </div>
+            </div>
             <div class="flex gap-4 mt-4">
               <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
               <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
@@ -70,6 +482,50 @@
         setTimeout(() => {
           newContent.classList.remove('enter-start');
           newContent.classList.add('enter');
+          
+          // Setup password validation
+          const passwordInput = document.getElementById('password');
+          const confirmPasswordInput = document.getElementById('confirm-password');
+          
+          if (passwordInput) {
+            passwordInput.addEventListener('focus', () => {
+              document.getElementById('password-requirements').classList.add('show');
+              document.getElementById('password-requirements').classList.remove('all-met');
+            });
+            passwordInput.addEventListener('blur', () => {
+              setTimeout(() => {
+                const requirementsEl = document.getElementById('password-requirements');
+                if (requirementsEl && !requirementsEl.matches(':hover')) {
+                  requirementsEl.classList.remove('show');
+                }
+              }, 200);
+            });
+            passwordInput.addEventListener('input', (e) => {
+              const validation = validatePassword(e.target.value);
+              checkPasswordMatch();
+              
+              // Auto-hide tooltip when all requirements are met
+              if (validation.isValid) {
+                setTimeout(() => {
+                  document.getElementById('password-requirements').classList.add('all-met');
+                }, 500);
+              }
+            });
+          }
+          
+          if (confirmPasswordInput) {
+            confirmPasswordInput.addEventListener('input', () => {
+              checkPasswordMatch();
+            });
+            confirmPasswordInput.addEventListener('focus', () => {
+              checkPasswordMatch();
+            });
+            confirmPasswordInput.addEventListener('blur', () => {
+              setTimeout(() => {
+                document.getElementById('password-mismatch').classList.remove('show');
+              }, 200);
+            });
+          }
         }, 10); // Small delay to ensure the animation triggers
       }, 600); // Match the transition duration (0.6s)
     }
@@ -87,8 +543,16 @@
           <div class="panel-content enter-start" id="panel-content">
             <div class="form-title">LOG IN</div>
             <input type="email" id="login-email" placeholder="Email" class="form-input" />
-            <input type="password" id="login-password" placeholder="Password" class="form-input" />
-            <div class="button" onclick="submitLoginForm()">LOG IN</div>
+            <div class="password-wrapper">
+              <input type="password" id="login-password" placeholder="Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('login-password', 'toggle-login-password')" id="toggle-login-password">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div class="flex gap-4 mt-4">
+              <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
+              <button class="button" onclick="submitLoginForm()" style="flex:2;">LOG IN</button>
+            </div>
           </div>
         `;
 
@@ -122,7 +586,7 @@
 
       // Validate login form
       if (!email || !password) {
-        alert("Please fill out all required fields.");
+        showModal("Please fill out all required fields.");
         return;
       }
 
@@ -145,12 +609,12 @@
           userEmail = data.email;
           showOTPVerificationForm();
         } else {
-          alert(data.message);
+          showModal(data.message);
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred during login.');
+        showModal('An error occurred during login.');
       });
     }
 
@@ -164,19 +628,26 @@
 
       // Validate required fields
       if (!firstname || !lastname || !email || !password || !confirmPassword) {
-        alert("Please fill out all required fields.");
+        showModal("Please fill out all required fields.");
         return;
       }
 
       // Validate email domain
       if (!email.toLowerCase().endsWith('@cvsu.edu.ph')) {
-        alert("Only @cvsu.edu.ph email addresses are allowed for registration.");
+        showModal("Only @cvsu.edu.ph email addresses are allowed for registration.");
         return;
       }
 
+      // Validate password requirements
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        showModal("Password does not meet the requirements. Please ensure it has at least 8 characters, one uppercase letter, one lowercase letter, and one number.", "Invalid Password");
+        return;
+      }
+      
       // Validate password match
       if (password !== confirmPassword) {
-        alert("Passwords do not match!");
+        showModal("Passwords do not match!");
         return;
       }
 
@@ -214,17 +685,17 @@
             console.error('Registration error:', data);
             // Show detailed error if available
             const errorMsg = data.message + (data.detail ? '\n\nDetails: ' + data.detail : '');
-            alert(errorMsg);
+            showModal(errorMsg);
           }
         } catch (e) {
           console.error('JSON parse error:', e);
           console.error('Response text:', text);
-          alert('Server returned invalid response. Please check console for details.');
+          showModal('Server returned invalid response. Please check console for details.');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred during registration: ' + error.message);
+        showModal('An error occurred during registration: ' + error.message);
       });
     }
 
@@ -292,12 +763,12 @@
             });
           } else {
             console.error('Failed to load departments:', data.error);
-            alert('Failed to load departments. Please try again.');
+            showModal('Failed to load departments. Please try again.');
           }
         })
         .catch(error => {
           console.error('Error loading departments:', error);
-          alert('Error loading departments. Please check your connection.');
+          showModal('Error loading departments. Please check your connection.');
         });
     }
 
@@ -374,7 +845,7 @@
 
         // Validate required fields
         if (!studentId || !contactNo || !emergencyContact) {
-          alert("Please fill out all required fields.");
+          showModal("Please fill out all required fields.");
           return;
         }
 
@@ -413,7 +884,7 @@
 
     function sendOTP() {
       if (!userEmail) {
-        alert('Email not found. Please restart registration.');
+        showModal('Email not found. Please restart registration.');
         return;
       }
 
@@ -426,14 +897,14 @@
       .then(data => {
         if (data.status === 'success') {
           startOTPTimer();
-          alert('OTP sent to your email successfully!');
+          showModal('OTP sent to your email successfully!', 'Success');
         } else {
-          alert('Failed to send OTP: ' + data.message);
+          showModal('Failed to send OTP: ' + data.message);
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Network error. Please try again.');
+        showModal('Network error. Please try again.');
       });
     }
 
@@ -442,7 +913,7 @@
       for (let i = 1; i <= 6; i++) {
         const digit = document.getElementById(`otp-${i}`).value;
         if (!digit) {
-          alert('Please enter the complete 6-digit code.');
+          showModal('Please enter the complete 6-digit code.');
           return;
         }
         otpDigits.push(digit);
@@ -476,17 +947,17 @@
               try {
                 const regData = JSON.parse(text);
                 if (regData.status === 'success') {
-                  alert(regData.message + ' Registration completed successfully!');
+                  showModal(regData.message + ' Registration completed successfully!', 'Success');
                   // Redirect based on role
                   const redirect_url = (userData.role === 'student' || userData.role === 'non_acad') ? '../STUDENT/index.php' : '../portal/home/home.html';
                   window.location.href = redirect_url;
                 } else {
                   console.error('Role-specific registration error:', regData);
-                  alert('OTP verified but registration failed: ' + regData.message);
+                  showModal('OTP verified but registration failed: ' + regData.message);
                 }
               } catch (e) {
                 console.error('JSON parse error:', e);
-                alert('Server returned invalid response after OTP verification.');
+                showModal('Server returned invalid response after OTP verification.');
               }
             })
             .catch(error => {
@@ -498,7 +969,7 @@
             showRoleSpecificForm();
           }
         } else {
-          alert('Verification failed: ' + data.message);
+          showModal('Verification failed: ' + data.message);
           // Clear OTP inputs on failure
           for (let i = 1; i <= 6; i++) {
             document.getElementById(`otp-${i}`).value = '';
@@ -508,7 +979,7 @@
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Network error. Please try again.');
+        showModal('Network error. Please try again.');
       });
     }
 
@@ -612,8 +1083,18 @@
               <input type="text" id="mi" placeholder="M.I." class="form-input mi" />
             </div>
             <input type="email" id="email" placeholder="Email" class="form-input" />
-            <input type="password" id="password" placeholder="Password" class="form-input" />
-            <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+            <div class="password-wrapper">
+              <input type="password" id="password" placeholder="Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password-back')\" id="toggle-password-back">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div class="password-wrapper">
+              <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'toggle-confirm-password-back')\" id="toggle-confirm-password-back">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
             <div class="flex gap-4 mt-4">
               <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
               <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
@@ -647,8 +1128,18 @@
               <input type="text" id="mi" placeholder="M.I." class="form-input mi" />
             </div>
             <input type="email" id="email" placeholder="Email" class="form-input" />
-            <input type="password" id="password" placeholder="Password" class="form-input" />
-            <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+            <div class="password-wrapper">
+              <input type="password" id="password" placeholder="Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password-role')\" id="toggle-password-role">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div class="password-wrapper">
+              <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'toggle-confirm-password-role')\" id="toggle-confirm-password-role">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
             <div class="flex gap-4 mt-4">
               <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
               <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
@@ -663,6 +1154,146 @@
         }, 10);
       }, 600);
     }
+
+    // Password Toggle Function
+    function togglePasswordVisibility(inputId, toggleId) {
+      const input = document.getElementById(inputId);
+      const toggle = document.getElementById(toggleId);
+      const icon = toggle.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+    
+    // Password Validation Function
+    function validatePassword(password) {
+      const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password)
+      };
+      
+      // Update UI if elements exist
+      const lengthItem = document.getElementById('req-length');
+      const uppercaseItem = document.getElementById('req-uppercase');
+      const lowercaseItem = document.getElementById('req-lowercase');
+      const numberItem = document.getElementById('req-number');
+      
+      if (lengthItem) {
+        updateRequirementItem(lengthItem, requirements.length);
+      }
+      if (uppercaseItem) {
+        updateRequirementItem(uppercaseItem, requirements.uppercase);
+      }
+      if (lowercaseItem) {
+        updateRequirementItem(lowercaseItem, requirements.lowercase);
+      }
+      if (numberItem) {
+        updateRequirementItem(numberItem, requirements.number);
+      }
+      
+      return {
+        isValid: requirements.length && requirements.uppercase && requirements.lowercase && requirements.number,
+        requirements: requirements
+      };
+    }
+    
+    function updateRequirementItem(element, isMet) {
+      const icon = element.querySelector('i');
+      if (isMet) {
+        element.classList.remove('requirement-unmet');
+        element.classList.add('requirement-met');
+        icon.classList.remove('fa-times-circle');
+        icon.classList.add('fa-check-circle');
+      } else {
+        element.classList.remove('requirement-met');
+        element.classList.add('requirement-unmet');
+        icon.classList.remove('fa-check-circle');
+        icon.classList.add('fa-times-circle');
+      }
+    }
+    
+    // Check if passwords match
+    function checkPasswordMatch() {
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirm-password');
+      const mismatchTooltip = document.getElementById('password-mismatch');
+      
+      if (!password || !confirmPassword || !mismatchTooltip) return;
+      
+      const passwordValue = password.value;
+      const confirmPasswordValue = confirmPassword.value;
+      
+      // Only show mismatch if confirm password has content and doesn't match
+      if (confirmPasswordValue && passwordValue !== confirmPasswordValue) {
+        mismatchTooltip.classList.add('show');
+      } else {
+        mismatchTooltip.classList.remove('show');
+      }
+    }
+
+    // Custom Modal Functions
+    function showModal(message, title = 'Notification', type = 'default', autoClose = false) {
+      const modal = document.getElementById('custom-modal');
+      const modalContent = modal.querySelector('.modal-content');
+      
+      // Remove existing type classes
+      modalContent.classList.remove('modal-success', 'modal-error', 'modal-warning');
+      
+      // Add type class
+      if (type === 'success') {
+        modalContent.classList.add('modal-success');
+      } else if (type === 'error') {
+        modalContent.classList.add('modal-error');
+      } else if (type === 'warning') {
+        modalContent.classList.add('modal-warning');
+      }
+      
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      modal.style.display = 'flex';
+      
+      // Auto-close for success messages
+      if (autoClose && type === 'success') {
+        setTimeout(() => {
+          closeModal();
+        }, 3000);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('custom-modal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside or pressing Escape
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('custom-modal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+      }
+      
+      // Keyboard support
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('custom-modal');
+          if (modal && modal.style.display === 'flex') {
+            closeModal();
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>

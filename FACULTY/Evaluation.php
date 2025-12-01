@@ -427,7 +427,7 @@ if ($notifications_result) {
                 </div>
                 <div class="eval-suggestion">
                   <strong>Suggestion:</strong>
-                  <span><?php echo htmlspecialchars($eval['suggestion'] ?? '-'); ?></span>
+                  <span><?php echo nl2br(htmlspecialchars(($eval['suggestion'] && $eval['suggestion'] !== '0') ? $eval['suggestion'] : '-')); ?></span>
                 </div>
                 <div class="eval-recommend">
                   <span class="recommend-badge <?php echo strtolower($eval['recommend'] ?? ''); ?>">

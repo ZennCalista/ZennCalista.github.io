@@ -189,7 +189,7 @@ if ($user_id) {
               <b>ADDITIONAL FEEDBACK</b>
               <div style="margin-top:8px;">
                 <label>Suggestion for the improvement</label>
-                <input type="text" name="suggestion" style="width:60%;padding:6px;border-radius:4px;border:1px solid #ccc;background:#fffbe6;">
+                <input type="text" name="suggestion" placeholder="Enter your suggestions for improvement..." style="width:60%;padding:6px;border-radius:4px;border:1px solid #ccc;background:#fffbe6;">
               </div>
               <div style="margin-top:12px;">
                 <label>Would you Recommend this Program?</label>

@@ -135,15 +135,16 @@
     .name-row {
       display: flex;
       width: 100%;
-      gap: 2%; /* Space between Lastname and M.I. */
+      gap: 10px; /* Fixed gap between Lastname and M.I. */
     }
 
     .form-input.lastname {
-      width: 80%; /* 80% width for Lastname */
+      flex: 1; /* Lastname takes remaining space */
     }
 
     .form-input.mi {
-      width: 18%; /* 20% width for M.I. (adjusted to fit with gap) */
+      width: 50px; /* Fixed width for M.I. */
+      flex-shrink: 0; /* Prevents shrinking */
     }
 
     .radio-group {
