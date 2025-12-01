@@ -121,6 +121,145 @@
     .modal-btn-success:hover {
       background-color: #229954;
     }
+    
+    /* Document Viewer Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content.large-modal {
+      width: 95vw !important;
+      height: 95vh !important;
+      max-width: 95vw !important;
+      max-height: 95vh !important;
+      box-sizing: border-box !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background: #ffffff !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+    }
+    
+    .modal-content.large-modal .modal-header {
+      flex: 0 0 auto !important;
+      padding: 12px 20px !important;
+      background: #114d2e !important;
+      color: white !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+    
+    .modal-content.large-modal .modal-header h3 {
+      margin: 0 !important;
+      color: white !important;
+      font-size: 1.1rem !important;
+    }
+    
+    .modal-content.large-modal .modal-body {
+      flex: 1 1 auto !important;
+      height: auto !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #ffffff !important;
+    }
+    
+    #certificateViewer {
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    #certificateViewer .paper-wrap {
+      width: 95% !important;
+      height: 96% !important;
+      max-width: none !important;
+      background: #fff !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    
+    #certificateViewer iframe, #certificateViewer img {
+      width: 100% !important;
+      height: 100% !important;
+      border: 0 !important;
+      display: block !important;
+    }
+    
+    .view-controls {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+    
+    .view-controls span#viewFilename {
+      color: #ffffff !important;
+      opacity: 0.95 !important;
+      font-weight: 600 !important;
+      max-width: 50vw !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+    
+    .view-controls a.download-btn {
+      background: #27ae60 !important;
+      color: #ffffff !important;
+      border: 0 !important;
+      padding: 8px 16px !important;
+      border-radius: 6px !important;
+      text-decoration: none !important;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      cursor: pointer !important;
+      transition: all 0.3s !important;
+    }
+    
+    .view-controls a.download-btn:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+    }
+    
+    .close-btn {
+      background: transparent !important;
+      border: none !important;
+      color: #2c3e50 !important;
+      font-size: 2rem !important;
+      cursor: pointer !important;
+      padding: 0 10px !important;
+      line-height: 1 !important;
+      transition: transform 0.2s !important;
+    }
+    
+    .close-btn:hover {
+      transform: scale(1.1) !important;
+    }
   </style>
 </head>
 <body>
@@ -136,6 +275,28 @@
       <div class="modal-footer">
         <button id="modalCancelBtn" class="modal-btn modal-btn-secondary" style="display: none;">Cancel</button>
         <button id="modalOkBtn" class="modal-btn modal-btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Certificate Viewer Modal -->
+  <div id="certificateModal" class="modal">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-certificate"></i> View Certificate</h3>
+        <div class="view-controls">
+          <span id="viewFilename"></span>
+          <a id="downloadLink" class="download-btn" target="_blank" rel="noopener">
+            <i class="fas fa-download"></i>
+            <span>Download</span>
+          </a>
+        </div>
+        <button class="close-btn" onclick="closeCertificateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="certificateViewer">
+          <!-- Certificate content injected dynamically -->
+        </div>
       </div>
     </div>
   </div>
@@ -482,11 +643,9 @@ function loadCertificates() {
                         <td><span class="status-badge status-issued">Issued</span></td>
                         <td>
                             <div class="action-buttons">
-                                <a href="${certUrl}" 
-                                   class="btn" 
-                                   target="_blank">
+                                <button class="btn" onclick="viewCertificate('${certUrl}', '${cert.name}')">
                                     View Certificate
-                                </a>
+                                </button>
                                 <button class="btn" onclick="regenerateCert(${cert.cert_id}, ${cert.program_id}, '${cert.type}', this)">Regenerate</button>
                             </div>
                         </td>
@@ -587,6 +746,50 @@ document.getElementById('programs').onchange = function() {
     // Optionally hide eligible section when program changes
     document.getElementById('eligible-section').style.display = 'none';
 };
+
+// View certificate in modal
+function viewCertificate(certUrl, participantName) {
+    const viewer = document.getElementById('certificateViewer');
+    const modal = document.getElementById('certificateModal');
+    const filenameEl = document.getElementById('viewFilename');
+    const downloadEl = document.getElementById('downloadLink');
+    
+    // Set filename
+    const filename = `Certificate_${participantName.replace(/\s+/g, '_')}.pdf`;
+    if (filenameEl) filenameEl.textContent = filename;
+    
+    // Set download link
+    if (downloadEl) {
+        downloadEl.href = certUrl;
+        downloadEl.setAttribute('download', filename);
+    }
+    
+    // Load PDF in viewer
+    viewer.innerHTML = `
+        <div class="paper-wrap">
+            <iframe src="${certUrl}" allowfullscreen></iframe>
+        </div>
+    `;
+    
+    // Show modal
+    if (modal) modal.classList.add('show');
+}
+
+// Close certificate modal
+function closeCertificateModal() {
+    const modal = document.getElementById('certificateModal');
+    if (modal) modal.classList.remove('show');
+    const viewer = document.getElementById('certificateViewer');
+    if (viewer) viewer.innerHTML = '';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('certificateModal');
+    if (e.target === modal) {
+        closeCertificateModal();
+    }
+});
 
 function regenerateCert(cert_id, program_id, type, btn) {
     showConfirm('Are you sure you want to regenerate this certificate?', () => {
