@@ -677,13 +677,25 @@ function switchTab(tab) {
 
 // Export users function
 function exportUsers() {
-  const dataStr = JSON.stringify(allUsers, null, 2);
-  const dataBlob = new Blob([dataStr], {type: 'application/json'});
-  const url = URL.createObjectURL(dataBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'users_export.json';
-  link.click();
+  // Show loading indicator
+  showToast('Generating PDF...', 'info');
+  
+  // Get current filters to export only visible users
+  const searchTerm = document.getElementById('search-users').value.toLowerCase();
+  const roleFilter = document.getElementById('role-filter').value;
+  const departmentFilter = document.getElementById('department-filter').value;
+  const statusFilter = document.getElementById('status-filter').value;
+  
+  // Send request to PHP script to generate PDF
+  const params = new URLSearchParams({
+    search: searchTerm,
+    role: roleFilter,
+    department: departmentFilter,
+    status: statusFilter
+  });
+  
+  // Open PDF in new window for download
+  window.open('export_users_pdf.php?' + params.toString(), '_blank');
 }
 
 // Initialize search and filter functionality
