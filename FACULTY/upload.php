@@ -403,6 +403,158 @@ h2 {
     transform: translate(-50%, -50%);
   }
 }
+
+/* Document Viewer Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 10000;
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal.show {
+  display: flex !important;
+}
+
+.modal-content.large-modal {
+  width: 95vw !important;
+  height: 95vh !important;
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #114d2e !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.modal-content.large-modal .modal-header {
+  flex: 0 0 auto !important;
+  padding: 12px 18px !important;
+  background: #114d2e !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.modal-content.large-modal .modal-header h3 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 1.2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.modal-content.large-modal .modal-body {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #1a1a1a !important;
+}
+
+#documentViewer {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#documentViewer .paper-wrap {
+  width: 95% !important;
+  height: 96% !important;
+  max-width: none !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+#documentViewer iframe, #documentViewer img {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display: block !important;
+}
+
+.modal-content.large-modal .view-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.modal-content.large-modal .view-controls span#viewFilename {
+  color: #fff !important;
+  opacity: 0.95 !important;
+  font-weight: 600 !important;
+  max-width: 60vw !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+}
+
+.modal-content.large-modal .view-controls a.download-btn {
+  background: #ffffff !important;
+  color: #114d2e !important;
+  border: 0 !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.modal-content.large-modal .view-controls a.download-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
+}
+
+.modal-content.large-modal .view-controls a.download-btn i.fas {
+  color: #114d2e !important;
+  font-size: 1rem !important;
+}
+
+.modal-content.large-modal .close-btn {
+  background: none !important;
+  border: none !important;
+  color: #fff !important;
+  font-size: 2rem !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: color 0.2s !important;
+}
+
+.modal-content.large-modal .close-btn:hover {
+  color: #ff6b6b !important;
+}
   </style>
 </head>
 <body>
@@ -419,6 +571,22 @@ h2 {
       <div class="clear-modal-actions">
         <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
         <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Status Modal -->
+  <div class="clear-modal-overlay" id="uploadStatusModal" style="display: none;">
+    <div class="clear-modal">
+      <div class="clear-modal-header" id="uploadStatusHeader">
+        <i class="fas fa-check-circle" id="uploadStatusIcon" style="color: #28a745;"></i>
+        <h3 id="uploadStatusTitle">Upload Successful</h3>
+      </div>
+      <div class="clear-modal-body" id="uploadStatusMessage">
+        Your documents have been uploaded successfully!
+      </div>
+      <div class="clear-modal-actions">
+        <button class="clear-modal-btn" style="background: #247a37; color: #fff;" onclick="closeUploadStatusModal()">OK</button>
       </div>
     </div>
   </div>
@@ -509,15 +677,14 @@ h2 {
             <input type="file" name="document_file[]" id="document-file" multiple style="display: none;">
           </div>
           <div id="file-preview" class="file-preview"></div>
-
           <button type="submit" class="submit"><i class="fas fa-upload"></i> Upload</button>
-        </form>
-        <div id="upload-message" style="margin-top:10px;font-weight:bold;color:#247a37;"></div>
+          <div class="info-box" style="margin: 16px 0;">
+            <i class="fas fa-info-circle"></i>
+            Allowed file types: PDF, DOCX, JPG, PNG. Max size: 10MB per file. Multiple files allowed for images (JPG, PNG). PDF and DOCX limited to one file.
+          </div>
 
-        <div class="info-box">
-          <i class="fas fa-info-circle"></i>
-          Allowed file types: PDF, DOCX, JPG, PNG. Max size: 10MB per file. Multiple files allowed for images (JPG, PNG). PDF and DOCX limited to one file.
-        </div>
+          
+        </form>
       </div>
 
       <!-- Right Side -->
@@ -532,9 +699,9 @@ h2 {
             <button id="clear-notifications-btn" style="background: #b30000; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; font-weight: bold;">Clear All</button>
           </div>
           <?php
-          // Fetch active notifications (add this PHP block at the top if not present)
+          // Fetch active notifications for faculty only
           $notifications = [];
-          $notifications_query = "SELECT message, priority FROM notifications WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE()) ORDER BY created_at DESC LIMIT 5";
+          $notifications_query = "SELECT message, priority FROM notifications WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE()) AND (audience = 'faculty' OR audience = 'all') ORDER BY created_at DESC LIMIT 5";
           $notifications_result = $conn->query($notifications_query);
           if ($notifications_result) {
               while ($row = $notifications_result->fetch_assoc()) {
@@ -580,12 +747,122 @@ h2 {
 <div id="uploadsModal" class="modal-overlay" style="display:none;">
   <div class="modal-content">
     <button class="modal-close" onclick="closeUploadsModal()">&times;</button>
-    <iframe src="my_uploads.php" frameborder="0"></iframe>
+    <iframe id="uploadsIframe" src="my_uploads.php" frameborder="0"></iframe>
+  </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div id="documentsModal" class="modal" style="display: none;">
+  <div class="modal-content large-modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-eye"></i> View Document</h3>
+      <div class="view-controls">
+        <span id="viewFilename"></span>
+        <a id="downloadLink" class="download-btn" target="_blank" rel="noopener">
+          <i class="fas fa-download" aria-hidden="true"></i>
+          <span>Download</span>
+        </a>
+      </div>
+      <button class="close-btn" onclick="closeViewDocumentModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="documentViewer">
+        <!-- content injected dynamically -->
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Modal JS (add before </body>) -->
 <script>
+// Document Viewer Functions
+function showViewDocumentModal(path, docId) {
+  const viewer = document.getElementById('documentViewer');
+  const extension = (path || '').split('.').pop().toLowerCase();
+
+  let viewUrl;
+  // Handle different path formats
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    viewUrl = path;
+  } else if (path.startsWith('uploads/')) {
+    viewUrl = path; // Already relative to FACULTY directory
+  } else if (path.startsWith('FACULTY/uploads/')) {
+    viewUrl = path.replace('FACULTY/', ''); // Remove FACULTY prefix
+  } else {
+    viewUrl = path;
+  }
+
+  if (extension === 'pdf') {
+    viewer.innerHTML = `
+      <div class="paper-wrap">
+        <iframe src="${viewUrl}" allowfullscreen></iframe>
+      </div>
+    `;
+  } else if (extension === 'docx') {
+    // Use Google viewer as fallback - construct full URL for external access
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+    const fullUrl = window.location.origin + basePath + '/' + viewUrl;
+    viewer.innerHTML = `
+      <div class="paper-wrap">
+        <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true" allowfullscreen></iframe>
+      </div>
+    `;
+  } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+    viewer.innerHTML = `
+      <div class="paper-wrap" style="background:#f5f5f5;">
+        <img src="${viewUrl}" alt="Document Image" style="max-width:100%; height:auto; display:block; margin:0 auto;"/>
+      </div>
+    `;
+  } else {
+    // For unknown types, show message
+    viewer.innerHTML = `<div class="paper-wrap" style="display:flex;align-items:center;justify-content:center;color:#666;">Unsupported preview for this file type. Please download to view.</div>`;
+  }
+
+  // populate filename and download link in header
+  try {
+    const filenameEl = document.getElementById('viewFilename');
+    const downloadEl = document.getElementById('downloadLink');
+    const filename = (path && path.split('/').pop()) || (docId ? `document_${docId}` : 'document');
+    if (filenameEl) filenameEl.textContent = filename;
+    const downloadHref = viewUrl || path;
+    if (downloadEl) {
+      downloadEl.href = downloadHref;
+      downloadEl.setAttribute('download', filename);
+    }
+  } catch (e) {
+    console.warn('Could not set filename/download link', e);
+  }
+
+  const modal = document.getElementById('documentsModal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeViewDocumentModal() {
+  const modal = document.getElementById('documentsModal');
+  if (modal) modal.classList.remove('show');
+  const viewer = document.getElementById('documentViewer');
+  if (viewer) viewer.innerHTML = '';
+}
+
+// Listen for messages from iframe to open document viewer
+window.addEventListener('message', function(event) {
+  // Security check - only accept messages from same origin
+  if (event.origin !== window.location.origin) return;
+  
+  if (event.data.action === 'viewDocument') {
+    showViewDocumentModal(event.data.path, event.data.docId);
+  }
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+  const modal = document.getElementById('documentsModal');
+  if (e.target === modal) {
+    closeViewDocumentModal();
+  }
+});
+
 const dropZone = document.getElementById('file-drop-zone');
 const fileInput = document.getElementById('document-file');
 const filePreview = document.getElementById('file-preview');
@@ -724,6 +1001,30 @@ function closeClearModal() {
   document.getElementById('clearModalOverlay').style.display = 'none';
 }
 
+function showUploadStatusModal(success, message) {
+  const modal = document.getElementById('uploadStatusModal');
+  const icon = document.getElementById('uploadStatusIcon');
+  const title = document.getElementById('uploadStatusTitle');
+  const messageEl = document.getElementById('uploadStatusMessage');
+  
+  if (success) {
+    icon.className = 'fas fa-check-circle';
+    icon.style.color = '#28a745';
+    title.textContent = 'Upload Successful';
+  } else {
+    icon.className = 'fas fa-exclamation-circle';
+    icon.style.color = '#e53935';
+    title.textContent = 'Upload Failed';
+  }
+  
+  messageEl.textContent = message;
+  modal.style.display = 'block';
+}
+
+function closeUploadStatusModal() {
+  document.getElementById('uploadStatusModal').style.display = 'none';
+}
+
 function confirmClearNotifications() {
   fetch('clear_notifications.php')
     .then(response => response.text())
@@ -767,11 +1068,21 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+  
+  const uploadStatusOverlay = document.getElementById('uploadStatusModal');
+  if (uploadStatusOverlay) {
+    uploadStatusOverlay.addEventListener('click', function(e) {
+      if (e.target === uploadStatusOverlay) {
+        closeUploadStatusModal();
+      }
+    });
+  }
 
   // Close modal with Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closeClearModal();
+      closeUploadStatusModal();
     }
   });
 });
@@ -800,8 +1111,11 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     data.append('document_file[]', file);
   });
 
-  var msgDiv = document.getElementById('upload-message');
-  msgDiv.textContent = 'Uploading...';
+  // Show loading state
+  const submitBtn = form.querySelector('.submit');
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+  submitBtn.disabled = true;
 
   fetch('upload_handler.php', {
     method: 'POST',
@@ -809,18 +1123,30 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
   })
   .then(response => response.text())
   .then(text => {
-    msgDiv.textContent = text;
-    form.reset();
-    selectedFiles = [];
-    updateFilePreview();
-    // Reset form visibility
-    document.getElementById('program-field').style.display = 'block';
-    document.getElementById('proposal-fields').style.display = 'none';
-    document.getElementById('program').required = true;
-    document.getElementById('proposal-title').required = false;
+    // Check if upload was successful based on response text
+    const isSuccess = text.toLowerCase().includes('success') || text.toLowerCase().includes('uploaded');
+    showUploadStatusModal(isSuccess, text);
+    
+    if (isSuccess) {
+      form.reset();
+      selectedFiles = [];
+      updateFilePreview();
+      // Reset form visibility
+      document.getElementById('program-field').style.display = 'block';
+      document.getElementById('proposal-fields').style.display = 'none';
+      document.getElementById('program').required = true;
+      document.getElementById('proposal-title').required = false;
+    }
+    
+    // Restore button
+    submitBtn.innerHTML = originalBtnText;
+    submitBtn.disabled = false;
   })
   .catch(() => {
-    msgDiv.textContent = 'Upload failed. Please try again.';
+    showUploadStatusModal(false, 'Upload failed. Please check your connection and try again.');
+    // Restore button
+    submitBtn.innerHTML = originalBtnText;
+    submitBtn.disabled = false;
   });
 });
 </script>

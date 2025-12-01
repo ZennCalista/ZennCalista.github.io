@@ -166,6 +166,12 @@ function generateCode($length = 4) {
       <section class="content">
         <h2>Attendance Tracking</h2>
         <p>Monitor and manage attendance for all registered extension programs and services.</p>
+        <div class="summary-box">
+          <h3>Attendance Summary</h3>
+          <p><strong>Total Sessions:</strong> <span id="total-sessions">0</span></p>
+          <p><strong>Sessions Attended:</strong> <span id="sessions-attended">0</span></p>
+          <p><strong>Attendance Rate:</strong> <span id="attendance-rate">0%</span></p>
+        </div>
 
         <div class="attendance-section">
           <div class="qr-box">
@@ -173,10 +179,10 @@ function generateCode($length = 4) {
             <button class="qr-btn" id="open-qr-modal">Show QR Code</button>
           </div>
 
-          <div class="manual-box">
+          <!-- <div class="manual-box">
             <h3>Manual Attendance Entry</h3>
             <button class="manual-btn" id="open-manual-modal">Mark Attendance Manually</button>
-          </div>
+          </div> -->
         </div>
 
         <div class="records-section">
@@ -190,12 +196,7 @@ function generateCode($length = 4) {
           </div>
         </div>
 
-        <div class="summary-box">
-          <h3>Attendance Summary</h3>
-          <p><strong>Total Sessions:</strong> <span id="total-sessions">0</span></p>
-          <p><strong>Sessions Attended:</strong> <span id="sessions-attended">0</span></p>
-          <p><strong>Attendance Rate:</strong> <span id="attendance-rate">0%</span></p>
-        </div>
+        
       </section>
     </main>
   </div>

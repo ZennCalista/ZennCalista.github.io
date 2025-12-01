@@ -101,7 +101,7 @@ if ($user_id) {
 
       <!-- All Evaluations Table (initially hidden) -->
       <section class="all-evals-section" style="display:none;">
-        <h2>All Evaluations</h2>
+        <h2 style="padding: 20px 0;">All Evaluations</h2>
         <div class="table-wrapper">
           <table class="eval-table">
             <thead>
@@ -113,7 +113,7 @@ if ($user_id) {
                 <th>Relevance</th>
                 <th>Organization</th>
                 <th>Experience</th>
-                <th>Suggestion</th>
+                <!-- <th>Suggestion</th> -->
                 <th>Recommend</th>
               </tr>
             </thead>

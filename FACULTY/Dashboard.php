@@ -128,8 +128,8 @@ while ($stmt->fetch()) {
 }
 $stmt->close();
 
-// Upcoming notifications (meetings, reminders)
-$res = $conn->query("SELECT message, expires_at FROM notifications WHERE is_active = 1 AND (expires_at IS NOT NULL AND expires_at >= CURDATE()) ORDER BY expires_at ASC LIMIT 3");
+// Upcoming notifications (meetings, reminders) - faculty only
+$res = $conn->query("SELECT message, expires_at FROM notifications WHERE is_active = 1 AND (expires_at IS NOT NULL AND expires_at >= CURDATE()) AND (audience = 'faculty' OR audience = 'all') ORDER BY expires_at ASC LIMIT 3");
 while ($row = $res->fetch_assoc()) {
     $upcoming_events[] = [
         'type' => 'Reminder',

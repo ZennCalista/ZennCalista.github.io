@@ -146,7 +146,7 @@ foreach ($programs as $program) {
 
 // Fetch notifications (optional)
 $notifications = [];
-$notifications_query = "SELECT message, priority FROM notifications WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE()) ORDER BY created_at DESC LIMIT 5";
+$notifications_query = "SELECT message, priority FROM notifications WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE()) AND (audience = 'faculty' OR audience = 'all') ORDER BY created_at DESC LIMIT 5";
 $notifications_result = $conn->query($notifications_query);
 if ($notifications_result) {
     while ($row = $notifications_result->fetch_assoc()) {

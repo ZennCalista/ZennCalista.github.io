@@ -120,7 +120,6 @@ document.addEventListener("DOMContentLoaded", function () {
           <td>${ev.relevance}</td>
           <td>${ev.organization}</td>
           <td>${ev.experience}</td>
-          <td>${ev.suggestion || ''}</td>
           <td>${ev.recommend || ''}</td>
         `;
         tbody.appendChild(tr);

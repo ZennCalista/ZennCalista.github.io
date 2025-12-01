@@ -150,5 +150,3 @@ if ($document_type !== 'proposal') {
 
     echo "Upload successful!";
 }
-?>
-?>
