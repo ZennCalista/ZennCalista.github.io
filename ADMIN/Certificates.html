@@ -10,9 +10,135 @@
   <!-- Add to your CSS or in a <style> tag -->
   <style>
     #eligible-section { display: none; }
+    
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    
+    .modal-icon {
+      font-size: 24px;
+    }
+    
+    .modal-icon.error { color: #e74c3c; }
+    .modal-icon.success { color: #27ae60; }
+    .modal-icon.warning { color: #f39c12; }
+    .modal-icon.info { color: #3498db; }
+    
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+      color: #2c3e50;
+    }
+    
+    .modal-message {
+      margin-bottom: 25px;
+      color: #555;
+      line-height: 1.5;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    .modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .modal-btn-primary {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .modal-btn-primary:hover {
+      background-color: #2980b9;
+    }
+    
+    .modal-btn-secondary {
+      background-color: #95a5a6;
+      color: white;
+    }
+    
+    .modal-btn-secondary:hover {
+      background-color: #7f8c8d;
+    }
+    
+    .modal-btn-success {
+      background-color: #27ae60;
+      color: white;
+    }
+    
+    .modal-btn-success:hover {
+      background-color: #229954;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Modal Component -->
+  <div id="customModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i id="modalIcon" class="fas modal-icon"></i>
+        <h3 id="modalTitle" class="modal-title"></h3>
+      </div>
+      <div id="modalMessage" class="modal-message"></div>
+      <div class="modal-footer">
+        <button id="modalCancelBtn" class="modal-btn modal-btn-secondary" style="display: none;">Cancel</button>
+        <button id="modalOkBtn" class="modal-btn modal-btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
 
     
   <div class="sidebar">
@@ -117,6 +243,78 @@
       </div>
       
       <script>
+// Custom Modal Functions
+function showModal(message, type = 'info', title = '', showCancel = false, onConfirm = null, onCancel = null) {
+    const modal = document.getElementById('customModal');
+    const icon = document.getElementById('modalIcon');
+    const titleEl = document.getElementById('modalTitle');
+    const messageEl = document.getElementById('modalMessage');
+    const okBtn = document.getElementById('modalOkBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    
+    // Set icon based on type
+    const icons = {
+        'success': 'fa-check-circle',
+        'error': 'fa-exclamation-circle',
+        'warning': 'fa-exclamation-triangle',
+        'info': 'fa-info-circle'
+    };
+    
+    const titles = {
+        'success': 'Success',
+        'error': 'Error',
+        'warning': 'Warning',
+        'info': 'Information'
+    };
+    
+    icon.className = `fas ${icons[type] || icons.info} modal-icon ${type}`;
+    titleEl.textContent = title || titles[type] || titles.info;
+    messageEl.textContent = message;
+    
+    // Show/hide cancel button
+    if (showCancel) {
+        cancelBtn.style.display = 'inline-block';
+    } else {
+        cancelBtn.style.display = 'none';
+    }
+    
+    // Update OK button style based on type
+    okBtn.className = 'modal-btn ' + (type === 'success' ? 'modal-btn-success' : 'modal-btn-primary');
+    
+    // Show modal
+    modal.classList.add('active');
+    
+    // Set up event handlers
+    const handleOk = () => {
+        modal.classList.remove('active');
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        if (onConfirm) onConfirm();
+    };
+    
+    const handleCancel = () => {
+        modal.classList.remove('active');
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        if (onCancel) onCancel();
+    };
+    
+    okBtn.addEventListener('click', handleOk);
+    cancelBtn.addEventListener('click', handleCancel);
+    
+    // Close on overlay click
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            handleCancel();
+        }
+    };
+}
+
+// Confirmation dialog
+function showConfirm(message, onConfirm, onCancel) {
+    showModal(message, 'warning', 'Confirm Action', true, onConfirm, onCancel);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initial loads
     loadCertificates();
@@ -150,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error loading programs:', error);
-            alert('Error loading programs. Please check the console for details.');
+            showModal('Error loading programs. Please check your connection.', 'error');
         });
 });
 
@@ -158,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('load-eligible').onclick = function() {
         const program_id = document.getElementById('programs').value;
         if (!program_id) {
-            alert('Please select a program first.');
+            showModal('Please select a program first.', 'warning');
             return;
         }
         document.getElementById('eligible-section').style.display = 'block'; // Show section
@@ -240,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return JSON.parse(text);
       })
       .then(resp => {
-        alert(resp.message);
+        showModal(resp.message, resp.status === 'success' ? 'success' : 'error');
         // Do NOT replace the button, just reload both tables:
         loadCertificates();
         loadPendingCertificates();
@@ -248,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .catch(error => {
         console.error('Error issuing certificate:', error);
-        alert('Error issuing certificate. Check console for details.');
+        showModal('Error issuing certificate. Please try again.', 'error');
       });
     }
 
@@ -314,11 +512,15 @@ function issueFacultyCert(program_id, btn) {
   })
   .then(res => res.json())
   .then(resp => {
-    alert(resp.message);
+    showModal(resp.message, resp.status === 'success' ? 'success' : 'error');
     btn.disabled = true;
     btn.textContent = 'Issued';
     loadCertificates();
     loadPendingCertificates();
+  })
+  .catch(error => {
+    console.error('Error issuing faculty certificate:', error);
+    showModal('Error issuing faculty certificate. Please try again.', 'error');
   });
 }
 
@@ -387,25 +589,30 @@ document.getElementById('programs').onchange = function() {
 };
 
 function regenerateCert(cert_id, program_id, type, btn) {
-    if (!confirm('Are you sure you want to regenerate this certificate?')) return;
-    const formData = new FormData();
-    let url = '';
-    if (type === 'faculty') {
-        formData.append('program_id', program_id);
-        url = '../backend/api.php?action=regenerate_faculty_certificate';
-    } else {
-        formData.append('participant_id', cert_id);
-        url = '../backend/api.php?action=regenerate_certificate';
-    }
-    fetch(url, {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(resp => {
-        alert(resp.message);
-        loadCertificates();
-        loadPendingCertificates();
+    showConfirm('Are you sure you want to regenerate this certificate?', () => {
+        const formData = new FormData();
+        let url = '';
+        if (type === 'faculty') {
+            formData.append('program_id', program_id);
+            url = '../backend/api.php?action=regenerate_faculty_certificate';
+        } else {
+            formData.append('participant_id', cert_id);
+            url = '../backend/api.php?action=regenerate_certificate';
+        }
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(resp => {
+            showModal(resp.message, resp.status === 'success' ? 'success' : 'error');
+            loadCertificates();
+            loadPendingCertificates();
+        })
+        .catch(error => {
+            console.error('Error regenerating certificate:', error);
+            showModal('Error regenerating certificate. Please try again.', 'error');
+        });
     });
 }
 </script>
