@@ -28,12 +28,18 @@ if (!$faculty_id) {
     // Fetch all uploads for this faculty - both proposals and documents
     $uploads = [];
 
-    // First, get all proposals
-    $proposals_sql = "SELECT pp.id, pp.proposal_title as title, pp.description, pp.status, pp.submitted_at as upload_date,
-                             'proposal' as upload_type, NULL as file_path, NULL as original_filename,
-                             NULL as program_name, pp.review_notes as admin_remarks
+    // Get all proposals with their attached documents
+    $proposals_sql = "SELECT pp.id as proposal_id, pp.proposal_title as title, pp.description, pp.status, pp.submitted_at as upload_date,
+                             'proposal' as upload_type, 
+                             GROUP_CONCAT(du.file_path SEPARATOR '|||') as file_paths,
+                             GROUP_CONCAT(du.original_filename SEPARATOR '|||') as original_filenames,
+                             GROUP_CONCAT(du.id SEPARATOR '|||') as document_ids,
+                             NULL as program_name, pp.review_notes as admin_remarks,
+                             COUNT(du.id) as file_count
                       FROM program_proposals pp
+                      LEFT JOIN document_uploads du ON du.proposal_id = pp.id
                       WHERE pp.faculty_id = ?
+                      GROUP BY pp.id
                       ORDER BY pp.submitted_at DESC";
     $stmt = $conn->prepare($proposals_sql);
     $stmt->bind_param("i", $faculty_id);
@@ -45,32 +51,28 @@ if (!$faculty_id) {
     }
     $stmt->close();
 
-    // Then, get all document uploads (including those linked to proposals)
+    // Then, get all document uploads NOT linked to proposals
     $documents_sql = "SELECT du.id, 
                              CASE 
-                               WHEN du.proposal_id IS NOT NULL THEN CONCAT('Proposal Document: ', pp.proposal_title)
                                WHEN du.program_id IS NOT NULL THEN p.program_name
                                ELSE 'General Document'
                              END as title,
                              du.document_type as description,
                              du.status,
                              du.upload_date,
+                             'document' as upload_type,
+                             du.file_path as file_paths,
+                             du.original_filename as original_filenames,
+                             du.id as document_ids,
                              CASE 
-                               WHEN du.proposal_id IS NOT NULL THEN 'proposal_document'
-                               ELSE 'document'
-                             END as upload_type,
-                             du.file_path,
-                             du.original_filename,
-                             CASE 
-                               WHEN du.proposal_id IS NOT NULL THEN CONCAT('Proposal: ', pp.proposal_title)
                                WHEN du.program_id IS NOT NULL THEN p.program_name
                                ELSE 'General'
                              END as program_name,
-                             NULL as admin_remarks
+                             NULL as admin_remarks,
+                             1 as file_count
                       FROM document_uploads du
                       LEFT JOIN programs p ON du.program_id = p.id
-                      LEFT JOIN program_proposals pp ON du.proposal_id = pp.id
-                      WHERE du.faculty_id = ?
+                      WHERE du.faculty_id = ? AND du.proposal_id IS NULL
                       ORDER BY du.upload_date DESC";
     $stmt = $conn->prepare($documents_sql);
     $stmt->bind_param("i", $faculty_id);
@@ -108,6 +110,9 @@ if (!$faculty_id) {
     .remarks { color: #b30000; font-size: 0.97em; }
     .download-link { color: #247a37; text-decoration: none; font-weight: 500; }
     .download-link:hover { text-decoration: underline; }
+    .download-link i { margin-right: 4px; }
+    .file-list { padding-left: 8px; }
+    .file-count { font-weight: 600; color: #2E7D32; margin-bottom: 6px; font-size: 0.95em; }
     h2 { margin: 40px auto 18px auto; text-align: center; color: #247a37; }
   </style>
 </head>
@@ -164,13 +169,41 @@ if (!$faculty_id) {
             </td>
             <td><?php echo htmlspecialchars($upload['program_name'] ?? 'N/A'); ?></td>
             <td>
-              <?php if (!empty($upload['file_path']) && !empty($upload['original_filename'])): ?>
-                <a class="download-link" href="<?php echo htmlspecialchars($upload['file_path']); ?>" target="_blank">
-                  <i class="fas fa-download"></i> <?php echo htmlspecialchars($upload['original_filename']); ?>
-                </a>
-              <?php else: ?>
-                <span style="color:#999;">No file attached</span>
-              <?php endif; ?>
+              <?php 
+              if (!empty($upload['file_paths']) && !empty($upload['original_filenames'])) {
+                $file_paths = explode('|||', $upload['file_paths']);
+                $filenames = explode('|||', $upload['original_filenames']);
+                
+                // Filter out empty values
+                $file_paths = array_filter($file_paths, function($val) { return !empty(trim($val)); });
+                $filenames = array_filter($filenames, function($val) { return !empty(trim($val)); });
+                
+                if (count($file_paths) > 1) {
+                  // Multiple files - show count and list
+                  echo '<div class="file-count">' . count($file_paths) . ' files attached:</div>';
+                  echo '<div class="file-list">';
+                  $file_paths = array_values($file_paths);
+                  $filenames = array_values($filenames);
+                  for ($i = 0; $i < count($file_paths); $i++) {
+                    echo '<a class="download-link" href="' . htmlspecialchars($file_paths[$i]) . '" target="_blank" style="display:block; margin:2px 0;">';
+                    echo '<i class="fas fa-download"></i> ' . htmlspecialchars($filenames[$i]);
+                    echo '</a>';
+                  }
+                  echo '</div>';
+                } elseif (count($file_paths) === 1) {
+                  // Single file
+                  $file_paths = array_values($file_paths);
+                  $filenames = array_values($filenames);
+                  echo '<a class="download-link" href="' . htmlspecialchars($file_paths[0]) . '" target="_blank">';
+                  echo '<i class="fas fa-download"></i> ' . htmlspecialchars($filenames[0]);
+                  echo '</a>';
+                } else {
+                  echo '<span style="color:#999;">No file attached</span>';
+                }
+              } else {
+                echo '<span style="color:#999;">No file attached</span>';
+              }
+              ?>
             </td>
             <td><?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($upload['upload_date']))); ?></td>
             <td>
