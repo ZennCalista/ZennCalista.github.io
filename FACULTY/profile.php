@@ -173,6 +173,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
         transform: translate(-50%, -50%);
       }
     }
+
+    /* Change Password Button */
+    .change-password-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .change-password-btn:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .change-password-btn i {
+      font-size: 0.95rem;
+    }
   </style>
 </head>
 <body>
@@ -262,6 +288,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
               <!-- <div class="info-row"><span>Faculty ID:</span> <?php echo htmlspecialchars($faculty_profile['faculty_id'] ?? ''); ?></div> -->
               <div class="info-row"><span>Department:</span> <?php echo htmlspecialchars($faculty_profile['faculty_department'] ?? ''); ?></div>
               <div class="info-row"><span>Position:</span> <?php echo htmlspecialchars($faculty_profile['position'] ?? ''); ?></div>
+            </div>
+          </div>
+
+          <!-- Security Settings Card -->
+          <div class="profile-card-section">
+            <div class="section-header">
+              <i class="fas fa-shield-alt"></i>
+              <span>Security Settings</span>
+            </div>
+            <div class="section-content">
+              <div class="info-row" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Password</span>
+                <button class="change-password-btn" onclick="PasswordChangeModal.open()" title="Change Password">
+                  <i class="fas fa-key"></i> Change Password
+                </button>
+              </div>
+              <p style="color: #6b7280; font-size: 0.875rem; margin-top: 8px;">
+                Keep your account secure by regularly updating your password
+              </p>
             </div>
           </div>
         </div>
@@ -453,6 +498,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
       });
     });
   </script>
+
+  <!-- Include Password Change Modal -->
+  <?php include '../portal/shared/password_change_modal.php'; ?>
+  <script src="../portal/shared/password_change_modal.js"></script>
 </body>
 </html>
 

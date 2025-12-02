@@ -1,10 +1,11 @@
 <?php
 // Only require PHPMailer if not in testing mode
-$config = require 'email_config.php';
+$config = require __DIR__ . '/email_config.php';
 if ($config['smtp']['username'] === 'your-email@gmail.com' || strpos($config['smtp']['username'], 'your-') === 0) {
     // Testing mode - don't require PHPMailer
 } else {
-    require_once '../vendor/autoload.php';
+    // Use __DIR__ to get absolute path to vendor
+    require_once __DIR__ . '/../vendor/autoload.php';
 }
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -16,7 +17,7 @@ class OTPUtils {
 
     public function __construct($db_connection) {
         $this->conn = $db_connection;
-        $this->config = require 'email_config.php';
+        $this->config = require __DIR__ . '/email_config.php';
     }
 
     /**

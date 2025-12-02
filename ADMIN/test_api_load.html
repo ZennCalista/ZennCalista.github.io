@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html>
+<head><title>Test API</title></head>
+<body>
+<h1>API Test</h1>
+<pre id='result'>Loading...</pre>
+<script>
+fetch('../backend/api.php?action=all_programs')
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('result').textContent = 'Success! Loaded ' + data.length + ' programs';
+  })
+  .catch(err => {
+    document.getElementById('result').textContent = 'Error: ' + err.message;
+  });
+</script>
+</body>
+</html>

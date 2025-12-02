@@ -63,6 +63,32 @@ if ($user_id) {
     .value {
       color: #555;
     }
+
+    /* Change Password Button */
+    .change-password-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .change-password-btn:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .change-password-btn i {
+      font-size: 0.95rem;
+    }
   </style>
 </head>
 <body>
@@ -126,6 +152,24 @@ if ($user_id) {
           <div class="value" id="profile-emergency">Loading...</div>
         </div>
       </section>
+
+      <!-- Security Settings Card -->
+      <section class="profile-card" style="margin-top: 20px;">
+        <div class="profile-title">
+          <i class="fas fa-shield-alt"></i> Security Settings
+        </div>
+        <div style="padding: 20px 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-weight: bold; color: #333;">Password</span>
+            <button class="change-password-btn" onclick="PasswordChangeModal.open()" title="Change Password">
+              <i class="fas fa-key"></i> Change Password
+            </button>
+          </div>
+          <p style="color: #6b7280; font-size: 0.9rem; margin-top: 8px;">
+            Keep your account secure by regularly updating your password
+          </p>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -151,5 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
   </script>
+
+  <!-- Include Password Change Modal -->
+  <?php include '../portal/shared/password_change_modal.php'; ?>
+  <script src="../portal/shared/password_change_modal.js"></script>
 </body>
 </html>
