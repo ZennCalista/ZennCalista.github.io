@@ -274,9 +274,9 @@ h2 {
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(36,122,55,0.18);
-  width: 90vw;
-  max-width: 900px;
-  height: 80vh;
+  width: 95vw;
+  max-width: 1400px;
+  height: 90vh;
   position: relative;
   display: flex;
   flex-direction: column;
