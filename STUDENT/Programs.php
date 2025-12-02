@@ -668,8 +668,8 @@ if ($user_id) {
   }
 
   function downloadCertificate(programId) {
-    // Download certificate for completed program
-    window.open(`certificates.php?program_id=${programId}`, '_blank');
+    // Navigate to certificate page in same tab
+    window.location.href = `certificates.php?program_id=${programId}`;
   }
 
   function viewApplicationStatus(programId) {
