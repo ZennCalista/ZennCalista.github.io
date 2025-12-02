@@ -1,9 +1,20 @@
 <?php
+// Start output buffering to catch any errors before JSON output
+ob_start();
+
 session_start();
 
 // Set error handling to output JSON
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
+
+// Custom error handler to output JSON
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    ob_clean();
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Server error: ' . $errstr]);
+    exit;
+});
 
 header('Content-Type: application/json');
 
@@ -12,17 +23,20 @@ try {
     require_once '../../register/otp_utils.php';
     require_once 'password_utils.php';
 } catch (Exception $e) {
+    ob_clean();
     echo json_encode(['success' => false, 'message' => 'Server configuration error: ' . $e->getMessage()]);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    ob_clean();
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
     exit;
 }
 
 if (!isset($_SESSION['user_id'])) {
+    ob_clean();
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
     exit;
@@ -31,6 +45,7 @@ if (!isset($_SESSION['user_id'])) {
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($data['otp']) || !isset($data['new_password']) || !isset($data['confirm_password'])) {
+    ob_clean();
     echo json_encode(['success' => false, 'message' => 'All fields are required']);
     exit;
 }
@@ -43,6 +58,7 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $stmt->bind_result($email);
 if (!$stmt->fetch()) {
+    ob_clean();
     echo json_encode(['success' => false, 'message' => 'User not found']);
     exit;
 }
@@ -53,6 +69,7 @@ $confirm_password = $data['confirm_password'];
 
 // Check if passwords match
 if ($new_password !== $confirm_password) {
+    ob_clean();
     echo json_encode(['success' => false, 'message' => 'Passwords do not match']);
     exit;
 }
@@ -60,6 +77,7 @@ if ($new_password !== $confirm_password) {
 // Validate password requirements
 $validation = PasswordUtils::validatePassword($new_password);
 if (!$validation['valid']) {
+    ob_clean();
     echo json_encode([
         'success' => false,
         'message' => 'Password does not meet requirements',
@@ -70,6 +88,7 @@ if (!$validation['valid']) {
 
 // Check if new password is same as current password
 if (PasswordUtils::isSameAsCurrentPassword($user_id, $new_password, $conn)) {
+    ob_clean();
     echo json_encode(['success' => false, 'message' => 'New password cannot be the same as current password']);
     exit;
 }
@@ -78,28 +97,41 @@ if (PasswordUtils::isSameAsCurrentPassword($user_id, $new_password, $conn)) {
 $otp_utils = new OTPUtils($conn);
 $verify_result = $otp_utils->verifyOTP($user_id, $otp);
 if ($verify_result['status'] !== 'success') {
+    ob_clean();
     echo json_encode(['success' => false, 'message' => $verify_result['message'] ?? 'Invalid or expired OTP']);
     exit;
 }
 
 // Update password
-if (PasswordUtils::updatePassword($user_id, $new_password, $conn)) {
-    // Log the password change (optional)
-    PasswordUtils::logPasswordChange($user_id, $conn);
-    
-    // Delete used OTP
-    $stmt = $conn->prepare("DELETE FROM otp_verifications WHERE user_id = ? AND email = ?");
-    if ($stmt) {
-        $stmt->bind_param("is", $user_id, $email);
-        $stmt->execute();
-        $stmt->close();
+try {
+    if (PasswordUtils::updatePassword($user_id, $new_password, $conn)) {
+        // Log the password change (optional - ignore if table doesn't exist)
+        try {
+            PasswordUtils::logPasswordChange($user_id, $conn);
+        } catch (Exception $e) {
+            // Silently fail if logging table doesn't exist
+            error_log("Password change logging failed: " . $e->getMessage());
+        }
+        
+        // Delete used OTP
+        $stmt = $conn->prepare("DELETE FROM otp_verifications WHERE user_id = ? AND email = ?");
+        if ($stmt) {
+            $stmt->bind_param("is", $user_id, $email);
+            $stmt->execute();
+            $stmt->close();
+        }
+        
+        ob_clean();
+        echo json_encode([
+            'success' => true,
+            'message' => 'Password changed successfully'
+        ]);
+    } else {
+        ob_clean();
+        echo json_encode(['success' => false, 'message' => 'Failed to update password. Please try again.']);
     }
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Password changed successfully'
-    ]);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Failed to update password. Please try again.']);
+} catch (Exception $e) {
+    ob_clean();
+    echo json_encode(['success' => false, 'message' => 'Error updating password: ' . $e->getMessage()]);
 }
 ?>
