@@ -413,7 +413,9 @@ function renderEvaluationsTable(evaluations) {
 function renderChart(evaluations) {
   try {
     const ctx = document.getElementById('avgRatingChart').getContext('2d');
-    if (window.avgRatingChart) window.avgRatingChart.destroy();
+    if (window.avgRatingChart && typeof window.avgRatingChart.destroy === 'function') {
+      window.avgRatingChart.destroy();
+    }
     
     // Group by program and calculate averages
     const progMap = {};
