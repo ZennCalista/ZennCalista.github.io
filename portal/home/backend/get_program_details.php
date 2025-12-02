@@ -60,18 +60,13 @@ try {
         $image_ids = explode('||', $row['image_ids']);
         $image_descs = explode('||', $row['image_descs']);
         
-        // Detect environment: Local vs Hosted
-        // Match the same structure as get_programs.php for consistency
-        $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
-        $base_url = $is_local ? '/Etracker' : '';
-        
         foreach ($image_ids as $idx => $image_id) {
             if (!empty($image_id)) {
                 $images[] = [
                     'id' => $image_id,
                     'image_id' => $image_id,
                     'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                    'image_url' => $base_url . '/portal/home/backend/get_image.php?image_id=' . $image_id
+                    'image_url' => 'backend/get_image.php?image_id=' . $image_id
                 ];
             }
         }
