@@ -39,14 +39,41 @@ function requireAdminAuth() {
 // Require admin authentication for all operations
 requireAdminAuth();
 
+// Clear all notifications (check this FIRST before other POST handlers)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'clear_all') {
+    header('Content-Type: application/json');
+    
+    $stmt = $conn->prepare("UPDATE notifications SET is_active = 0 WHERE is_active = 1 AND audience IN ('admin', 'all')");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $conn->error]);
+        exit;
+    }
+    
+    if (!$stmt->execute()) {
+        echo json_encode(['success' => false, 'error' => 'Failed to execute: ' . $stmt->error]);
+        exit;
+    }
+    
+    $stmt->close();
+    echo json_encode(['success' => true, 'message' => 'All notifications cleared']);
+    exit;
+}
+
 // Insert or update notification
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    
     $id = $_POST['id'] ?? '';
-    $message = $_POST['message'];
-    $priority = $_POST['priority'];
+    $message = $_POST['message'] ?? '';
+    $priority = $_POST['priority'] ?? '';
     $audience = $_POST['audience'] ?? 'all';
-    $expires_at = $_POST['expires_at'];
+    $expires_at = $_POST['expires_at'] ?? '';
     $is_active = 1;
+
+    if (empty($message) || empty($priority) || empty($expires_at)) {
+        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+        exit;
+    }
 
     if ($id) {
         $stmt = $conn->prepare("UPDATE notifications SET message=?, priority=?, audience=?, expires_at=? WHERE id=?");
@@ -55,15 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("INSERT INTO notifications (message, priority, audience, created_at, expires_at, is_active) VALUES (?, ?, ?, NOW(), ?, ?)");
         $stmt->bind_param("ssssi", $message, $priority, $audience, $expires_at, $is_active);
     }
-    $stmt->execute();
-    echo json_encode(['success' => true]);
-    exit;
-}
-
-// Clear all notifications
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'clear_all') {
-    $stmt = $conn->prepare("UPDATE notifications SET is_active = 0 WHERE is_active = 1 AND audience IN ('admin', 'all')");
-    $stmt->execute();
+    
+    if (!$stmt->execute()) {
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $stmt->error]);
+        exit;
+    }
+    
+    $stmt->close();
     echo json_encode(['success' => true]);
     exit;
 }
