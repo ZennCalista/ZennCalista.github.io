@@ -323,7 +323,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const manualMsg = document.getElementById('manual-attendance-message');
   const timeInInput = document.getElementById('manual-time-in');
 
-  openBtn.onclick = function() {
+  if (openBtn) {
+    openBtn.onclick = function() {
     modal.style.display = 'block';
     manualMsg.textContent = '';
     // Set default time-in to current time
@@ -346,40 +347,46 @@ document.addEventListener('DOMContentLoaded', function() {
           programSelect.innerHTML = '<option value="">No approved programs</option>';
         }
       });
-  };
-  closeBtn.onclick = function() {
-    modal.style.display = 'none';
-  };
+    };
+  }
+  
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      modal.style.display = 'none';
+    };
+  }
 
-  manualForm.onsubmit = function(e) {
-    e.preventDefault();
-    manualMsg.textContent = 'Submitting...';
-    manualMsg.style.color = '#2e6e1e';
-    // When submitting manual attendance:
-    fetch('mark_attendance.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        program_id: programSelect.value, // <-- use program_id, not name
-        time_in: timeInInput.value
+  if (manualForm) {
+    manualForm.onsubmit = function(e) {
+      e.preventDefault();
+      manualMsg.textContent = 'Submitting...';
+      manualMsg.style.color = '#2e6e1e';
+      // When submitting manual attendance:
+      fetch('mark_attendance.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          program_id: programSelect.value, // <-- use program_id, not name
+          time_in: timeInInput.value
+        })
       })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        manualMsg.style.color = 'green';
-        manualMsg.textContent = 'Attendance marked successfully!';
-        setTimeout(() => { modal.style.display = 'none'; location.reload(); }, 1000);
-      } else {
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          manualMsg.style.color = 'green';
+          manualMsg.textContent = 'Attendance marked successfully!';
+          setTimeout(() => { modal.style.display = 'none'; location.reload(); }, 1000);
+        } else {
+          manualMsg.style.color = 'red';
+          manualMsg.textContent = data.message || 'Failed to mark attendance.';
+        }
+      })
+      .catch(() => {
         manualMsg.style.color = 'red';
-        manualMsg.textContent = data.message || 'Failed to mark attendance.';
-      }
-    })
-    .catch(() => {
-      manualMsg.style.color = 'red';
-      manualMsg.textContent = 'Failed to mark attendance.';
-    });
-  };
+        manualMsg.textContent = 'Failed to mark attendance.';
+      });
+    };
+  }
 
   // QR Modal logic
   const qrModal = document.getElementById('qr-modal');
@@ -458,9 +465,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // END of openQrBtn.onclick
 
-  document.getElementById('scan-qr-btn').onclick = function() {
-    document.getElementById('qr-reader').style.display = 'block';
-    const qrReader = new Html5Qrcode("qr-reader");
+  const scanQrBtn = document.getElementById('scan-qr-btn');
+  if (scanQrBtn) {
+    scanQrBtn.onclick = function() {
+      document.getElementById('qr-reader').style.display = 'block';
+      const qrReader = new Html5Qrcode("qr-reader");
     qrReader.start(
       { facingMode: "environment" }, // Use rear camera if available
       { fps: 10, qrbox: 250 },
@@ -491,13 +500,16 @@ document.addEventListener('DOMContentLoaded', function() {
       alert("Unable to start QR scanner: " + err);
       document.getElementById('qr-reader').style.display = 'none';
     });
-  }; // <-- Make sure this closes the onclick function
+    }; // <-- Make sure this closes the onclick function
+  } // Close the null check for scanQrBtn
 
 // QR Code manual entry
-document.getElementById('submit-qr-code').onclick = function() {
-  const code = document.getElementById('qr-code-input').value.trim();
-  const qrModal = document.getElementById('qr-modal');
-  const qrCodeMessage = document.getElementById('qr-code-message');
+const submitQrCodeBtn = document.getElementById('submit-qr-code');
+if (submitQrCodeBtn) {
+  submitQrCodeBtn.onclick = function() {
+    const code = document.getElementById('qr-code-input').value.trim();
+    const qrModal = document.getElementById('qr-modal');
+    const qrCodeMessage = document.getElementById('qr-code-message');
   if (!code) {
     qrCodeMessage.innerText = "Please enter the code.";
     return;
@@ -520,7 +532,8 @@ document.getElementById('submit-qr-code').onclick = function() {
   .catch(() => {
     qrCodeMessage.innerText = "Error marking attendance.";
   });
-};
+  };
+} // Close the null check for submitQrCodeBtn
 
 }); // <-- Add this to close the DOMContentLoaded event listener
 
