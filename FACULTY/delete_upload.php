@@ -110,14 +110,6 @@ try {
         $stmt->execute();
         $stmt->close();
 
-        // Delete related notifications (if table exists)
-        $stmt = $conn->prepare("DELETE FROM notifications WHERE related_id = ? AND related_type = 'proposal'");
-        if ($stmt) {
-            $stmt->bind_param("i", $actual_id);
-            $stmt->execute();
-            $stmt->close();
-        }
-
     } else {
         // Deleting a single document
         $stmt = $conn->prepare("
@@ -162,14 +154,6 @@ try {
         $stmt->bind_param("i", $actual_id);
         $stmt->execute();
         $stmt->close();
-
-        // Delete related notifications (if table exists)
-        $stmt = $conn->prepare("DELETE FROM notifications WHERE related_id = ? AND related_type = 'document'");
-        if ($stmt) {
-            $stmt->bind_param("i", $actual_id);
-            $stmt->execute();
-            $stmt->close();
-        }
     }
 
     // Commit transaction
