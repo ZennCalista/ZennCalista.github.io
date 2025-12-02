@@ -28,7 +28,7 @@ if (!$program_id) {
     returnJsonError('Program ID is required');
 }
 
-require_once '../FACULTY/db.php';
+require_once 'db.php';
 if ($conn->connect_error) {
     returnJsonError('Database connection failed');
 }

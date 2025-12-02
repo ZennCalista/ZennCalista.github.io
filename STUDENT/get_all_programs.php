@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
     returnJsonError('Unauthorized: Please log in as a student');
 }
 
-require_once '../FACULTY/db.php';
+require_once 'db.php';
 if ($conn->connect_error) {
     returnJsonError('Database connection failed: ' . $conn->connect_error);
 }

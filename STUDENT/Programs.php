@@ -355,20 +355,33 @@ if ($user_id) {
     // Fetch enrollments first, then programs
     fetchEnrolledPrograms().then(() => {
       fetch('get_all_programs.php')
-        .then(response => response.json())
-        .then((data) => {
-          loading.style.display = 'none';
-          if (data.status === 'success' && data.programs.length > 0) {
-            directoryPrograms = data.programs;
-            renderDirectoryCards(directoryPrograms, directoryCurrentPage);
-          } else {
-            cardList.innerHTML = '<div>No programs available</div>';
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then(text => {
+          try {
+            const data = JSON.parse(text);
+            loading.style.display = 'none';
+            if (data.status === 'success' && data.programs.length > 0) {
+              directoryPrograms = data.programs;
+              renderDirectoryCards(directoryPrograms, directoryCurrentPage);
+            } else {
+              cardList.innerHTML = `<div>${data.message || 'No programs available'}</div>`;
+            }
+          } catch (e) {
+            loading.style.display = 'none';
+            cardList.innerHTML = '<div>Error: Invalid server response</div>';
+            console.error('JSON Parse Error:', e);
+            console.error('Response text:', text);
           }
         })
         .catch(error => {
           loading.style.display = 'none';
-          cardList.innerHTML = '<div>Error loading programs</div>';
-          console.error('Error:', error);
+          cardList.innerHTML = '<div>Error loading programs. Please refresh the page.</div>';
+          console.error('Fetch Error:', error);
         });
     });
 
