@@ -687,37 +687,90 @@ function issueFacultyCert(program_id, btn) {
 // Load pending certificates (if any)
 function loadPendingCertificates() {
     const program_id = document.getElementById('programs').value;
-    fetch('../backend/api.php?action=list_certificates')
+    const tbody = document.querySelector('#pending-table tbody');
+    tbody.innerHTML = '';
+    
+    // Fetch both list_certificates and eligible_for_certificate
+    const certPromise = fetch('../backend/api.php?action=list_certificates')
         .then(res => res.text())
         .then(text => {
             console.log('Pending certs raw response:', text);
             return JSON.parse(text);
-        })
-        .then(certificates => {
+        });
+    
+    // Only fetch eligible if program is selected
+    const eligiblePromise = program_id 
+        ? fetch('../backend/api.php?action=eligible_for_certificate&program_id=' + program_id)
+            .then(res => res.json())
+        : Promise.resolve({ students: [], faculty: [] });
+    
+    Promise.all([certPromise, eligiblePromise])
+        .then(([certificates, eligibleData]) => {
             if (certificates.error) {
                 throw new Error(certificates.error);
             }
-            const tbody = document.querySelector('#pending-table tbody');
-            tbody.innerHTML = '';
+            
+            // Get pending certificates from list_certificates
             let pendingCerts = certificates.filter(cert =>
-
-            cert.certificate_issued == 0 ||
-    cert.certificate_issued === "0" ||
-    cert.certificate_issued === null
-);
+                cert.certificate_issued == 0 ||
+                cert.certificate_issued === "0" ||
+                cert.certificate_issued === null
+            );
+            
             // If a program is selected, filter by program_id
             if (program_id) {
                 pendingCerts = pendingCerts.filter(cert => cert.program_id == program_id);
             }
             
-            if (pendingCerts.length === 0) {
+            // Add eligible students and faculty that aren't already in pendingCerts
+            const allPending = [...pendingCerts];
+            
+            if (eligibleData.students) {
+                eligibleData.students.forEach(student => {
+                    // Check if this student is already in the pending list
+                    const exists = pendingCerts.some(cert => 
+                        cert.cert_id == student.cert_id && cert.type === 'student'
+                    );
+                    if (!exists) {
+                        allPending.push({
+                            cert_id: student.cert_id,
+                            program_id: student.program_id,
+                            name: student.name,
+                            program_name: document.getElementById('programs').selectedOptions[0]?.textContent || 'Selected Program',
+                            type: 'student',
+                            certificate_issued: 0
+                        });
+                    }
+                });
+            }
+            
+            if (eligibleData.faculty) {
+                eligibleData.faculty.forEach(faculty => {
+                    // Check if this faculty is already in the pending list
+                    const exists = pendingCerts.some(cert => 
+                        cert.program_id == faculty.program_id && cert.type === 'faculty'
+                    );
+                    if (!exists) {
+                        allPending.push({
+                            cert_id: null,
+                            program_id: faculty.program_id,
+                            name: faculty.name,
+                            program_name: document.getElementById('programs').selectedOptions[0]?.textContent || 'Selected Program',
+                            type: 'faculty',
+                            certificate_issued: 0
+                        });
+                    }
+                });
+            }
+            
+            if (allPending.length === 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = '<td colspan="5">No pending certificates found</td>';
                 tbody.appendChild(tr);
                 return;
             }
 
-            pendingCerts.forEach(cert => {
+            allPending.forEach(cert => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${cert.name}</td>
