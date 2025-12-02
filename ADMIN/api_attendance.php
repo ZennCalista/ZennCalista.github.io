@@ -99,7 +99,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_logs') {
 
 // Fetch program attendance summary
 if (isset($_GET['action']) && $_GET['action'] === 'get_program_summary') {
-    $result = $conn->query("
+    // Build query with optional date filters
+    $sql = "
         SELECT 
             a.program_id,
             p.program_name,
@@ -109,9 +110,25 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_program_summary') {
             SUM(a.status = 'Absent') as absent
         FROM attendance a
         LEFT JOIN programs p ON a.program_id = p.id
+        WHERE 1=1
+    ";
+    
+    // Add date filters if provided
+    if (isset($_GET['from']) && !empty($_GET['from'])) {
+        $from = $conn->real_escape_string($_GET['from']);
+        $sql .= " AND a.date >= '$from'";
+    }
+    if (isset($_GET['to']) && !empty($_GET['to'])) {
+        $to = $conn->real_escape_string($_GET['to']);
+        $sql .= " AND a.date <= '$to'";
+    }
+    
+    $sql .= "
         GROUP BY a.program_id, a.date
         ORDER BY a.date DESC
-    ");
+    ";
+    
+    $result = $conn->query($sql);
     $summary = [];
     while ($row = $result->fetch_assoc()) {
         $row['attendance_percent'] = $row['registered'] > 0 ? round(($row['present'] / $row['registered']) * 100) : 0;

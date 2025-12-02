@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // Fetch all proposals with faculty details
+// Sort by: pending first, then approved/rejected, ordered by submission date (newest first)
 $proposals_sql = "SELECT pp.*, f.department, u.firstname, u.lastname, u.email,
                          COUNT(du.id) as document_count,
                          p.program_name
@@ -74,7 +75,14 @@ $proposals_sql = "SELECT pp.*, f.department, u.firstname, u.lastname, u.email,
                   LEFT JOIN document_uploads du ON du.proposal_id = pp.id
                   LEFT JOIN programs p ON pp.program_id = p.id
                   GROUP BY pp.id
-                  ORDER BY pp.submitted_at DESC";
+                  ORDER BY 
+                    CASE pp.status 
+                      WHEN 'pending' THEN 1 
+                      WHEN 'approved' THEN 2 
+                      WHEN 'rejected' THEN 3 
+                      ELSE 4 
+                    END,
+                    pp.submitted_at DESC";
 
 $proposals_result = $conn->query($proposals_sql);
 $proposals = [];
@@ -457,20 +465,20 @@ if ($proposals_result) {
                                     <i class="fas fa-folder-open"></i> View Documents
                                 </button>
 
-                                <form method="post" style="display: inline;">
+                                <form method="post" style="display: inline;" id="approveForm<?php echo $proposal['id']; ?>">
                                     <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
                                     <input type="hidden" name="action" value="approve">
-                                    <textarea name="review_notes" class="review-notes" placeholder="Optional approval notes..." rows="2"></textarea>
-                                    <button type="submit" class="btn-approve" onclick="return confirm('Approve this proposal?')">
+                                    <textarea name="review_notes" class="review-notes" placeholder="Optional approval notes..." rows="2" id="approveNotes<?php echo $proposal['id']; ?>"></textarea>
+                                    <button type="button" class="btn-approve" onclick="showConfirmModal('approve', <?php echo $proposal['id']; ?>)">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
                                 </form>
 
-                                <form method="post" style="display: inline;">
+                                <form method="post" style="display: inline;" id="rejectForm<?php echo $proposal['id']; ?>">
                                     <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
                                     <input type="hidden" name="action" value="reject">
-                                    <textarea name="review_notes" class="review-notes" placeholder="Rejection reason..." rows="2" required></textarea>
-                                    <button type="submit" class="btn-reject" onclick="return confirm('Reject this proposal?')">
+                                    <textarea name="review_notes" class="review-notes" placeholder="Rejection reason..." rows="2" required id="rejectNotes<?php echo $proposal['id']; ?>"></textarea>
+                                    <button type="button" class="btn-reject" onclick="showConfirmModal('reject', <?php echo $proposal['id']; ?>)">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </form>
@@ -534,6 +542,49 @@ if ($proposals_result) {
         </div>
     </div>
 
+    <!-- Confirmation Modal for Approve/Reject -->
+    <div id="confirmationModal" class="modal" onclick="if(event.target===this)closeConfirmationModal()">
+        <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:450px; width:90%; max-height:90vh; overflow-y:auto;">
+            <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+                <h2 style="margin:0; color:#1f2937; font-size:18px;" id="confirmationTitle">Confirm Action</h2>
+                <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeConfirmationModal()">&times;</span>
+            </div>
+            <div style="padding:20px;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div id="confirmationIcon" style="font-size:48px; margin-bottom:16px;">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <p id="confirmationMessage" style="margin:0; color:#374151; line-height:1.5;">Are you sure?</p>
+                </div>
+            </div>
+            <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+                <button style="padding:8px 16px; border:1px solid #d1d5db; background:white; color:#374151; border-radius:6px; cursor:pointer;" onclick="closeConfirmationModal()">Cancel</button>
+                <button id="confirmationButton" style="padding:8px 16px; border:none; color:white; border-radius:6px; cursor:pointer;" onclick="executeConfirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal" onclick="if(event.target===this)closeAlertModal()">
+        <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+            <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+                <h2 style="margin:0; color:#1f2937; font-size:18px;" id="alertTitle">Notice</h2>
+                <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeAlertModal()">&times;</span>
+            </div>
+            <div style="padding:20px;">
+                <div style="text-align:center;">
+                    <div id="alertIcon" style="font-size:48px; margin-bottom:16px;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <p id="alertMessage" style="margin:0; color:#374151; line-height:1.5;"></p>
+                </div>
+            </div>
+            <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end;">
+                <button style="padding:8px 16px; border:none; background:#007bff; color:white; border-radius:6px; cursor:pointer;" onclick="closeAlertModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function filterProposals() {
             const statusFilter = document.getElementById('statusFilter').value;
@@ -560,12 +611,12 @@ if ($proposals_result) {
                         const doc = documents[0];
                         showViewDocumentModal(doc.file_path, doc.id);
                     } else {
-                        alert('No documents found for this proposal.');
+                        showAlertModal('No Documents', 'No documents found for this proposal.', 'info');
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching documents:', error);
-                    alert('Error loading documents.');
+                    showAlertModal('Error', 'Error loading documents. Please try again.', 'error');
                 });
         }
 
@@ -635,6 +686,103 @@ if ($proposals_result) {
             const modal = document.getElementById('documentsModal');
             if (e.target === modal) {
                 closeDocumentsModal();
+            }
+        });
+
+        // Confirmation Modal Functions
+        let pendingAction = null;
+        let pendingProposalId = null;
+
+        function showConfirmModal(action, proposalId) {
+            const modal = document.getElementById('confirmationModal');
+            const title = document.getElementById('confirmationTitle');
+            const message = document.getElementById('confirmationMessage');
+            const icon = document.getElementById('confirmationIcon');
+            const button = document.getElementById('confirmationButton');
+            
+            pendingAction = action;
+            pendingProposalId = proposalId;
+
+            if (action === 'approve') {
+                title.textContent = 'Approve Proposal';
+                message.textContent = 'Are you sure you want to approve this proposal?';
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                icon.style.color = '#28a745';
+                button.style.background = '#28a745';
+                button.innerHTML = '<i class="fas fa-check"></i> Approve';
+            } else if (action === 'reject') {
+                const notes = document.getElementById('rejectNotes' + proposalId).value.trim();
+                if (!notes) {
+                    showAlertModal('Required Field', 'Please provide a rejection reason before rejecting.', 'warning');
+                    return;
+                }
+                title.textContent = 'Reject Proposal';
+                message.textContent = 'Are you sure you want to reject this proposal? This action will notify the faculty member.';
+                icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                icon.style.color = '#dc3545';
+                button.style.background = '#dc3545';
+                button.innerHTML = '<i class="fas fa-times"></i> Reject';
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeConfirmationModal() {
+            const modal = document.getElementById('confirmationModal');
+            modal.classList.remove('show');
+            pendingAction = null;
+            pendingProposalId = null;
+        }
+
+        function executeConfirmAction() {
+            if (pendingAction && pendingProposalId) {
+                const formId = pendingAction + 'Form' + pendingProposalId;
+                const form = document.getElementById(formId);
+                if (form) {
+                    form.submit();
+                }
+            }
+            closeConfirmationModal();
+        }
+
+        // Alert Modal Functions
+        function showAlertModal(title, message, type = 'info') {
+            const modal = document.getElementById('alertModal');
+            const titleEl = document.getElementById('alertTitle');
+            const messageEl = document.getElementById('alertMessage');
+            const iconEl = document.getElementById('alertIcon');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            // Set icon and color based on type
+            if (type === 'error') {
+                iconEl.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                iconEl.style.color = '#dc3545';
+            } else if (type === 'warning') {
+                iconEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                iconEl.style.color = '#ffc107';
+            } else if (type === 'success') {
+                iconEl.innerHTML = '<i class="fas fa-check-circle"></i>';
+                iconEl.style.color = '#28a745';
+            } else {
+                iconEl.innerHTML = '<i class="fas fa-info-circle"></i>';
+                iconEl.style.color = '#17a2b8';
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeAlertModal() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('show');
+        }
+
+        // Keyboard support for modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeConfirmationModal();
+                closeAlertModal();
             }
         });
     </script>

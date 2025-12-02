@@ -523,7 +523,20 @@ function loadAttendanceLogs() {
 
 // Load program attendance overview
 function loadProgramAttendanceOverview() {
-  fetch('api_attendance.php?action=get_program_summary')
+  // Get date filter values
+  const filterFrom = document.getElementById('filterFrom').value;
+  const filterTo = document.getElementById('filterTo').value;
+  
+  // Build URL with date filters if provided
+  let url = 'api_attendance.php?action=get_program_summary';
+  if (filterFrom) {
+    url += `&from=${filterFrom}`;
+  }
+  if (filterTo) {
+    url += `&to=${filterTo}`;
+  }
+  
+  fetch(url)
     .then(res => res.json())
     .then(data => {
       if (data.success) {

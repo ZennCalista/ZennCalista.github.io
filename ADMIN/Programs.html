@@ -17,7 +17,8 @@
     .modal-content {
       background: white;
       border-radius: 8px;
-      max-width: 90vw;
+      max-width: 1400px;
+      width: 95%;
       max-height: 90vh;
       overflow-y: auto;
       position: relative;
@@ -316,6 +317,32 @@
       </div>
     </div>
   </div>
+
+  <!-- Delete Session Modal -->
+  <div id="delete-session-modal" class="modal" onclick="if(event.target===this)closeModal('delete-session-modal')">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 style="margin:0; color:#1f2937; font-size:18px;">Delete Session</h2>
+        <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeModal('delete-session-modal')">&times;</span>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:48px; color:#ef4444; margin-bottom:16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <p style="margin:0; color:#374151; line-height:1.5; margin-bottom:12px;">Are you sure you want to delete this session? <strong style="color:#ef4444;">This action cannot be undone.</strong></p>
+          <div style="background:#fef2f2; border-radius:8px; padding:16px; margin-top:16px; text-align:left; border-left:4px solid #ef4444;">
+            <p style="margin:4px 0; font-size:14px;"><strong>Session:</strong> <span id="delete-session-title">-</span></p>
+            <p style="margin:4px 0; font-size:13px; color:#6b7280; margin-top:8px;"><i class="fas fa-info-circle"></i> All session data including attendance records will be permanently deleted.</p>
+          </div>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:1px solid #d1d5db; background:white; color:#374151; border-radius:6px; cursor:pointer;" onclick="closeModal('delete-session-modal')">Cancel</button>
+        <button style="padding:8px 16px; border:none; background:#ef4444; color:white; border-radius:6px; cursor:pointer;" onclick="confirmDeleteSession()">Delete Session</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -518,10 +545,10 @@ async function showProgramDetails(programId) {
   }
 
   modal.innerHTML = `
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 1400px; width: 95%;">
       <button onclick="closeModal('programDetailsModal')" class="close-modal" title="Close">&times;</button>
       <h2>${prog.program_name}</h2>
-      <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 30px; margin-bottom: 20px;">
         <div style="flex: 1;">
           <p><strong>Department:</strong> ${prog.department}</p>
           <p><strong>Dates:</strong> ${prog.start_date} to ${prog.end_date}</p>
@@ -530,7 +557,7 @@ async function showProgramDetails(programId) {
           <p><strong>Status:</strong> ${prog.status}</p>
           <p><strong>Description:</strong> ${prog.description}</p>
         </div>
-        <div style="flex-shrink: 0; max-width: 300px;">
+        <div style="flex-shrink: 0; max-width: 400px;">
           ${images.length > 0 ? `
             <div class="program-images-grid">
               ${images.map(img => `
@@ -1104,6 +1131,48 @@ async function confirmRestoreProgram() {
   }
 }
 
+// Show delete session confirmation modal
+function showDeleteSessionModal(sessionId, sessionTitle, programId) {
+  document.getElementById('delete-session-title').textContent = sessionTitle;
+  window.pendingDeleteSessionId = sessionId;
+  window.pendingDeleteProgramId = programId;
+  document.getElementById('delete-session-modal').classList.add('show');
+}
+
+// Confirm delete session action
+async function confirmDeleteSession() {
+  const sessionId = window.pendingDeleteSessionId;
+  const programId = window.pendingDeleteProgramId;
+  if (!sessionId || !programId) return;
+
+  try {
+    const response = await fetch('../backend/delete_session.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `session_id=${sessionId}`
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.success) {
+      closeModal('delete-session-modal');
+      showToast('Session deleted successfully!', 'success');
+      await loadSessions(programId);
+      showProgramDetails(programId);
+    } else {
+      closeModal('delete-session-modal');
+      showToast('Error deleting session: ' + (result.error || 'Unknown error'), 'error');
+    }
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    closeModal('delete-session-modal');
+    showToast('Error deleting session: ' + error.message, 'error');
+  }
+}
+
 // --- View Archived Program Details ---
 async function viewArchivedProgramDetails(archiveId) {
   const modal = document.getElementById('programDetailsModal');
@@ -1116,10 +1185,10 @@ async function viewArchivedProgramDetails(archiveId) {
   }
 
   modal.innerHTML = `
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 1400px; width: 95%;">
       <button onclick="closeModal('programDetailsModal')" class="close-modal" title="Close">&times;</button>
       <h2>${prog.program_name} (Archived)</h2>
-      <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 30px; margin-bottom: 20px;">
         <div style="flex: 1;">
           <p><strong>Department:</strong> ${prog.department || '-'}</p>
           <p><strong>Dates:</strong> ${prog.start_date} to ${prog.end_date}</p>
@@ -1261,27 +1330,14 @@ async function showEditSessionForm(sessionId, programId) {
   };
 }
 
-async function deleteSession(sessionId, programId) {
-  if (confirm('Delete this session? This action cannot be undone.')) {
-    try {
-      const response = await fetch(`../backend/delete_session.php?id=${sessionId}`, { method: 'POST' });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.success !== false) {
-        showProgramDetails(programId);
-        renderProgramsTable();
-      } else {
-        alert('Error deleting session: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error deleting session:', error);
-      alert('Error deleting session: ' + error.message);
-    }
-  }
+function deleteSession(sessionId, programId) {
+  // Find the session title from sessionsByProgramData
+  const sessions = sessionsByProgramData[programId] || [];
+  const session = sessions.find(s => s.id == sessionId);
+  const sessionTitle = session ? session.session_title : 'this session';
+  
+  // Show the delete confirmation modal
+  showDeleteSessionModal(sessionId, sessionTitle, programId);
 }
 
 // --- Modal Close Utility ---
@@ -1290,7 +1346,7 @@ function closeModal(id) {
   if (modal) {
     modal.classList.remove('show');
     // For static modals, don't clear content
-    if (id === 'archive-program-modal' || id === 'restore-program-modal') {
+    if (id === 'archive-program-modal' || id === 'restore-program-modal' || id === 'delete-session-modal') {
       return;
     }
     // Clear modal content after animation for dynamic modals

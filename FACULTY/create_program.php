@@ -211,6 +211,29 @@ try {
     $program_id = $conn->insert_id;
     $stmt->close();
     
+    // Insert sessions into program_sessions table
+    if (!empty($sessions)) {
+        $session_sql = "INSERT INTO program_sessions (program_id, session_title, session_date, session_start, session_end) VALUES (?, ?, ?, ?, ?)";
+        $session_stmt = $conn->prepare($session_sql);
+        if (!$session_stmt) {
+            throw new Exception('Session prepare failed: ' . $conn->error);
+        }
+        
+        foreach ($sessions as $session) {
+            $session_title = $session['title'] ?? '';
+            $session_date = $session['date'] ?? '';
+            $session_start = $session['start_time'] ?? '';
+            $session_end = $session['end_time'] ?? '';
+            
+            $session_stmt->bind_param("issss", $program_id, $session_title, $session_date, $session_start, $session_end);
+            if (!$session_stmt->execute()) {
+                throw new Exception('Failed to insert session: ' . $session_stmt->error);
+            }
+        }
+        $session_stmt->close();
+        error_log("Inserted " . count($sessions) . " sessions for program ID $program_id");
+    }
+    
     // Mark proposal as used and link to created program
     $update_proposal_sql = "UPDATE program_proposals SET status = 'used', program_id = ? WHERE id = ?";
     $update_stmt = $conn->prepare($update_proposal_sql);

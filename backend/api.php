@@ -350,7 +350,7 @@ if ($action === 'issue_certificate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ssi", $file_path, $pdf_content, $participant_id);
     $stmt->execute();
 
-    echo json_encode(['message' => 'Certificate issued!', 'file' => $file_path]);
+    echo json_encode(['status' => 'success', 'message' => 'Certificate issued!', 'file' => $file_path]);
     exit;
 }
 
@@ -560,7 +560,7 @@ if ($action === 'issue_faculty_certificate' && $_SERVER['REQUEST_METHOD'] === 'P
     $stmt->bind_param("ssi", $file_path, $pdf_content, $program_id);
     $stmt->execute();
 
-    echo json_encode(['message' => 'Faculty certificate issued!', 'file' => $file_path]);
+    echo json_encode(['status' => 'success', 'message' => 'Faculty certificate issued!', 'file' => $file_path]);
     exit;
 }
 
@@ -876,7 +876,7 @@ if ($action === 'regenerate_certificate' && $_SERVER['REQUEST_METHOD'] === 'POST
     $stmt->bind_param("ssi", $file_path, $pdf_content, $participant_id);
     $stmt->execute();
 
-    echo json_encode(['message' => 'Certificate regenerated!', 'file' => $file_path]);
+    echo json_encode(['status' => 'success', 'message' => 'Certificate regenerated!', 'file' => $file_path]);
     exit;
 }
 
@@ -1005,7 +1005,7 @@ if ($action === 'regenerate_faculty_certificate' && $_SERVER['REQUEST_METHOD'] =
     $stmt->bind_param("ssi", $file_path, $pdf_content, $program_id);
     $stmt->execute();
 
-    echo json_encode(['message' => 'Faculty certificate regenerated!', 'file' => $file_path]);
+    echo json_encode(['status' => 'success', 'message' => 'Faculty certificate regenerated!', 'file' => $file_path]);
     exit;
 }
 

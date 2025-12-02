@@ -363,11 +363,72 @@
 
     <!-- Modal Overlay -->
     <div id="modal-overlay" class="modal-overlay hidden"></div>
+
+    <!-- Custom Alert Modal -->
+    <div id="alert-modal" class="alert-modal hidden">
+      <div class="alert-modal-content">
+        <div class="alert-modal-icon">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="alert-modal-body">
+          <h3 id="alert-modal-title">Alert</h3>
+          <p id="alert-modal-message">This is an alert message.</p>
+        </div>
+        <div class="alert-modal-footer">
+          <button class="alert-modal-btn" onclick="closeAlertModal()">
+            <i class="fas fa-check"></i> OK
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="alert-modal-overlay" class="modal-overlay hidden"></div>
   </div>
   
   <script>
     // Global variables for charts
     let charts = {};
+
+    // Custom Alert Modal Functions
+    function showAlertModal(message, title = 'Alert', type = 'warning') {
+      const modal = document.getElementById('alert-modal');
+      const overlay = document.getElementById('alert-modal-overlay');
+      const titleEl = document.getElementById('alert-modal-title');
+      const messageEl = document.getElementById('alert-modal-message');
+      const iconEl = modal.querySelector('.alert-modal-icon i');
+      
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      
+      // Update icon based on type
+      iconEl.className = '';
+      if (type === 'error') {
+        iconEl.className = 'fas fa-times-circle';
+        modal.classList.add('alert-error');
+        modal.classList.remove('alert-success', 'alert-warning', 'alert-info');
+      } else if (type === 'success') {
+        iconEl.className = 'fas fa-check-circle';
+        modal.classList.add('alert-success');
+        modal.classList.remove('alert-error', 'alert-warning', 'alert-info');
+      } else if (type === 'info') {
+        iconEl.className = 'fas fa-info-circle';
+        modal.classList.add('alert-info');
+        modal.classList.remove('alert-error', 'alert-success', 'alert-warning');
+      } else {
+        iconEl.className = 'fas fa-exclamation-circle';
+        modal.classList.add('alert-warning');
+        modal.classList.remove('alert-error', 'alert-success', 'alert-info');
+      }
+      
+      modal.classList.remove('hidden');
+      overlay.classList.remove('hidden');
+    }
+
+    function closeAlertModal() {
+      const modal = document.getElementById('alert-modal');
+      const overlay = document.getElementById('alert-modal-overlay');
+      modal.classList.add('hidden');
+      overlay.classList.add('hidden');
+    }
 
     // Initialize Dashboard and Charts
     async function initializeDashboard() {
@@ -1148,12 +1209,12 @@
       const reportType = modal.getAttribute('data-report-type');
       
       if (!allDatesChecked && (!startDate || !endDate)) {
-        alert('Please select both start and end dates, or check "Include all dates".');
+        showAlertModal('Please select both start and end dates, or check "Include all dates".', 'Date Selection Required', 'warning');
         return;
       }
       
       if (!allDatesChecked && new Date(startDate) > new Date(endDate)) {
-        alert('Start date must be before end date.');
+        showAlertModal('Start date must be before end date.', 'Invalid Date Range', 'error');
         return;
       }
       
@@ -1165,7 +1226,7 @@
       const hasData = reportContent && !reportContent.querySelector('.no-data') && !reportContent.querySelector('.error-message');
       
       if (!hasData) {
-        alert('No data available to export. Please generate a report first.');
+        showAlertModal('No data available to export. Please generate a report first.', 'Export Failed', 'warning');
         return;
       }
 
@@ -1181,7 +1242,7 @@
           exportToPDF(modalTitle, reportType);
           break;
         default:
-          alert('Export format not supported.');
+          showAlertModal('Export format not supported.', 'Export Error', 'error');
       }
     }
 
@@ -1190,7 +1251,7 @@
       // This provides basic Excel compatibility
       const table = document.querySelector('#report-content .report-table');
       if (!table) {
-        alert('No table data found to export.');
+        showAlertModal('No table data found to export.', 'Export Failed', 'warning');
         return;
       }
 
@@ -1232,7 +1293,7 @@
       const table = reportContent.querySelector('.report-table');
       
       if (!table) {
-        alert('No table data found to export.');
+        showAlertModal('No table data found to export.', 'Export Failed', 'warning');
         return;
       }
       
@@ -1514,7 +1575,7 @@
       const reportType = reportModal.getAttribute('data-report-type');
       
       if (!reportContent || reportContent.querySelector('.no-data') || reportContent.querySelector('.error-message')) {
-        alert('No data available to print. Please generate a report first.');
+        showAlertModal('No data available to print. Please generate a report first.', 'Print Failed', 'warning');
         return;
       }
       
@@ -1573,6 +1634,22 @@
           }
         });
       }
+      
+      // Alert modal overlay click to close
+      const alertModalOverlay = document.getElementById('alert-modal-overlay');
+      if (alertModalOverlay) {
+        alertModalOverlay.addEventListener('click', closeAlertModal);
+      }
+      
+      // Escape key to close alert modal
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const alertModal = document.getElementById('alert-modal');
+          if (alertModal && !alertModal.classList.contains('hidden')) {
+            closeAlertModal();
+          }
+        }
+      });
     });
   </script>
 
