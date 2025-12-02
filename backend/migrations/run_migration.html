@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Migration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #114d2e;
+            padding-bottom: 10px;
+        }
+        .info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        button {
+            background: #114d2e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #0d3d24;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Database Migration Tool</h1>
+        
+        <div class="info">
+            <strong>⚠️ Important:</strong> This migration will add the following columns to the <code>document_uploads</code> table:
+            <ul>
+                <li><code>admin_remarks</code> - TEXT field for admin review comments</li>
+                <li><code>reviewed_by</code> - INT field linking to users table</li>
+                <li><code>reviewed_at</code> - DATETIME field for review timestamp</li>
+            </ul>
+            <p>This is required for the document review functionality to work properly.</p>
+        </div>
+        
+        <button id="runBtn" onclick="runMigration()">▶️ Run Migration</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        async function runMigration() {
+            const btn = document.getElementById('runBtn');
+            const output = document.getElementById('output');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Running migration...';
+            output.style.display = 'block';
+            output.innerHTML = 'Starting migration...\n\n';
+            
+            try {
+                const response = await fetch('add_document_review_columns.php');
+                const text = await response.text();
+                
+                output.innerHTML += text;
+                
+                if (text.includes('✅') || text.includes('Migration completed')) {
+                    output.innerHTML += '\n\n<span class="success">✅ Migration completed successfully!</span>';
+                    btn.textContent = '✅ Migration Complete';
+                    btn.style.background = '#4caf50';
+                } else if (text.includes('already exists')) {
+                    output.innerHTML += '\n\n<span class="warning">⚠️ Columns already exist - no changes needed</span>';
+                    btn.textContent = '✅ Already Up to Date';
+                    btn.style.background = '#ff9800';
+                } else {
+                    throw new Error('Migration may have failed');
+                }
+                
+            } catch (error) {
+                output.innerHTML += '\n\n<span class="error">❌ Error: ' + error.message + '</span>';
+                btn.textContent = '❌ Migration Failed';
+                btn.style.background = '#f44336';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

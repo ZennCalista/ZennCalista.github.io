@@ -466,9 +466,22 @@
         // Request programs including archived ones so admin can filter by them too
         const res = await fetch('../backend/get_programs.php?include_archived=1');
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const raw = await res.json();
+        
+        // Get the response text first to debug JSON parsing issues
+        const responseText = await res.text();
+        let raw;
+        
+        try {
+          raw = JSON.parse(responseText);
+        } catch (jsonError) {
+          console.error('JSON parse error:', jsonError);
+          console.error('Response text:', responseText);
+          throw new Error('Invalid JSON response from server');
+        }
+        
         // Handle both formats: { success: true, data: [...] } or direct array
         const data = (raw && raw.success && Array.isArray(raw.data)) ? raw.data : (Array.isArray(raw) ? raw : []);
+        
         // Optional: sort programs alphabetically by program_name
         data.sort((a, b) => {
           const aName = (a.program_name || '').toString().toLowerCase();
@@ -486,6 +499,10 @@
         populateProgramFilter();
       } catch (error) {
         console.error('Error fetching programs:', error);
+        // Still populate with empty array so the page doesn't break
+        allPrograms = [];
+        programsMap = {};
+        populateProgramFilter();
       }
     }
 
