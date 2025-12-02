@@ -706,16 +706,18 @@
           })
         });
         
-        if (response.ok) {
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
           closeReviewModal();
           await loadDocuments();
           showSuccessMessage(`Document ${status} successfully!`);
         } else {
-          throw new Error('Failed to update document status');
+          throw new Error(result.error || 'Failed to update document status');
         }
       } catch (error) {
         console.error('Error reviewing document:', error);
-        showErrorMessage('Failed to update document status. Please try again.');
+        showErrorMessage(error.message || 'Failed to update document status. Please try again.');
       }
     }
 
