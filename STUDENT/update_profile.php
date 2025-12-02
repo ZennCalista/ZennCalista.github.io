@@ -20,11 +20,18 @@ if (!$data) {
 }
 
 // Validate required fields
+if (empty($data['firstname']) || empty($data['lastname'])) {
+    echo json_encode(['status' => 'error', 'message' => 'First name and last name are required']);
+    exit;
+}
+
 if (empty($data['contact_no']) || empty($data['emergency_contact'])) {
     echo json_encode(['status' => 'error', 'message' => 'Contact number and emergency contact are required']);
     exit;
 }
 
+$firstname = trim($data['firstname']);
+$lastname = trim($data['lastname']);
 $student_id = !empty($data['student_id']) ? trim($data['student_id']) : null;
 $course = !empty($data['course']) ? trim($data['course']) : null;
 $contact_no = trim($data['contact_no']);
@@ -46,22 +53,26 @@ if ($student_id) {
     $check_stmt->close();
 }
 
+// Update the users table (firstname and lastname)
+$user_sql = "UPDATE users SET firstname = ?, lastname = ? WHERE id = ?";
+$user_stmt = $conn->prepare($user_sql);
+$user_stmt->bind_param('ssi', $firstname, $lastname, $user_id);
+$user_updated = $user_stmt->execute();
+$user_stmt->close();
+
 // Update the students table
-$sql = "UPDATE students 
+$student_sql = "UPDATE students 
         SET student_id = ?, course = ?, contact_no = ?, emergency_contact = ? 
         WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('ssssi', $student_id, $course, $contact_no, $emergency_contact, $user_id);
+$student_stmt = $conn->prepare($student_sql);
+$student_stmt->bind_param('ssssi', $student_id, $course, $contact_no, $emergency_contact, $user_id);
+$student_updated = $student_stmt->execute();
+$student_stmt->close();
 
-if ($stmt->execute()) {
-    if ($stmt->affected_rows > 0) {
-        echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully']);
-    } else {
-        echo json_encode(['status' => 'success', 'message' => 'No changes were made']);
-    }
+if ($user_updated && $student_updated) {
+    echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully']);
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Failed to update profile: ' . $stmt->error]);
+    echo json_encode(['status' => 'error', 'message' => 'Failed to update profile']);
 }
 
-$stmt->close();
 $conn->close();
