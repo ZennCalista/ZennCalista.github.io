@@ -584,9 +584,6 @@ if ($user_id) {
     } else if (type === 'completed') {
       actionButtons = `
         <div class="card-actions">
-          <button class="action-btn primary" onclick="viewProgramDetails(${program.id})">
-            <i class="fas fa-info-circle"></i> View Details
-          </button>
           <button class="action-btn success" onclick="provideFeedback(${program.id})">
             <i class="fas fa-comment-dots"></i> Provide Feedback
           </button>
