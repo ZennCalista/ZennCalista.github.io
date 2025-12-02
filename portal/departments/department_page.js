@@ -343,9 +343,13 @@ function displayDepartmentPrograms(deptId) {
   }
   
   const html = deptPrograms.map(program => {
-    const imageSource = program.images && program.images.length > 0 
-      ? program.images[0].image_url 
-      : '../images/placeholder.jpg';
+    // Adjust image path since we're in departments folder, not home folder
+    let imageSource = '../images/placeholder.jpg';
+    if (program.images && program.images.length > 0) {
+      const imgUrl = program.images[0].image_url;
+      // If it's a relative path starting with 'backend/', prepend '../home/'
+      imageSource = imgUrl.startsWith('backend/') ? '../home/' + imgUrl : imgUrl;
+    }
     
     return `
       <div class="article-card" data-program-id="${program.id}">
@@ -422,10 +426,17 @@ function openProgramModal(program) {
 
   // Setup images
   if (program.images && program.images.length > 0) {
-    modalState.images = program.images.map(imageObj => ({
-      url: imageObj.image_url,
-      alt: imageObj.image_desc || 'Program image'
-    }));
+    modalState.images = program.images.map(imageObj => {
+      // Adjust image path since we're in departments folder, not home folder
+      let imgUrl = imageObj.image_url;
+      if (imgUrl.startsWith('backend/')) {
+        imgUrl = '../home/' + imgUrl;
+      }
+      return {
+        url: imgUrl,
+        alt: imageObj.image_desc || 'Program image'
+      };
+    });
   } else {
     modalState.images = [{
       url: '../images/placeholder.jpg',

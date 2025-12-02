@@ -58,16 +58,12 @@ try {
                 $image_ids = explode('||', $row['archive_image_ids']);
                 $image_descs = explode('||', $row['archive_image_descs']);
                 
-                // Detect if local (has /Etracker in path) or hosted (no /Etracker)
-                $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
-                $base_url = $is_local ? '/Etracker' : '';
-                
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => $base_url . '/portal/home/backend/get_archived_image.php?image_id=' . $image_id
+                            'image_url' => '../home/backend/get_archived_image.php?image_id=' . $image_id
                         ];
                     }
                 }
@@ -78,16 +74,12 @@ try {
                 $image_ids = explode('||', $row['fallback_image_ids']);
                 $image_descs = explode('||', $row['fallback_image_descs']);
                 
-                // Use same base URL detection
-                $is_local = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/Etracker/') !== false;
-                $base_url = $is_local ? '/Etracker' : '';
-                
                 foreach ($image_ids as $idx => $image_id) {
                     if (!empty($image_id)) {
                         $images[] = [
                             'image_id' => $image_id,
                             'image_desc' => isset($image_descs[$idx]) ? $image_descs[$idx] : 'Program image',
-                            'image_url' => $base_url . '/portal/home/backend/get_image.php?image_id=' . $image_id
+                            'image_url' => '../home/backend/get_image.php?image_id=' . $image_id
                         ];
                     }
                 }

@@ -383,10 +383,13 @@
 
       // Setup images
       if (program.images && program.images.length > 0) {
-        modalState.images = program.images.map(img => ({
-          url: img.image_url,
-          alt: img.image_desc || 'Program image'
-        }));
+        modalState.images = program.images.map(img => {
+          // Image URLs from backend are already relative to archive folder
+          return {
+            url: img.image_url,
+            alt: img.image_desc || 'Program image'
+          };
+        });
       } else {
         modalState.images = [{
           url: '../images/placeholder.jpg',
