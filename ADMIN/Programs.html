@@ -351,6 +351,17 @@ function fetchPrograms() {
   return fetch('../backend/get_programs.php').then(res => {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     return res.json();
+  }).then(data => {
+    // Handle new API response format
+    if (data && data.success && Array.isArray(data.data)) {
+      return data.data;
+    }
+    // Fallback for old format (direct array)
+    if (Array.isArray(data)) {
+      return data;
+    }
+    console.warn('Unexpected programs data format:', data);
+    return [];
   }).catch(err => {
     console.error('Error fetching programs:', err);
     return [];
@@ -360,6 +371,17 @@ function fetchFaculty() {
   return fetch('../backend/get_faculty.php').then(res => {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     return res.json();
+  }).then(data => {
+    // Handle potential wrapped response format
+    if (data && data.success && Array.isArray(data.data)) {
+      return data.data;
+    }
+    // Fallback for direct array
+    if (Array.isArray(data)) {
+      return data;
+    }
+    console.warn('Unexpected faculty data format:', data);
+    return [];
   }).catch(err => {
     console.error('Error fetching faculty:', err);
     return [];
@@ -369,6 +391,17 @@ function fetchArchivedPrograms() {
   return fetch('../backend/get_archived_programs.php').then(res => {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     return res.json();
+  }).then(data => {
+    // Handle potential wrapped response format
+    if (data && data.success && Array.isArray(data.data)) {
+      return data.data;
+    }
+    // Fallback for direct array
+    if (Array.isArray(data)) {
+      return data;
+    }
+    console.warn('Unexpected archived programs data format:', data);
+    return [];
   }).catch(err => {
     console.error('Error fetching archived programs:', err);
     return [];
@@ -377,11 +410,15 @@ function fetchArchivedPrograms() {
 
 // --- Render Stats ---
 function renderStats(programs, sessions) {
-  document.getElementById('totalPrograms').innerText = programs.length;
-  document.getElementById('ongoingPrograms').innerText = programs.filter(p => p.status === 'ongoing').length;
-  document.getElementById('endedPrograms').innerText = programs.filter(p => p.status === 'ended').length;
+  // Ensure programs and sessions are arrays
+  const programsArray = Array.isArray(programs) ? programs : [];
+  const sessionsArray = Array.isArray(sessions) ? sessions : [];
+  
+  document.getElementById('totalPrograms').innerText = programsArray.length;
+  document.getElementById('ongoingPrograms').innerText = programsArray.filter(p => p.status === 'ongoing').length;
+  document.getElementById('endedPrograms').innerText = programsArray.filter(p => p.status === 'ended').length;
   const today = new Date();
-  const upcoming = sessions.filter(s => new Date(s.session_date) >= today);
+  const upcoming = sessionsArray.filter(s => new Date(s.session_date) >= today);
   document.getElementById('upcomingSessions').innerText = upcoming.length;
 
   // Update archived count if element exists
@@ -400,23 +437,37 @@ let sessionsByProgramData = {};
 
 async function renderProgramsTable() {
   try {
-    const [programs, archivedPrograms, facultyList, allSessions] = await Promise.all([
+    const [programs, archivedPrograms, facultyList, sessionsResponse] = await Promise.all([
       fetchPrograms(),
       fetchArchivedPrograms(),
       fetchFaculty(),
       fetch('../backend/get_all_sessions.php').then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
+      }).then(data => {
+        // Handle potential wrapped response format
+        if (data && data.success && Array.isArray(data.data)) {
+          return data.data;
+        }
+        // Fallback for direct array
+        if (Array.isArray(data)) {
+          return data;
+        }
+        console.warn('Unexpected sessions data format:', data);
+        return [];
       }).catch(err => {
         console.error('Error fetching all sessions:', err);
         return [];
       })
     ]);
 
+    // Ensure we have arrays
+    const allSessions = Array.isArray(sessionsResponse) ? sessionsResponse : [];
+
     // Save data for pagination
-    programsData = programs;
-    archivedProgramsData = archivedPrograms;
-    facultyListData = facultyList;
+    programsData = Array.isArray(programs) ? programs : [];
+    archivedProgramsData = Array.isArray(archivedPrograms) ? archivedPrograms : [];
+    facultyListData = Array.isArray(facultyList) ? facultyList : [];
 
     // Group sessions by program_id
     sessionsByProgramData = {};
@@ -425,7 +476,7 @@ async function renderProgramsTable() {
       sessionsByProgramData[s.program_id].push(s);
     });
 
-    renderStats(programs, allSessions);
+    renderStats(programsData, allSessions);
     renderProgramsPage();
     renderArchivedProgramsTable();
   } catch (error) {
