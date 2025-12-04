@@ -29,18 +29,20 @@ if ($user_id) {
   <link rel="stylesheet" href="Profile.css" />
   <style>
     .profile-card {
-      background: #fff8cc;
+      background: #ffffff;
       padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 2px solid #e8f5e9;
       max-width: 600px;
       margin: 40px auto;
     }
 
     .profile-title {
       text-align: center;
-      color: #2e6e1e;
+      color: #114d2e;
       font-size: 24px;
+      font-weight: 700;
       margin-bottom: 20px;
     }
 
@@ -158,23 +160,24 @@ if ($user_id) {
     .profile-input {
       width: 100%;
       padding: 8px 12px;
-      border: 2px solid #e5e7eb;
-      border-radius: 6px;
+      border: 1px solid #000;
+      border-radius: 8px;
       font-size: 16px;
       color: #333;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s ease;
+      background: #ffffff;
     }
 
     .profile-input:focus {
       outline: none;
-      border-color: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      border-color: #000;
+      background: #ffffff;
     }
 
     .profile-input:disabled {
-      background-color: transparent;
-      border: none;
-      padding: 0;
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 8px 12px;
       color: #555;
     }
 

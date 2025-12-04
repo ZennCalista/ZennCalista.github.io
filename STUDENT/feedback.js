@@ -11,9 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
       tbody.innerHTML = '';
       data.programs.forEach(row => {
         const tr = document.createElement('tr');
+        const statusClass = row.status.toLowerCase();
         tr.innerHTML = `
           <td>${row.program_name}</td>
-          <td>${row.status}</td>
+          <td><span class="status-badge status-${statusClass}">${row.status}</span></td>
           <td>${row.submitted_date || ''}</td>
           <td>
             ${row.can_evaluate

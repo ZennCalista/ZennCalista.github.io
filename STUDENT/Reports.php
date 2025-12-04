@@ -36,16 +36,17 @@ if ($user_id) {
       margin-top: 32px;
     }
     .report-type-card {
-      background: linear-gradient(135deg, #fff8cc 60%, #e6f9e6 100%);
+      background: #ffffff;
       border-radius: 20px;
-      box-shadow: 0 6px 24px rgba(46,110,30,0.10), 0 1.5px 6px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+      border: 2px solid #e8f5e9;
       padding: 32px 36px;
       min-width: 240px;
       max-width: 320px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.25s;
+      transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.25s, border-color 0.25s;
       opacity: 0;
       transform: translateY(40px) scale(0.97);
       animation: cardIn 0.7s forwards;
@@ -60,7 +61,8 @@ if ($user_id) {
       }
     }
     .report-type-card:hover {
-      box-shadow: 0 12px 32px rgba(46,110,30,0.16), 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08);
+      border-color: #66bb6a;
       transform: translateY(-8px) scale(1.03);
     }
     .report-type-card img {
@@ -70,17 +72,22 @@ if ($user_id) {
       filter: drop-shadow(0 2px 4px rgba(46,110,30,0.08));
     }
     .report-type-card h3 {
-      color: #2e6e1e;
+      color: #114d2e;
       font-size: 1.35rem;
       margin-bottom: 12px;
       letter-spacing: 0.5px;
+      font-weight: 700;
     }
     .report-type-card p {
       font-size: 1.08rem;
-      color: #333;
+      color: #555;
       margin: 4px 0;
-      font-weight: 500;
+      font-weight: 400;
       letter-spacing: 0.1px;
+    }
+    .report-type-card p strong {
+      color: #333;
+      font-weight: 600;
     }
     @media (max-width: 900px) {
       .summary-cards { flex-direction: column; align-items: center; }
@@ -88,11 +95,12 @@ if ($user_id) {
     }
     
     .reports-container h2 {
-      color: #2e6e1e;
-      font-size: 1.5rem;
+      color: #114d2e;
+      font-size: 1.8rem;
       margin-bottom: 10px;
       text-align: center;
       letter-spacing: 0.5px;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -158,7 +166,7 @@ if ($user_id) {
         document.getElementById('summaryCards').innerHTML = `
           <div class="report-type-card">
             <!-- Attendance Icon (fa-calendar-check) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#2e6e1e" viewBox="0 0 448 512" width="56" height="56">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#66bb6a" viewBox="0 0 448 512" width="56" height="56">
               <path d="M152 64c0-13.3-10.7-24-24-24s-24 10.7-24 24v24H56C25.1 88 0 113.1 0 144v48h448v-48c0-30.9-25.1-56-56-56h-48V64c0-13.3-10.7-24-24-24s-24 10.7-24 24v24H152V64zM448 464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V208h448v256zm-96-136c0-13.3-10.7-24-24-24s-24 10.7-24 24v40c0 13.3 10.7 24 24 24s24-10.7 24-24v-40z"/>
             </svg>
             <h3>Attendance</h3>
@@ -168,7 +176,7 @@ if ($user_id) {
           </div>
           <div class="report-type-card">
             <!-- Participation Icon (fa-users) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#2e6e1e" viewBox="0 0 640 512" width="56" height="56">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#66bb6a" viewBox="0 0 640 512" width="56" height="56">
               <path d="M96 128a64 64 0 1 1 128 0 64 64 0 1 1-128 0zm224 64a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm112-64a64 64 0 1 1 128 0 64 64 0 1 1-128 0zM320 304c-57.3 0-160 28.7-160 86v42c0 13.3 10.7 24 24 24h272c13.3 0 24-10.7 24-24v-42c0-57.3-102.7-86-160-86zm224 32c-35.3 0-96 17.7-96 53.3V432c0 8.8 7.2 16 16 16h160c8.8 0 16-7.2 16-16v-42.7C576 353.7 515.3 336 480 336z"/>
             </svg>
             <h3>Participation</h3>
@@ -179,7 +187,7 @@ if ($user_id) {
           </div>
           <div class="report-type-card">
             <!-- Feedback Icon (fa-comment-dots) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#2e6e1e" viewBox="0 0 512 512" width="56" height="56">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#66bb6a" viewBox="0 0 512 512" width="56" height="56">
               <path d="M256 32C114.6 32 0 125.1 0 240c0 49.6 24.6 95.1 65.7 130.1C56.2 426.7 27.7 446.7 27.4 447c-2.1 1.5-2.9 4.2-2 6.6c.9 2.4 3.1 3.9 5.6 3.9c66.2 0 116.5-31.6 139.1-48.2c27.1 7.6 56.2 11.7 86.9 11.7c141.4 0 256-93.1 256-208S397.4 32 256 32zm-96 208c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32zm96 0c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32zm96 0c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32z"/>
             </svg>
             <h3>Feedback</h3>
@@ -188,7 +196,7 @@ if ($user_id) {
           </div>
           <div class="report-type-card">
             <!-- Certificate Icon (fa-certificate) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#2e6e1e" viewBox="0 0 512 512" width="56" height="56">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#66bb6a" viewBox="0 0 512 512" width="56" height="56">
               <path d="M458.1 334.1l-42.7-6.2c-7.6-1.1-14.1-6.6-16.5-14l-19.1-41.1c-2.4-5.2-7.6-8.6-13.3-8.6s-10.9 3.4-13.3 8.6l-19.1 41.1c-2.4 7.4-8.9 12.9-16.5 14l-42.7 6.2c-7.6 1.1-13.3 7.4-13.3 15.1c0 7.7 5.7 14 13.3 15.1l42.7 6.2c7.6 1.1 14.1 6.6 16.5 14l19.1 41.1c2.4 5.2 7.6 8.6 13.3 8.6s10.9-3.4 13.3-8.6l19.1-41.1c2.4-7.4 8.9-12.9 16.5-14l42.7-6.2c7.6-1.1 13.3-7.4 13.3-15.1c0-7.7-5.7-14-13.3-15.1zM256 32C114.6 32 0 125.1 0 240c0 49.6 24.6 95.1 65.7 130.1C56.2 426.7 27.7 446.7 27.4 447c-2.1 1.5-2.9 4.2-2 6.6c.9 2.4 3.1 3.9 5.6 3.9c66.2 0 116.5-31.6 139.1-48.2c27.1 7.6 56.2 11.7 86.9 11.7c141.4 0 256-93.1 256-208S397.4 32 256 32z"/>
             </svg>
             <h3>Certificates</h3>

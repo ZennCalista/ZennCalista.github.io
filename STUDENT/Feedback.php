@@ -132,7 +132,7 @@ if ($user_id) {
           <div class="eval-instructions">
             <b>Instructions:</b> Please complete the evaluation by rating each aspect of the program on a scale of 1 to 5 (1 = Poor, 5 = Excellent) and provide any additional comments.
           </div>
-          <form id="detailed-eval-form" style="background:#fff3c4; padding:24px 32px; border-radius:16px; border:2px solid #b48cff; margin-top:0;">
+          <form id="detailed-eval-form" style="background:#e8f5e9; padding:24px 32px; border-radius:16px; border:2px solid #66bb6a; margin-top:0;">
             <input type="hidden" id="detailed-program-id" name="program_id" />
             <div class="eval-group">
               <label><b>Quality of Content</b></label>
@@ -189,7 +189,7 @@ if ($user_id) {
               <b>ADDITIONAL FEEDBACK</b>
               <div style="margin-top:8px;">
                 <label>Suggestion for the improvement</label>
-                <input type="text" name="suggestion" placeholder="Enter your suggestions for improvement..." style="width:60%;padding:6px;border-radius:4px;border:1px solid #ccc;background:#fffbe6;">
+                <input type="text" name="suggestion" placeholder="Enter your suggestions for improvement..." style="width:60%;padding:6px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;">
               </div>
               <div style="margin-top:12px;">
                 <label>Would you Recommend this Program?</label>
@@ -197,7 +197,7 @@ if ($user_id) {
                 <input type="radio" name="recommend" value="no"> no
               </div>
             </div>
-            <button type="submit" style="margin-top:22px;padding:10px 40px;font-size:1.1em;background:#fffbe6;border:1.5px solid #b48cff;border-radius:6px;">SUBMIT</button>
+            <button type="submit" style="margin-top:22px;padding:10px 40px;font-size:1.1em;background:#f1f8e9;border:1.5px solid #66bb6a;border-radius:6px;">SUBMIT</button>
             <div id="detailed-eval-message" style="margin-top:12px;text-align:center;"></div>
           </form>
         </div>
