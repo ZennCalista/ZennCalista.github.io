@@ -13,7 +13,7 @@
     display: flex;
     min-height: 100vh;
     padding-left: 40px;
-    align-items: center;
+    align-items: flex-start;
 }
   
   /* Sidebar */
@@ -273,6 +273,29 @@
     padding: 20px;
     border-radius: 16px;
     border: 1px solid #c6ebc9;
+  }
+  
+  .summary-box h3 {
+    color: #114d2e;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+  
+  .summary-box p {
+    color: #333;
+    font-size: 1.05rem;
+    margin: 10px 0;
+  }
+  
+  .summary-box strong {
+    color: #114d2e;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  
+  .summary-box span {
+    color: #1f2937;
+    font-weight: 600;
   }
   
   .sidebar-bottom {

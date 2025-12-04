@@ -59,7 +59,7 @@ function generateCode($length = 4) {
   color: #888;
 }
 .manual-submit-btn {
-  background: #2e6e1e;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -67,6 +67,13 @@ function generateCode($length = 4) {
   font-size: 1em;
   cursor: pointer;
   margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.manual-submit-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 #qr-manual-entry {
@@ -79,7 +86,7 @@ function generateCode($length = 4) {
 
 #qr-manual-entry label {
   font-weight: 600;
-  color: #2e6e1e;
+  color: #114d2e;
   margin-bottom: 4px;
 }
 
@@ -93,11 +100,11 @@ function generateCode($length = 4) {
 }
 
 #qr-code-input:focus {
-  border: 1.5px solid #2e6e1e;
+  border: 1.5px solid #66bb6a;
 }
 
 #submit-qr-code {
-  background: #218c21;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -105,11 +112,13 @@ function generateCode($length = 4) {
   font-size: 1em;
   cursor: pointer;
   margin-top: 6px;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
 }
 
 #submit-qr-code:hover {
-  background: #176b16;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 #qr-code-message {
