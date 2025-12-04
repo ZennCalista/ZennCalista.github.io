@@ -111,10 +111,11 @@ body {
   color: white;
 }
 
-.stat-card.total-programs .stat-icon { background: linear-gradient(135deg, #10b981, #047857); }
-.stat-card.total-participants .stat-icon { background: linear-gradient(135deg, #059669, #065f46); }
-.stat-card.avg-attendance .stat-icon { background: linear-gradient(135deg, #16a34a, #15803d); }
-.stat-card.completion-rate .stat-icon { background: linear-gradient(135deg, #22c55e, #16a34a); }
+/* Professional color scheme for stat cards */
+.stat-card.total-programs .stat-icon { background: linear-gradient(135deg, #3b82f6, #2563eb); } /* Blue - Information */
+.stat-card.total-participants .stat-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); } /* Purple - Community */
+.stat-card.avg-attendance .stat-icon { background: linear-gradient(135deg, #f59e0b, #d97706); } /* Orange - Activity */
+.stat-card.completion-rate .stat-icon { background: linear-gradient(135deg, #10b981, #059669); } /* Green - Success */
 
 .stat-info h3 {
   font-size: 32px;
@@ -178,8 +179,16 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: #e5e7eb; /* Default neutral gray */
 }
+
+/* Colored top borders matching each report type */
+.report-card:has(.report-icon.participation)::before { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.report-card:has(.report-icon.attendance)::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.report-card:has(.report-icon.performance)::before { background: linear-gradient(90deg, #10b981, #059669); }
+.report-card:has(.report-icon.feedback)::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.report-card:has(.report-icon.completion)::before { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+.report-card:has(.report-icon.faculty)::before { background: linear-gradient(90deg, #ec4899, #db2777); }
 
 .report-card:hover {
   transform: translateY(-6px);
@@ -198,12 +207,13 @@ body {
   margin-bottom: 20px;
 }
 
-.report-icon.participation { background: linear-gradient(135deg, #10b981, #047857); }
-.report-icon.attendance { background: linear-gradient(135deg, #059669, #065f46); }
-.report-icon.performance { background: linear-gradient(135deg, #16a34a, #15803d); }
-.report-icon.feedback { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.report-icon.completion { background: linear-gradient(135deg, #34d399, #10b981); }
-.report-icon.faculty { background: linear-gradient(135deg, #6ee7b7, #34d399); }
+/* Professional color scheme for report cards */
+.report-icon.participation { background: linear-gradient(135deg, #3b82f6, #2563eb); } /* Blue - Data/Analytics */
+.report-icon.attendance { background: linear-gradient(135deg, #f59e0b, #d97706); } /* Orange - Activity/Tracking */
+.report-icon.performance { background: linear-gradient(135deg, #10b981, #059669); } /* Green - Success/Achievement */
+.report-icon.feedback { background: linear-gradient(135deg, #8b5cf6, #7c3aed); } /* Purple - Communication/Feedback */
+.report-icon.completion { background: linear-gradient(135deg, #06b6d4, #0891b2); } /* Cyan - Progress/Completion */
+.report-icon.faculty { background: linear-gradient(135deg, #ec4899, #db2777); } /* Pink - People/Faculty */
 
 .report-info h3 {
   font-size: 20px;
@@ -257,9 +267,34 @@ body {
   gap: 8px;
 }
 
+/* Color-matched buttons for each report type */
+.report-card:has(.report-icon.participation) .generate-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.report-card:has(.report-icon.attendance) .generate-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.report-card:has(.report-icon.performance) .generate-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.report-card:has(.report-icon.feedback) .generate-btn {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.report-card:has(.report-icon.completion) .generate-btn {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.report-card:has(.report-icon.faculty) .generate-btn {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
 .generate-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* ====== ANALYTICS SECTION ====== */

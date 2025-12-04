@@ -514,6 +514,19 @@
         const popularityData = await fetchChartData('programs_by_department');
         if (popularityData.success && popularityData.data && popularityData.data.length > 0) {
           const data = popularityData.data;
+          // Use the same diverse color palette as Dashboard
+          const deptColors = [
+            '#1B472B', // Dark green
+            '#2563EB', // Blue
+            '#DC2626', // Red
+            '#EA580C', // Orange
+            '#7C3AED', // Purple
+            '#059669', // Emerald
+            '#DB2777', // Pink
+            '#D97706', // Amber
+            '#4F46E5', // Indigo
+            '#0891B2'  // Cyan
+          ];
           charts.programPopularity = new Chart(document.getElementById('programPopularityChart'), {
             type: 'bar',
             data: {
@@ -521,9 +534,7 @@
               datasets: [{
                 label: 'Programs',
                 data: data.map(item => item.program_count || 0),
-                backgroundColor: [
-                  '#10b981', '#059669', '#047857', '#065f46', '#064e3b', '#052e16'
-                ],
+                backgroundColor: data.map((item, i) => deptColors[i % deptColors.length]),
                 borderRadius: 6,
                 borderWidth: 0
               }]

@@ -19,7 +19,7 @@
   /* Sidebar */
   .sidebar {
     width: 220px;
-    background: #fff8cc;
+    background: #e8f5e9;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -67,7 +67,7 @@
   }
   
   .nav-item.active {
-    background: #fff1a5;
+    background: #c8e6c9;
     border-radius: 8px;
     padding: 10px;
   }
@@ -86,10 +86,10 @@
   
   .header h1 {
     text-align: center;
-    background: #fff8cc;
+    background: #e8f5e9;
     padding: 20px;
     border-radius: 20px;
-    color: #2e6e1e;
+    color: #114d2e;
     margin-bottom: 30px;
   }
   
@@ -116,7 +116,7 @@
   
   .qr-box {
     flex: 1;
-    background: linear-gradient(120deg, #eafbe4 60%, #fff8cc 100%);
+    background: linear-gradient(120deg, #e8f5e9 60%, #c8e6c9 100%);
     padding: 32px 24px;
     border-radius: 18px;
     box-shadow: 0 4px 18px rgba(46, 110, 30, 0.10);
@@ -129,7 +129,7 @@
   }
   
   .qr-box h3 {
-    color: #2e6e1e;
+    color: #114d2e;
     font-size: 1.25rem;
     margin-bottom: 18px;
     letter-spacing: 0.5px;
@@ -148,7 +148,7 @@
   
   .manual-box {
     flex: 1;
-    background: linear-gradient(120deg, #eafbe4 60%, #fff8cc 100%);
+    background: linear-gradient(120deg, #e8f5e9 60%, #c8e6c9 100%);
     padding: 32px 24px;
     border-radius: 18px;
     box-shadow: 0 4px 18px rgba(46, 110, 30, 0.10);
@@ -161,7 +161,7 @@
   }
   
   .manual-box h3 {
-    color: #2e6e1e;
+    color: #114d2e;
     font-size: 1.25rem;
     margin-bottom: 18px;
     letter-spacing: 0.5px;
@@ -170,7 +170,7 @@
   .manual-btn {
     padding: 12px 32px;
     font-size: 1.1rem;
-    background: linear-gradient(90deg, #2e6e1e 60%, #5cb85c 100%);
+    background: linear-gradient(90deg, #114d2e 60%, #5cb85c 100%);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -190,7 +190,7 @@
   .qr-btn {
     padding: 12px 32px;
     font-size: 1.1rem;
-    background: linear-gradient(90deg, #2e6e1e 60%, #5cb85c 100%);
+    background: linear-gradient(90deg, #114d2e 60%, #5cb85c 100%);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -253,7 +253,7 @@
   }
   
   .attendance-table td.status-present {
-    color: #2e6e1e;
+    color: #114d2e;
     font-weight: bold;
   }
   
@@ -269,7 +269,7 @@
   
   .summary-box {
     margin-top: 30px;
-    background: #eafbe4;
+    background: #e8f5e9;
     padding: 20px;
     border-radius: 16px;
     border: 1px solid #c6ebc9;
@@ -303,8 +303,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #fff1a5;
-    color: #4b5600;
+    background: #c8e6c9;
+    color: #114d2e;
     border: none;
     border-radius: 16px;
     padding: 10px 18px;
@@ -418,4 +418,5 @@
   gap: 18px;
 }
 .timeline-details i { margin-right: 4px; }
+
 

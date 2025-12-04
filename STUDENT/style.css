@@ -19,7 +19,7 @@ body {
 
 .sidebar {
   width: 220px;
-  background: #fff8cc;
+  background: #e8f5e9;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -72,7 +72,7 @@ body {
 }
 
 .nav-item.active {
-  background: #fff1a5;
+  background: #c8e6c9;
   border-radius: 8px;
   padding: 10px;
 }
@@ -80,7 +80,7 @@ body {
 .main-content {
   flex-grow: 1;
   padding: 40px 40px 30px 40px;
-  background: linear-gradient(135deg, #fffde4 0%, #fff8cc 100%);
+  background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e9 100%);
   border-radius: 32px;
   box-shadow: 0 8px 32px rgba(60, 72, 88, 0.10);
   margin-right: 40px;
@@ -92,7 +92,7 @@ body {
 
 .header h1 {
   text-align: center;
-  background: linear-gradient(90deg, #fff8cc 0%, #fffde4 100%);
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
   color: #4b5600;
   box-shadow: 0 5px 20px rgba(60, 72, 88, 0.08);
   border-radius: 40px;
@@ -120,7 +120,7 @@ body {
 }
 
 .card {
-  background: #fffde4;
+  background: #f1f8e9;
   border-radius: 20px;
   box-shadow: 0 2px 12px rgba(60, 72, 88, 0.08);
   flex: 1;
@@ -129,7 +129,7 @@ body {
   text-align: center;
   transition: transform 0.2s, box-shadow 0.2s;
   animation: fadeInUp 0.7s;
-  border-left: 6px solid #fce373;
+  border-left: 6px solid #66bb6a;
 }
 
 .card:hover {
@@ -172,7 +172,7 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
-  background: #fff8cc;
+  background: #e8f5e9;
   padding: 10px 20px;
   border-radius: 20px;
   font-size: 14px;
@@ -209,7 +209,7 @@ body {
   padding: 10px;
   border-radius: 20px;
   border: none;
-  background: #fff1a5;
+  background: #c8e6c9;
 }
 
 .button-row {
@@ -475,7 +475,7 @@ body {
 
 .content-header {
   width: 100%;
-  background: #fff8cc;
+  background: #e8f5e9;
   border-radius: 32px;
   margin-bottom: 30px;
   padding: 24px 0 16px 0;
@@ -520,8 +520,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fff1a5;
-  color: #4b5600;
+  background: #c8e6c9;
+  color: #114d2e;
   border: none;
   border-radius: 16px;
   padding: 10px 18px;
@@ -537,4 +537,5 @@ body {
   background: #fce373;
   color: #257a1c;
 }
+
 

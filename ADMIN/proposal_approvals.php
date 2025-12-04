@@ -30,39 +30,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($action === 'approve' || $action === 'reject') {
         $status = ($action === 'approve') ? 'approved' : 'rejected';
 
-        $update_sql = "UPDATE program_proposals SET status = ?, reviewed_at = NOW(), reviewed_by = ?, review_notes = ? WHERE id = ?";
-        $update_stmt = $conn->prepare($update_sql);
-        $update_stmt->bind_param('sisi', $status, $user_id, $review_notes, $proposal_id);
-
-        if ($update_stmt->execute()) {
-            // Create notification for faculty
-            $faculty_query = $conn->prepare("SELECT u.firstname, u.lastname, pp.faculty_id FROM program_proposals pp JOIN faculty f ON pp.faculty_id = f.id JOIN users u ON f.user_id = u.id WHERE pp.id = ?");
-            $faculty_query->bind_param("i", $proposal_id);
-            $faculty_query->execute();
-            $faculty_query->bind_result($faculty_firstname, $faculty_lastname, $faculty_id);
-            $faculty_query->fetch();
-            $faculty_query->close();
-
-            $faculty_name = $faculty_firstname . ' ' . $faculty_lastname;
-            $message = "Your proposal has been " . ($status === 'approved' ? 'approved' : 'rejected') . " by admin.";
-            if (!empty($review_notes)) {
-                $message .= " Notes: " . $review_notes;
+        try {
+            $update_sql = "UPDATE program_proposals SET status = ?, reviewed_at = NOW(), reviewed_by = ?, review_notes = ? WHERE id = ?";
+            $update_stmt = $conn->prepare($update_sql);
+            
+            if (!$update_stmt) {
+                throw new Exception("Failed to prepare update statement: " . $conn->error);
             }
+            
+            $update_stmt->bind_param('sisi', $status, $user_id, $review_notes, $proposal_id);
 
-            $notif_sql = "INSERT INTO notifications (message, priority, audience, recipient_id, is_active, created_at) VALUES (?, ?, 'faculty', ?, 1, NOW())";
-            $priority = ($status === 'approved') ? 'low' : 'medium';
-            $notif_stmt = $conn->prepare($notif_sql);
-            $notif_stmt->bind_param('ssis', $message, $priority, $faculty_id);
-            $notif_stmt->execute();
-            $notif_stmt->close();
+            if ($update_stmt->execute()) {
+                // Create notification for faculty
+                $faculty_query = $conn->prepare("SELECT u.firstname, u.lastname, pp.faculty_id FROM program_proposals pp JOIN faculty f ON pp.faculty_id = f.id JOIN users u ON f.user_id = u.id WHERE pp.id = ?");
+                
+                if ($faculty_query) {
+                    $faculty_query->bind_param("i", $proposal_id);
+                    $faculty_query->execute();
+                    $faculty_query->bind_result($faculty_firstname, $faculty_lastname, $faculty_id);
+                    
+                    if ($faculty_query->fetch()) {
+                        $faculty_query->close();
+                        
+                        $faculty_name = $faculty_firstname . ' ' . $faculty_lastname;
+                        $message = "Your proposal has been " . ($status === 'approved' ? 'approved' : 'rejected') . " by admin.";
+                        if (!empty($review_notes)) {
+                            $message .= " Notes: " . $review_notes;
+                        }
 
-            $success_message = "Proposal " . ($status === 'approved' ? 'approved' : 'rejected') . " successfully!";
-        } else {
-            $error_message = "Failed to update proposal status.";
+                        $notif_sql = "INSERT INTO notifications (message, priority, audience, recipient_id, is_active, created_at) VALUES (?, ?, 'faculty', ?, 1, NOW())";
+                        $priority = ($status === 'approved') ? 'low' : 'medium';
+                        $notif_stmt = $conn->prepare($notif_sql);
+                        
+                        if ($notif_stmt) {
+                            $notif_stmt->bind_param('ssis', $message, $priority, $faculty_id);
+                            $notif_stmt->execute();
+                            $notif_stmt->close();
+                        }
+                    } else {
+                        $faculty_query->close();
+                    }
+                }
+
+                $_SESSION['success_message'] = "Proposal " . ($status === 'approved' ? 'approved' : 'rejected') . " successfully!";
+            } else {
+                throw new Exception("Failed to execute update: " . $update_stmt->error);
+            }
+            $update_stmt->close();
+            
+            // Redirect to prevent form resubmission
+            header('Location: proposal_approvals.php');
+            exit();
+            
+        } catch (Exception $e) {
+            error_log("Error in proposal approval: " . $e->getMessage());
+            $_SESSION['error_message'] = "Failed to update proposal status. Please try again.";
+            header('Location: proposal_approvals.php');
+            exit();
         }
-        $update_stmt->close();
     }
 }
+
+// Get messages from session and clear them
+$success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : null;
+$error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : null;
+unset($_SESSION['success_message']);
+unset($_SESSION['error_message']);
 
 // Fetch all proposals with faculty details
 // Sort by: pending first, then approved/rejected, ordered by submission date (newest first)
@@ -115,84 +148,161 @@ if ($proposals_result) {
         .status-rejected { background: #f8d7da; color: #721c24; }
         .status-used { background: #e2e3e5; color: #383d41; }
 
-        .proposal-card {
+        .proposals-table {
+            width: 100%;
             background: #fff;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-left: 4px solid #007bff;
+            overflow: hidden;
+            border-collapse: collapse;
         }
 
-        .proposal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
+        .proposals-table th {
+            background: #114d2e;
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .proposal-title {
-            font-size: 1.2rem;
+        .proposals-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .proposals-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .proposals-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .proposal-title-cell {
             font-weight: 600;
             color: #2c3e50;
             margin-bottom: 5px;
         }
 
-        .proposal-meta {
+        .proposal-description-text {
             color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            max-width: 300px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .proposal-description {
+        .faculty-info {
             color: #495057;
-            margin-bottom: 15px;
-            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .department-badge {
+            display: inline-block;
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 4px;
         }
 
         .proposal-actions {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 140px;
         }
 
         .btn-approve {
             background: #28a745;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            width: 100%;
+            white-space: nowrap;
         }
 
         .btn-reject {
             background: #dc3545;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            width: 100%;
+            white-space: nowrap;
         }
 
         .btn-view-docs {
             background: #17a2b8;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn-view-docs:hover {
+            background: #138496;
         }
 
         .review-notes {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             border: 1px solid #ced4da;
             border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .notes-display {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #495057;
             margin-top: 5px;
-            font-size: 0.9rem;
+        }
+
+        .date-info {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .doc-count {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .doc-count i {
+            color: #007bff;
         }
 
         .stats-section {
@@ -215,6 +325,18 @@ if ($proposals_result) {
             font-weight: bold;
             color: #007bff;
             margin-bottom: 10px;
+        }
+
+        .stat-number.pending {
+            color: #ffc107;
+        }
+
+        .stat-number.approved {
+            color: #28a745;
+        }
+
+        .stat-number.rejected {
+            color: #dc3545;
         }
 
         .stat-label {
@@ -261,6 +383,65 @@ if ($proposals_result) {
             border-radius: 8px;
             margin-bottom: 20px;
             border-left: 4px solid #dc3545;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination-controls button {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            background: #fff;
+            color: #495057;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-controls button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+            font-weight: 600;
+        }
+
+        .pagination-controls select {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
     </style>
         <style>
@@ -390,15 +571,15 @@ if ($proposals_result) {
             }, ['pending' => 0, 'approved' => 0, 'rejected' => 0]);
             ?>
             <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['pending']; ?></div>
+                <div class="stat-number pending"><?php echo $stats['pending']; ?></div>
                 <div class="stat-label">Pending Reviews</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['approved']; ?></div>
+                <div class="stat-number approved"><?php echo $stats['approved']; ?></div>
                 <div class="stat-label">Approved</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['rejected']; ?></div>
+                <div class="stat-number rejected"><?php echo $stats['rejected']; ?></div>
                 <div class="stat-label">Rejected</div>
             </div>
             <div class="stat-card">
@@ -430,93 +611,160 @@ if ($proposals_result) {
             </div>
         </div>
 
-        <!-- Proposals List -->
-        <div id="proposalsContainer">
-            <?php foreach ($proposals as $proposal): ?>
-                <div class="proposal-card" data-status="<?php echo $proposal['status']; ?>" data-department="<?php echo htmlspecialchars($proposal['department']); ?>">
-                    <div class="proposal-header">
-                        <div>
-                            <div class="proposal-title"><?php echo htmlspecialchars($proposal['proposal_title']); ?></div>
-                            <div class="proposal-meta">
-                                <strong><?php echo htmlspecialchars($proposal['firstname'] . ' ' . $proposal['lastname']); ?></strong>
-                                (<?php echo htmlspecialchars($proposal['department']); ?>) •
-                                Submitted: <?php echo date('M j, Y g:i A', strtotime($proposal['submitted_at'])); ?>
+        <!-- Proposals Table -->
+        <div id="tableWrapper">
+        <?php if (!empty($proposals)): ?>
+        <table class="proposals-table" id="proposalsTable">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Proposal Title</th>
+                    <th style="width: 18%;">Faculty / Department</th>
+                    <th style="width: 20%;">Description</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 10%;">Documents</th>
+                    <th style="width: 17%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="proposalsContainer">
+                <?php foreach ($proposals as $proposal): ?>
+                    <tr data-status="<?php echo $proposal['status']; ?>" data-department="<?php echo htmlspecialchars($proposal['department']); ?>">
+                        <!-- Proposal Title -->
+                        <td>
+                            <div class="proposal-title-cell">
+                                <?php echo htmlspecialchars($proposal['proposal_title']); ?>
                             </div>
-                        </div>
-                        <span class="status-badge status-<?php echo $proposal['status']; ?>">
-                            <?php echo ucfirst($proposal['status']); ?>
-                        </span>
-                    </div>
+                            <div class="date-info">
+                                <i class="fas fa-clock"></i> <?php echo date('M j, Y g:i A', strtotime($proposal['submitted_at'])); ?>
+                            </div>
+                        </td>
 
-                    <?php if (!empty($proposal['description'])): ?>
-                        <div class="proposal-description">
-                            <?php echo htmlspecialchars($proposal['description']); ?>
-                        </div>
-                    <?php endif; ?>
+                        <!-- Faculty / Department -->
+                        <td>
+                            <div class="faculty-info">
+                                <strong><?php echo htmlspecialchars($proposal['firstname'] . ' ' . $proposal['lastname']); ?></strong>
+                            </div>
+                            <div class="department-badge">
+                                <?php echo htmlspecialchars($proposal['department']); ?>
+                            </div>
+                        </td>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                        <div style="color: #6c757d; font-size: 0.9rem;">
-                            <i class="fas fa-file"></i> <?php echo $proposal['document_count']; ?> document(s) uploaded
-                        </div>
-
-                        <div class="proposal-actions">
-                            <?php if ($proposal['status'] === 'pending'): ?>
-                                <button class="btn-view-docs" onclick="viewProposalDocuments(<?php echo $proposal['id']; ?>)">
-                                    <i class="fas fa-folder-open"></i> View Documents
-                                </button>
-
-                                <form method="post" style="display: inline;" id="approveForm<?php echo $proposal['id']; ?>">
-                                    <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
-                                    <input type="hidden" name="action" value="approve">
-                                    <textarea name="review_notes" class="review-notes" placeholder="Optional approval notes..." rows="2" id="approveNotes<?php echo $proposal['id']; ?>"></textarea>
-                                    <button type="button" class="btn-approve" onclick="showConfirmModal('approve', <?php echo $proposal['id']; ?>)">
-                                        <i class="fas fa-check"></i> Approve
-                                    </button>
-                                </form>
-
-                                <form method="post" style="display: inline;" id="rejectForm<?php echo $proposal['id']; ?>">
-                                    <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
-                                    <input type="hidden" name="action" value="reject">
-                                    <textarea name="review_notes" class="review-notes" placeholder="Rejection reason..." rows="2" required id="rejectNotes<?php echo $proposal['id']; ?>"></textarea>
-                                    <button type="button" class="btn-reject" onclick="showConfirmModal('reject', <?php echo $proposal['id']; ?>)">
-                                        <i class="fas fa-times"></i> Reject
-                                    </button>
-                                </form>
+                        <!-- Description -->
+                        <td>
+                            <?php if (!empty($proposal['description'])): ?>
+                                <div class="proposal-description-text" title="<?php echo htmlspecialchars($proposal['description']); ?>">
+                                    <?php echo htmlspecialchars($proposal['description']); ?>
+                                </div>
                             <?php else: ?>
-                                <button class="btn-view-docs" onclick="viewProposalDocuments(<?php echo $proposal['id']; ?>)">
-                                    <i class="fas fa-folder-open"></i> View Documents
-                                </button>
+                                <span style="color: #adb5bd; font-style: italic;">No description</span>
+                            <?php endif; ?>
+                        </td>
 
+                        <!-- Status -->
+                        <td>
+                            <span class="status-badge status-<?php echo $proposal['status']; ?>">
+                                <?php echo ucfirst($proposal['status']); ?>
+                            </span>
+                            <?php if ($proposal['reviewed_at']): ?>
+                                <div class="date-info">
+                                    <i class="fas fa-check-circle"></i> <?php echo date('M j, Y', strtotime($proposal['reviewed_at'])); ?>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- Documents -->
+                        <td>
+                            <div class="doc-count">
+                                <i class="fas fa-file"></i> <?php echo $proposal['document_count']; ?> file<?php echo $proposal['document_count'] != 1 ? 's' : ''; ?>
+                            </div>
+                            <button class="btn-view-docs" onclick="viewProposalDocuments(<?php echo $proposal['id']; ?>)" style="margin-top: 8px;">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <?php if ($proposal['status'] === 'pending'): ?>
+                                <div class="proposal-actions">
+                                    <form method="post" id="approveForm<?php echo $proposal['id']; ?>">
+                                        <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
+                                        <input type="hidden" name="action" value="approve">
+                                        <textarea name="review_notes" class="review-notes" placeholder="Optional notes..." id="approveNotes<?php echo $proposal['id']; ?>"></textarea>
+                                        <button type="button" class="btn-approve" onclick="showConfirmModal('approve', <?php echo $proposal['id']; ?>)">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+
+                                    <form method="post" id="rejectForm<?php echo $proposal['id']; ?>" style="margin-top: 8px;">
+                                        <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
+                                        <input type="hidden" name="action" value="reject">
+                                        <textarea name="review_notes" class="review-notes" placeholder="Rejection reason (required)..." required id="rejectNotes<?php echo $proposal['id']; ?>"></textarea>
+                                        <button type="button" class="btn-reject" onclick="showConfirmModal('reject', <?php echo $proposal['id']; ?>)">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            <?php else: ?>
                                 <?php if (!empty($proposal['review_notes'])): ?>
-                                    <div style="margin-left: 10px; color: #6c757d; font-size: 0.9rem;">
-                                        <strong>Review Notes:</strong> <?php echo htmlspecialchars($proposal['review_notes']); ?>
+                                    <div class="notes-display">
+                                        <strong style="color: #495057;">Review Notes:</strong><br>
+                                        <?php echo htmlspecialchars($proposal['review_notes']); ?>
                                     </div>
                                 <?php endif; ?>
 
                                 <?php if ($proposal['status'] === 'used' && !empty($proposal['program_name'])): ?>
-                                    <div style="margin-left: 10px; color: #28a745; font-size: 0.9rem;">
-                                        <strong>Used for Program:</strong> <?php echo htmlspecialchars($proposal['program_name']); ?>
+                                    <div style="margin-top: 8px; padding: 8px; background: #d4edda; border-radius: 4px; font-size: 0.85rem; color: #155724;">
+                                        <strong>Used for:</strong><br>
+                                        <?php echo htmlspecialchars($proposal['program_name']); ?>
                                     </div>
                                 <?php endif; ?>
 
-                                <?php if ($proposal['reviewed_at']): ?>
-                                    <div style="margin-left: 10px; color: #6c757d; font-size: 0.8rem;">
-                                        Reviewed: <?php echo date('M j, Y g:i A', strtotime($proposal['reviewed_at'])); ?>
-                                    </div>
+                                <?php if ($proposal['status'] !== 'pending' && empty($proposal['review_notes']) && $proposal['status'] !== 'used'): ?>
+                                    <span style="color: #6c757d; font-style: italic; font-size: 0.85rem;">No review notes</span>
                                 <?php endif; ?>
                             <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-            <?php if (empty($proposals)): ?>
-                <div style="text-align: center; padding: 50px; color: #6c757d;">
-                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px;"></i>
-                    <h3>No proposals found</h3>
-                    <p>Faculty members haven't submitted any proposals yet.</p>
-                </div>
-            <?php endif; ?>
+        <!-- Pagination Controls -->
+        <div class="pagination-container" id="paginationContainer">
+            <div class="pagination-info">
+                <span id="paginationInfo">Showing 0-0 of 0 proposals</span>
+            </div>
+            <div class="pagination-controls">
+                <label for="rowsPerPage" style="margin-right: 8px; color: #6c757d;">Rows per page:</label>
+                <select id="rowsPerPage" onchange="changeRowsPerPage()">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <button onclick="goToFirstPage()" id="firstPageBtn">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button onclick="goToPreviousPage()" id="prevPageBtn">
+                    <i class="fas fa-angle-left"></i> Previous
+                </button>
+                <span id="pageNumbers" style="display: flex; gap: 4px;"></span>
+                <button onclick="goToNextPage()" id="nextPageBtn">
+                    Next <i class="fas fa-angle-right"></i>
+                </button>
+                <button onclick="goToLastPage()" id="lastPageBtn">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <?php else: ?>
+            <div style="text-align: center; padding: 50px; color: #6c757d; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <h3>No proposals found</h3>
+                <p>Faculty members haven't submitted any proposals yet.</p>
+            </div>
+        <?php endif; ?>
         </div>
     </div>
 
@@ -586,19 +834,160 @@ if ($proposals_result) {
     </div>
 
     <script>
+        // Pagination variables
+        let currentPage = 1;
+        let rowsPerPage = 5;
+        let allRows = [];
+        let filteredRows = [];
+
+        // Initialize pagination on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            allRows = Array.from(document.querySelectorAll('#proposalsContainer tr[data-status]'));
+            filteredRows = [...allRows];
+            updatePagination();
+        });
+
         function filterProposals() {
             const statusFilter = document.getElementById('statusFilter').value;
             const departmentFilter = document.getElementById('departmentFilter').value;
-            const cards = document.querySelectorAll('.proposal-card');
 
-            cards.forEach(card => {
-                const status = card.dataset.status;
-                const department = card.dataset.department;
+            // Filter rows and store them
+            filteredRows = allRows.filter(row => {
+                const status = row.dataset.status;
+                const department = row.dataset.department;
                 const statusMatch = !statusFilter || status === statusFilter;
                 const departmentMatch = !departmentFilter || department === departmentFilter;
-
-                card.style.display = (statusMatch && departmentMatch) ? 'block' : 'none';
+                return statusMatch && departmentMatch;
             });
+
+            // Reset to first page when filtering
+            currentPage = 1;
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const totalRows = filteredRows.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            
+            // Ensure current page is valid
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+
+            // Hide all rows first
+            allRows.forEach(row => row.style.display = 'none');
+
+            // Show only rows for current page
+            filteredRows.slice(startIndex, endIndex).forEach(row => {
+                row.style.display = '';
+            });
+
+            // Update pagination info
+            const start = totalRows > 0 ? startIndex + 1 : 0;
+            const end = Math.min(endIndex, totalRows);
+            document.getElementById('paginationInfo').textContent = 
+                `Showing ${start}-${end} of ${totalRows} proposal${totalRows !== 1 ? 's' : ''}`;
+
+            // Update pagination controls
+            updatePaginationControls(totalPages);
+        }
+
+        function updatePaginationControls(totalPages) {
+            const firstPageBtn = document.getElementById('firstPageBtn');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+            const lastPageBtn = document.getElementById('lastPageBtn');
+            const pageNumbers = document.getElementById('pageNumbers');
+
+            // Disable/enable navigation buttons
+            firstPageBtn.disabled = currentPage === 1;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+            // Generate page number buttons
+            pageNumbers.innerHTML = '';
+            
+            if (totalPages <= 7) {
+                // Show all pages if 7 or fewer
+                for (let i = 1; i <= totalPages; i++) {
+                    pageNumbers.appendChild(createPageButton(i));
+                }
+            } else {
+                // Show smart pagination with ellipsis
+                if (currentPage <= 3) {
+                    for (let i = 1; i <= 5; i++) {
+                        pageNumbers.appendChild(createPageButton(i));
+                    }
+                    pageNumbers.appendChild(createEllipsis());
+                    pageNumbers.appendChild(createPageButton(totalPages));
+                } else if (currentPage >= totalPages - 2) {
+                    pageNumbers.appendChild(createPageButton(1));
+                    pageNumbers.appendChild(createEllipsis());
+                    for (let i = totalPages - 4; i <= totalPages; i++) {
+                        pageNumbers.appendChild(createPageButton(i));
+                    }
+                } else {
+                    pageNumbers.appendChild(createPageButton(1));
+                    pageNumbers.appendChild(createEllipsis());
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        pageNumbers.appendChild(createPageButton(i));
+                    }
+                    pageNumbers.appendChild(createEllipsis());
+                    pageNumbers.appendChild(createPageButton(totalPages));
+                }
+            }
+        }
+
+        function createPageButton(pageNum) {
+            const button = document.createElement('button');
+            button.textContent = pageNum;
+            button.className = pageNum === currentPage ? 'active' : '';
+            button.onclick = () => goToPage(pageNum);
+            return button;
+        }
+
+        function createEllipsis() {
+            const span = document.createElement('span');
+            span.textContent = '...';
+            span.style.padding = '8px 4px';
+            span.style.color = '#6c757d';
+            return span;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            updatePagination();
+        }
+
+        function goToFirstPage() {
+            goToPage(1);
+        }
+
+        function goToPreviousPage() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        }
+
+        function goToNextPage() {
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        }
+
+        function goToLastPage() {
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+            goToPage(totalPages);
+        }
+
+        function changeRowsPerPage() {
+            rowsPerPage = parseInt(document.getElementById('rowsPerPage').value);
+            currentPage = 1;
+            updatePagination();
         }
 
         function viewProposalDocuments(proposalId) {
