@@ -58,30 +58,30 @@ $stmt->close();
 // Set default to "all" programs unless a program_id is provided via GET
 $selected_program_id = isset($_GET['program_id']) && $_GET['program_id'] != 'all' ? $_GET['program_id'] : 'all';
 
-// Fetch certificates for these programs only
+// Fetch faculty certificates for programs managed by this faculty
 $certificates = [];
 if (!empty($programs)) {
     $program_ids = array_column($programs, 'id');
     if ($selected_program_id != 'all' && in_array($selected_program_id, $program_ids)) {
-        // Filter by selected program
-        $certificate_query = "SELECT c.student_name, c.issue_date, c.certificate_file, p.program_name
-                              FROM certificates c
-                              JOIN programs p ON c.program_id = p.id
-                              WHERE c.program_id = ?
-                              ORDER BY c.issue_date DESC";
+        // Filter by selected program - get faculty certificate from programs table
+        $certificate_query = "SELECT program_name, faculty_certificate_issued_on as issue_date, 
+                              faculty_certificate_file as certificate_file
+                              FROM programs
+                              WHERE id = ? AND faculty_certificate_file IS NOT NULL
+                              ORDER BY faculty_certificate_issued_on DESC";
         $stmt = $conn->prepare($certificate_query);
         $stmt->bind_param("i", $selected_program_id);
         $stmt->execute();
         $result = $stmt->get_result();
     } else {
-        // Show all certificates for all programs managed by this faculty
+        // Show all faculty certificates for all programs managed by this faculty
         $in = implode(',', array_fill(0, count($program_ids), '?'));
         $types = str_repeat('i', count($program_ids));
-        $certificate_query = "SELECT c.student_name, c.issue_date, c.certificate_file, p.program_name
-                              FROM certificates c
-                              JOIN programs p ON c.program_id = p.id
-                              WHERE c.program_id IN ($in)
-                              ORDER BY c.issue_date DESC";
+        $certificate_query = "SELECT program_name, faculty_certificate_issued_on as issue_date, 
+                              faculty_certificate_file as certificate_file
+                              FROM programs
+                              WHERE id IN ($in) AND faculty_certificate_file IS NOT NULL
+                              ORDER BY faculty_certificate_issued_on DESC";
         $stmt = $conn->prepare($certificate_query);
         $stmt->bind_param($types, ...$program_ids);
         $stmt->execute();
@@ -303,7 +303,7 @@ if ($notifications_result) {
         <table class="certificate-table">
           <thead>
             <tr>
-              <th>Student Name</th>
+              <th>Faculty Member</th>
               <th>Program</th>
               <th>Issue Date</th>
               <th>Action</th>
@@ -315,13 +315,12 @@ if ($notifications_result) {
             <?php else: ?>
               <?php foreach ($certificates as $certificate): ?>
                 <tr>
-                  <td><?php echo htmlspecialchars($certificate['student_name']); ?></td>
+                  <td><?php echo htmlspecialchars($user_fullname); ?></td>
                   <td><?php echo htmlspecialchars($certificate['program_name']); ?></td>
-                  <td><?php echo htmlspecialchars(date('m-d-Y', strtotime($certificate['issue_date']))); ?></td>
+                  <td><?php echo $certificate['issue_date'] ? htmlspecialchars(date('m-d-Y', strtotime($certificate['issue_date']))) : 'N/A'; ?></td>
                   <td>
                     <?php if (!empty($certificate['certificate_file'])): ?>
-                      <a href="/<?php echo htmlspecialchars($certificate['certificate_file']); ?>" class="btn" target="_blank">View</a>
-                      <a href="/<?php echo htmlspecialchars($certificate['certificate_file']); ?>" class="btn" download>Download</a>
+                      <button class="btn" onclick="viewCertificate('<?php echo htmlspecialchars($certificate['certificate_file']); ?>')">View</button>
                     <?php else: ?>
                       <span>Not available</span>
                     <?php endif; ?>
@@ -396,6 +395,121 @@ if ($notifications_result) {
       background-color: #247a37;
       color: #fff;
     }
+
+    /* Document Viewer Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 8px;
+      position: relative;
+    }
+    .modal-content.large-modal {
+      width: 95vw !important;
+      height: 95vh !important;
+      max-width: 95vw !important;
+      max-height: 95vh !important;
+      box-sizing: border-box !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .modal-content.large-modal .modal-header {
+      flex: 0 0 auto !important;
+      padding: 8px 14px !important;
+      background: #114d2e;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-content.large-modal .modal-body {
+      flex: 1 1 auto !important;
+      height: auto !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #f5f5f5 !important;
+    }
+    #certificateViewer {
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    #certificateViewer .paper-wrap {
+      width: 95% !important;
+      height: 96% !important;
+      max-width: none !important;
+      background: #fff !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    #certificateViewer iframe, #certificateViewer img {
+      width: 100% !important;
+      height: 100% !important;
+      border: 0 !important;
+      display: block !important;
+    }
+    .modal-content.large-modal .view-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-content.large-modal .view-controls span#viewFilename {
+      color: #fff;
+      opacity: 0.95;
+      font-weight: 600;
+      max-width: 60vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .modal-content.large-modal .view-controls a.download-btn {
+      background: #ffffff !important;
+      color: #114d2e !important;
+      border: 0 !important;
+      padding: 8px 12px !important;
+      border-radius: 6px !important;
+      text-decoration: none !important;
+      font-weight: 700 !important;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      cursor: pointer !important;
+    }
+    .modal-content.large-modal .view-controls a.download-btn:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .close-btn:hover {
+      color: #ffcccc;
+    }
     .certificate-table {
       width: 100%;
       border-collapse: collapse;
@@ -414,6 +528,17 @@ if ($notifications_result) {
     .certificate-table td {
       background-color: #fff;
     }
+    .certificate-table td:last-child {
+      text-align: center;
+    }
+    .certificate-table .btn {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .certificate-table .btn:hover {
+      background-color: #2563eb;
+      color: white;
+    }
     .status-generated { color: green; font-weight: bold; }
     .status-pending { color: #f1c40f; font-weight: bold; }
     .note.priority-low { border-left-color: #59a96a; }
@@ -421,7 +546,96 @@ if ($notifications_result) {
     .note.priority-high { border-left-color: #e74c3c; }
   </style>
 
+  <!-- Certificate Viewer Modal -->
+  <div id="certificateModal" class="modal" style="display: none;">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-certificate"></i> View Certificate</h3>
+        <div class="view-controls">
+          <span id="viewFilename"></span>
+          <a id="downloadLink" class="download-btn" target="_blank" rel="noopener">
+            <i class="fas fa-download"></i>
+            <span>Download</span>
+          </a>
+        </div>
+        <button class="close-btn" onclick="closeCertificateViewer()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="certificateViewer">
+          <!-- content injected dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // Certificate Viewer Functions
+    function viewCertificate(filePath) {
+      const viewer = document.getElementById('certificateViewer');
+      const extension = (filePath || '').split('.').pop().toLowerCase();
+      
+      // Construct proper view URL using relative path from current directory
+      let viewUrl;
+      if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        viewUrl = filePath;
+      } else if (filePath.startsWith('certificates/')) {
+        viewUrl = '../' + filePath;
+      } else if (filePath.startsWith('/certificates/')) {
+        viewUrl = '..' + filePath;
+      } else if (filePath.startsWith('/')) {
+        viewUrl = '..' + filePath;
+      } else {
+        viewUrl = '../certificates/' + filePath;
+      }
+      
+      if (extension === 'pdf') {
+        viewer.innerHTML = `
+          <div class="paper-wrap">
+            <iframe src="${viewUrl}" allowfullscreen></iframe>
+          </div>
+        `;
+      } else if (extension === 'docx') {
+        // Use Google viewer for Word documents
+        const fullUrl = window.location.origin + viewUrl;
+        viewer.innerHTML = `
+          <div class="paper-wrap">
+            <iframe src="https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true" allowfullscreen></iframe>
+          </div>
+        `;
+      } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+        viewer.innerHTML = `
+          <div class="paper-wrap" style="background:#f5f5f5;">
+            <img src="${viewUrl}" alt="Certificate" style="max-width:100%; height:auto; display:block; margin:0 auto;"/>
+          </div>
+        `;
+      } else {
+        viewer.innerHTML = `<div class="paper-wrap">Unsupported file type for preview.</div>`;
+      }
+      
+      // Set filename and download link
+      const filename = filePath.split('/').pop();
+      document.getElementById('viewFilename').textContent = filename;
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = viewUrl;
+      downloadLink.setAttribute('download', filename);
+      
+      // Show modal
+      document.getElementById('certificateModal').style.display = 'block';
+    }
+    
+    function closeCertificateViewer() {
+      document.getElementById('certificateModal').style.display = 'none';
+      document.getElementById('certificateViewer').innerHTML = '';
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('certificateModal');
+      if (e.target === modal) {
+        closeCertificateViewer();
+      }
+    });
+
     // Modal functions
     function showClearModal() {
       document.getElementById('clearModalOverlay').style.display = 'block';

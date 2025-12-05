@@ -439,19 +439,19 @@ $stmt->close();
         <!-- Quick Stats -->
         <div class="dashboard-cards">
           <div class="dashboard-card">
-            <i class="fas fa-chalkboard-teacher"></i>
+            <i class="fas fa-chalkboard-teacher" style="color: #3b82f6;"></i>
             <div class="stat"><?php echo $total_programs; ?></div>
-            <div class="label">Programs</div>
+            <div class="label" style="color: #3b82f6;">Programs</div>
           </div>
           <div class="dashboard-card">
-            <i class="fas fa-users"></i>
+            <i class="fas fa-users" style="color: #59a96a;"></i>
             <div class="stat"><?php echo $total_participants; ?></div>
-            <div class="label">Participants</div>
+            <div class="label" style="color: #59a96a;">Participants</div>
           </div>
           <div class="dashboard-card">
-            <i class="fas fa-certificate"></i>
+            <i class="fas fa-certificate" style="color: #f59e0b;"></i>
             <div class="stat"><?php echo $total_certificates; ?></div>
-            <div class="label">Certificates</div>
+            <div class="label" style="color: #f59e0b;">Certificates</div>
           </div>
         </div>
 
@@ -523,7 +523,16 @@ $stmt->close();
         datasets: [{
           label: 'Attendance Rate (%)',
           data: <?php echo json_encode($attendance_rates); ?>,
-          backgroundColor: '#59a96a'
+          backgroundColor: [
+            '#59a96a',
+            '#3b82f6',
+            '#f59e0b',
+            '#8b5cf6',
+            '#ef4444',
+            '#14b8a6',
+            '#ec4899',
+            '#f97316'
+          ]
         }]
       },
       options: {
@@ -542,7 +551,16 @@ $stmt->close();
         datasets: [{
           label: 'Avg Feedback Score',
           data: <?php echo json_encode($feedback_scores); ?>,
-          backgroundColor: '#247a37'
+          backgroundColor: [
+            '#3b82f6',
+            '#59a96a',
+            '#8b5cf6',
+            '#f59e0b',
+            '#14b8a6',
+            '#ef4444',
+            '#f97316',
+            '#ec4899'
+          ]
         }]
       },
       options: {
