@@ -97,15 +97,16 @@
   }
   
   .enroll-btn.pending {
-    background: linear-gradient(90deg, #4caf50 60%, #66bb6a 100%);
-    color: #ffffff;
+    background: #ffc107;
+    color: #856404;
     cursor: default;
-    box-shadow: 0 2px 8px #4caf5022;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    font-weight: 600;
   }
   
   .enroll-btn.pending:hover {
     transform: none;
-    background: linear-gradient(90deg, #4caf50 60%, #66bb6a 100%);
+    background: #ffc107;
   }
   
   .enroll-btn:disabled {

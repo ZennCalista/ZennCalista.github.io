@@ -93,13 +93,16 @@
         // Update buttons
         if (step === 1) {
             document.getElementById('backBtn').style.display = 'none';
-            document.getElementById('nextBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+            document.getElementById('nextBtn').innerHTML = 'Send OTP <i class="fas fa-arrow-right"></i>';
+            document.getElementById('nextBtn').style.display = 'inline-flex';
         } else if (step === 2) {
             document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('nextBtn').innerHTML = 'Verify OTP <i class="fas fa-arrow-right"></i>';
+            document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Verify & Change Password';
+            document.getElementById('nextBtn').style.display = 'inline-flex';
         } else if (step === 3) {
-            document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Change Password';
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Close';
+            document.getElementById('nextBtn').style.display = 'inline-flex';
         }
 
         this.currentStep = step;
@@ -111,11 +114,15 @@
      */
     nextStep: async function() {
         if (this.currentStep === 1) {
-            await this.verifyCurrentPassword();
+            await this.validateAndSendOTP();
         } else if (this.currentStep === 2) {
-            await this.verifyOTP();
+            await this.verifyOTPAndChangePassword();
         } else if (this.currentStep === 3) {
-            await this.changePassword();
+            // Close modal on success
+            document.getElementById('passwordChangeModal').classList.remove('active');
+            this.reset();
+            // Optionally reload the page
+            setTimeout(() => window.location.reload(), 500);
         }
     },
 
@@ -129,17 +136,38 @@
     },
 
     /**
-     * Step 1: Verify current password
+     * Step 1: Validate all fields and send OTP
      */
-    verifyCurrentPassword: async function() {
+    validateAndSendOTP: async function() {
         const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
+        // Validate current password
         if (!currentPassword) {
             this.showError(1, 'Please enter your current password');
             return;
         }
 
-        this.showLoading('Verifying password...');
+        // Validate new password
+        if (!newPassword || !confirmPassword) {
+            this.showError(1, 'Please fill in all password fields');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            this.showError(1, 'Passwords do not match');
+            return;
+        }
+
+        // Validate password requirements
+        const validation = this.validatePassword(newPassword);
+        if (!validation.valid) {
+            this.showError(1, 'Password does not meet all requirements');
+            return;
+        }
+
+        this.showLoading('Verifying password and sending OTP...');
 
         try {
             const response = await fetch('../portal/shared/change_password_request.php', {
@@ -171,11 +199,14 @@
     },
 
     /**
-     * Step 2: Verify OTP
+     * Step 2: Verify OTP and Change Password
      */
-    verifyOTP: async function() {
+    verifyOTPAndChangePassword: async function() {
         const otpCode = document.getElementById('otpCode').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
+        // Validate OTP
         if (!otpCode || otpCode.length !== 6) {
             this.showError(2, 'Please enter the 6-digit OTP code');
             return;
@@ -186,39 +217,7 @@
             return;
         }
 
-        // Don't verify yet, just move to next step
-        // Actual verification happens when changing password
-        this.stopOtpTimer();
-        this.updateStep(3);
-    },
-
-    /**
-     * Step 3: Change password
-     */
-    changePassword: async function() {
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const otpCode = document.getElementById('otpCode').value;
-
-        // Validate inputs
-        if (!newPassword || !confirmPassword) {
-            this.showError(3, 'Please fill in all password fields');
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            this.showError(3, 'Passwords do not match');
-            return;
-        }
-
-        // Validate password requirements
-        const validation = this.validatePassword(newPassword);
-        if (!validation.valid) {
-            this.showError(3, 'Password does not meet all requirements');
-            return;
-        }
-
-        this.showLoading('Changing password...');
+        this.showLoading('Verifying OTP and changing password...');
 
         try {
             const response = await fetch('../portal/shared/change_password_verify.php', {
@@ -237,17 +236,16 @@
 
             if (data.success) {
                 this.hideLoading();
-                this.showAlert('Password changed successfully! Please log in with your new password.', 'success', () => {
-                    window.location.reload();
-                });
+                this.stopOtpTimer();
+                this.updateStep(3);
             } else {
-                this.showError(3, data.message || 'Failed to change password');
+                this.hideLoading();
+                this.showError(2, data.message || 'Failed to verify OTP or change password');
             }
         } catch (error) {
             console.error('Error:', error);
-            this.showError(3, 'An error occurred. Please try again.');
-        } finally {
             this.hideLoading();
+            this.showError(2, 'An error occurred. Please try again.');
         }
     },
 
@@ -256,6 +254,11 @@
      */
     resendOTP: async function() {
         const currentPassword = document.getElementById('currentPassword').value;
+
+        if (!currentPassword) {
+            this.showAlert('Please go back and enter your current password', 'error');
+            return;
+        }
 
         this.showLoading('Resending OTP...');
 

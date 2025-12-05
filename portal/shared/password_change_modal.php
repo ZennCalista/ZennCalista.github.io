@@ -23,15 +23,16 @@
             <div class="password-progress-line"></div>
             <div class="password-step" data-step="3">
                 <div class="password-step-number">3</div>
-                <div class="password-step-label">New Password</div>
+                <div class="password-step-label">Complete</div>
             </div>
         </div>
 
         <!-- Modal Body -->
         <div class="password-modal-body">
-            <!-- Step 1: Verify Current Password -->
+            <!-- Step 1: Enter Current and New Password -->
             <div class="password-step-content active" data-step="1">
-                <p class="password-step-description">Enter your current password to verify your identity</p>
+                <p class="password-step-description">Enter your current password and create a new strong password</p>
+                
                 <div class="password-form-group">
                     <label class="password-form-label">
                         <i class="fas fa-lock"></i> Current Password
@@ -43,34 +44,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="password-error-message" id="step1Error"></div>
-            </div>
 
-            <!-- Step 2: OTP Verification -->
-            <div class="password-step-content" data-step="2">
-                <p class="password-step-description">
-                    Enter the 6-digit code sent to <strong id="otpEmail"></strong>
-                </p>
-                <div class="password-form-group">
-                    <label class="password-form-label">
-                        <i class="fas fa-envelope"></i> Verification Code
-                    </label>
-                    <input type="text" id="otpCode" class="password-form-input otp-input" 
-                           placeholder="000000" maxlength="6" pattern="[0-9]{6}">
-                </div>
-                <div class="password-otp-timer" id="otpTimer">
-                    <i class="fas fa-clock"></i> Time remaining: <span id="otpTimeLeft">10:00</span>
-                </div>
-                <button type="button" class="password-resend-btn" id="resendOtpBtn" onclick="PasswordChangeModal.resendOTP()" disabled>
-                    <i class="fas fa-redo"></i> Resend OTP
-                </button>
-                <div class="password-error-message" id="step2Error"></div>
-            </div>
-
-            <!-- Step 3: New Password -->
-            <div class="password-step-content" data-step="3">
-                <p class="password-step-description">Create a strong password that meets all requirements</p>
-                
                 <div class="password-form-group">
                     <label class="password-form-label">
                         <i class="fas fa-key"></i> New Password
@@ -115,7 +89,47 @@
                 </div>
 
                 <div class="password-match-indicator" id="passwordMatchIndicator"></div>
-                <div class="password-error-message" id="step3Error"></div>
+                <div class="password-error-message" id="step1Error"></div>
+            </div>
+
+            <!-- Step 2: OTP Verification -->
+            <div class="password-step-content" data-step="2">
+                <p class="password-step-description">
+                    Enter the 6-digit code sent to <strong id="otpEmail"></strong>
+                </p>
+                <div class="password-form-group">
+                    <label class="password-form-label">
+                        <i class="fas fa-envelope"></i> Verification Code
+                    </label>
+                    <input type="text" id="otpCode" class="password-form-input otp-input" 
+                           placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+                </div>
+                <div class="password-otp-timer" id="otpTimer">
+                    <i class="fas fa-clock"></i> Time remaining: <span id="otpTimeLeft">10:00</span>
+                </div>
+                <button type="button" class="password-resend-btn" id="resendOtpBtn" onclick="PasswordChangeModal.resendOTP()" disabled>
+                    <i class="fas fa-redo"></i> Resend OTP
+                </button>
+                <div class="password-error-message" id="step2Error"></div>
+            </div>
+
+            <!-- Step 3: Success Confirmation -->
+            <div class="password-step-content" data-step="3">
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-check" style="color: white; font-size: 40px;"></i>
+                    </div>
+                    <h3 style="color: #114d2e; font-size: 24px; font-weight: 700; margin-bottom: 15px;">Password Changed Successfully!</h3>
+                    <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+                        Your password has been updated successfully. You can now use your new password to log in.
+                    </p>
+                    <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-top: 20px;">
+                        <i class="fas fa-info-circle" style="color: #059669; font-size: 20px;"></i>
+                        <p style="color: #166534; font-size: 14px; margin: 10px 0 0 0;">
+                            For your security, please remember your new password and keep it safe.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 

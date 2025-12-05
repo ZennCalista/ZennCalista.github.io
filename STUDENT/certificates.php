@@ -215,10 +215,10 @@ if ($user_id && $user) {
         <a href="Feedback.php" class="nav-item"><i class="fas fa-comment-dots"></i> Feedback</a>
         <a href="Reports.php" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
         <a href="certificates.php" class="nav-item active"><i class="fas fa-certificate"></i> Certificates</a>
-        <a href="Profile.php" class="nav-item"><i class="fas fa-user"></i> Profile</a>
+        <!-- <a href="Profile.php" class="nav-item"><i class="fas fa-user"></i> Profile</a> -->
       </nav>
       <div class="sidebar-bottom">
-        <div class="user-info">
+        <a href="Profile.php" class="user-info" style="text-decoration: none; color: inherit; cursor: pointer;">
           <i class="fas fa-user-circle"></i>
           <span>
             <?php
@@ -229,7 +229,7 @@ if ($user_id && $user) {
               }
             ?>
           </span>
-        </div>
+        </a>
   <a href="../register/logout.php" class="btn logout-btn">
           <i class="fas fa-sign-out-alt"></i> Log Out
         </a>

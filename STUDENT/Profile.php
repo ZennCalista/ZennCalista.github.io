@@ -28,22 +28,52 @@ if ($user_id) {
 
   <link rel="stylesheet" href="Profile.css" />
   <style>
-    .profile-card {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      border: 2px solid #e8f5e9;
-      max-width: 600px;
+    .profile-cards-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
       margin: 40px auto;
+      max-width: 1400px;
+      padding: 0 20px;
+    }
+
+    @media (max-width: 968px) {
+      .profile-cards-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .profile-card {
+      background: linear-gradient(135deg, #eafbe7 0%, #f0fdf4 100%);
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(36, 122, 55, 0.12);
+      border: 2px solid #d1f4e8;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(36, 122, 55, 0.18);
     }
 
     .profile-title {
       text-align: center;
       color: #114d2e;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #b7e4c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .profile-title i {
+      font-size: 28px;
+      color: #247a37;
     }
 
     .profile-info {
@@ -211,10 +241,10 @@ if ($user_id) {
             <a href="Attendance.php" class="nav-item"><i class="fas fa-calendar-check"></i> Attendance</a>
             <a href="Feedback.php" class="nav-item"><i class="fas fa-comment-dots"></i> Feedback</a>
             <a href="Reports.php" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
-            <a href="Profile.php" class="nav-item active"><i class="fas fa-user"></i> Profile</a>
+            <!-- <a href="Profile.php" class="nav-item active"><i class="fas fa-user"></i> Profile</a> -->
         </nav>
         <div class="sidebar-bottom">
-            <div class="user-info">
+            <a href="Profile.php" class="user-info" style="text-decoration: none; color: inherit; cursor: pointer;">
                 <i class="fas fa-user-circle"></i>
                 <span>
                     <?php
@@ -225,7 +255,7 @@ if ($user_id) {
                         }
                     ?>
                 </span>
-            </div>
+            </a>
             <a href="../register/logout.php" class="btn logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Log Out
             </a>
@@ -237,8 +267,12 @@ if ($user_id) {
         <h1>CVSU IMUS - EXTENSION SERVICES</h1>
       </header>
 
-      <section class="profile-card">
-        <div class="profile-title">Student Profile</div>
+      <div class="profile-cards-container">
+        <section class="profile-card">
+          <div class="profile-title">
+            <i class="fas fa-user-circle"></i>
+            <span>Student Profile</span>
+          </div>
 
         <div class="profile-info">
           <div class="label">First Name:</div>
@@ -291,25 +325,51 @@ if ($user_id) {
             <i class="fas fa-times"></i> Cancel
           </button>
         </div>
-      </section>
+        </section>
 
-      <!-- Security Settings Card -->
-      <section class="profile-card" style="margin-top: 20px;">
-        <div class="profile-title">
-          <i class="fas fa-shield-alt"></i> Security Settings
-        </div>
-        <div style="padding: 20px 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span style="font-weight: bold; color: #333;">Password</span>
-            <button class="change-password-btn" onclick="PasswordChangeModal.open()" title="Change Password">
-              <i class="fas fa-key"></i> Change Password
-            </button>
+        <!-- Security Settings Card -->
+        <section class="profile-card">
+          <div class="profile-title">
+            <i class="fas fa-shield-alt"></i>
+            <span>Security Settings</span>
           </div>
-          <p style="color: #6b7280; font-size: 0.9rem; margin-top: 8px;">
-            Keep your account secure by regularly updating your password
-          </p>
-        </div>
-      </section>
+          <div style="padding: 25px 0;">
+            <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #b7e4c7; box-shadow: 0 2px 10px rgba(36, 122, 55, 0.08);">
+              <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                  <i class="fas fa-key" style="color: white; font-size: 22px;"></i>
+                </div>
+                <div style="flex: 1;">
+                  <h3 style="margin: 0 0 5px 0; color: #114d2e; font-size: 18px; font-weight: 600;">Password Management</h3>
+                  <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.5;">
+                    Keep your account secure by regularly updating your password
+                  </p>
+                </div>
+              </div>
+              <button class="change-password-btn" onclick="PasswordChangeModal.open()" title="Change Password" style="width: 100%; justify-content: center; padding: 12px 20px; font-size: 1rem;">
+                <i class="fas fa-key"></i> Change Password
+              </button>
+            </div>
+            
+            <div style="margin-top: 25px; padding: 20px; background: white; border-radius: 15px; border: 2px solid #b7e4c7; box-shadow: 0 2px 10px rgba(36, 122, 55, 0.08);">
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                  <i class="fas fa-info-circle" style="color: white; font-size: 22px;"></i>
+                </div>
+                <div style="flex: 1;">
+                  <h3 style="margin: 0 0 8px 0; color: #114d2e; font-size: 16px; font-weight: 600;">Security Tips</h3>
+                  <ul style="margin: 0; padding-left: 20px; color: #6b7280; font-size: 0.85rem; line-height: 1.8;">
+                    <li>Use a strong, unique password</li>
+                    <li>Change your password regularly</li>
+                    <li>Never share your password with anyone</li>
+                    <li>Enable two-factor authentication when available</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
