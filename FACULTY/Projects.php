@@ -396,7 +396,7 @@ $unique_sdgs = count(array_unique($all_sdgs));
     <style>
         /* Projects page specific styles */
         .projects-header {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: #28a745;
             color: white;
             padding: 30px;
             border-radius: 15px;

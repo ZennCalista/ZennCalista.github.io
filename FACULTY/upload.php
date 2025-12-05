@@ -129,7 +129,7 @@ h2 {
 }
 
 .upload-form .submit {
-  background: linear-gradient(90deg, #59a96a 60%, #247a37 100%);
+  background: #247a37;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -142,7 +142,7 @@ h2 {
 }
 
 .upload-form .submit:hover {
-  background: linear-gradient(90deg, #247a37 60%, #59a96a 100%);
+  background: #1e3927;
   transform: translateY(-2px) scale(1.03);
 }
 
@@ -233,7 +233,7 @@ h2 {
 }
 
 .view-uploads-btn {
-  background: linear-gradient(90deg, #247a37 60%, #59a96a 100%);
+  background: #247a37;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -251,7 +251,7 @@ h2 {
   gap: 8px;
 }
 .view-uploads-btn:hover {
-  background: linear-gradient(90deg, #59a96a 60%, #247a37 100%);
+  background: #1e3927;
   transform: translateY(-2px) scale(1.03);
 }
 
@@ -680,7 +680,7 @@ h2 {
           <button type="submit" class="submit"><i class="fas fa-upload"></i> Upload</button>
           <div class="info-box" style="margin: 16px 0;">
             <i class="fas fa-info-circle"></i>
-            Allowed file types: PDF, DOCX, JPG, PNG. Max size: 10MB per file. Multiple files allowed for images (JPG, PNG). PDF and DOCX limited to one file.
+            Allowed file types: <strong>PDF, DOCX, JPG, PNG.</strong> Total size:<strong>25MB.</strong> Multiple files allowed for images (JPG, PNG). PDF and DOCX limited to one file.
           </div>
 
           
@@ -949,6 +949,15 @@ function handleFiles(files) {
     alert('Only one file allowed for PDF or DOCX. Multiple files are only allowed for images (JPG, PNG).');
     return;
   }
+  
+  // Check total file size (25MB limit)
+  const totalSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
+  const maxSize = 25 * 1024 * 1024; // 25MB in bytes
+  if (totalSize > maxSize) {
+    alert(`Total file size exceeds 25MB limit. Current total: ${formatFileSize(totalSize)}`);
+    return;
+  }
+  
   selectedFiles = Array.from(files);
   updateFilePreview();
 }

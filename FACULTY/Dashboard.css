@@ -6,7 +6,7 @@
   
   body {
     font-family: 'Segoe UI', sans-serif;
-    background: #f4fdf5; /* very light green, almost white */
+    background: #ffffff;
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
@@ -307,7 +307,7 @@
   
   /* Card style */
   .card {
-    background: #fff;
+    background: linear-gradient(135deg, #eafbe7 80%, #fffde4 100%);
     border-radius: 18px;
     box-shadow: 2px 2px 12px rgba(36, 122, 55, 0.07);
     padding: 22px 18px;
@@ -349,7 +349,7 @@
   }
   .card ul li {
     margin-bottom: 12px;
-    background: #f4fdf5;
+    background: #ffffff;
     border-radius: 8px;
     padding: 8px 10px;
   }
@@ -363,7 +363,7 @@
 }
 
 .quick-btn {
-  background: linear-gradient(90deg, #247a37 80%, #eee48f 100%);
+  background: #247a37;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -377,8 +377,8 @@
 }
 
 .quick-btn:hover {
-  background: linear-gradient(90deg, #1e3927 80%, #eee48f 100%);
-  color: #eee48f;
+  background: #1e3927;
+  color: #fff;
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 6px 18px rgba(36, 122, 55, 0.13);
 }
@@ -414,7 +414,7 @@
 }
 
 .progress-bar {
-  background: #f4fdf5;
+  background: #ffffff;
   border-radius: 8px;
   height: 12px;
   width: 100%;

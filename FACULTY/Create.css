@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #f4fdf5 0%, #e6f6e6 100%);
+    background: #ffffff;
     min-height: 100vh;
 }
 
@@ -395,7 +395,7 @@ body {
 
 .category-card.selected {
     border-color: #247a37;
-    background: linear-gradient(135deg, #f4fdf5, #e6f6e6);
+    background: #ffffff;
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(36, 122, 55, 0.2);
 }
@@ -442,7 +442,7 @@ body {
 
 .level-card.selected {
     border-color: #247a37;
-    background: linear-gradient(135deg, #f4fdf5, #e6f6e6);
+    background: #ffffff;
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(36, 122, 55, 0.2);
 }
