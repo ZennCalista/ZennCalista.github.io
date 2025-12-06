@@ -23,18 +23,60 @@ if (!$conn) {
 }
 
 try {
-    $sql = "SELECT id, program_id, faculty_id, document_type, file_path, original_filename, upload_date, status, uploaded_by, created_at FROM document_uploads ORDER BY upload_date DESC";
+    // Query to get both document uploads and program proposals
+    $sql = "
+        SELECT
+            'document' as record_type,
+            id,
+            program_id,
+            faculty_id,
+            document_type COLLATE utf8mb4_unicode_ci as document_type,
+            file_path COLLATE utf8mb4_unicode_ci as file_path,
+            original_filename COLLATE utf8mb4_unicode_ci as original_filename,
+            upload_date,
+            status COLLATE utf8mb4_unicode_ci as status,
+            uploaded_by,
+            created_at,
+            NULL as proposal_title,
+            NULL as description,
+            NULL as submitted_at,
+            NULL as review_notes
+        FROM document_uploads
+
+        UNION ALL
+
+        SELECT
+            'proposal' as record_type,
+            id,
+            program_id,
+            faculty_id,
+            'proposal' COLLATE utf8mb4_unicode_ci as document_type,
+            NULL as file_path,
+            proposal_title COLLATE utf8mb4_unicode_ci as original_filename,
+            DATE(submitted_at) as upload_date,
+            status COLLATE utf8mb4_unicode_ci as status,
+            faculty_id as uploaded_by,
+            submitted_at as created_at,
+            proposal_title COLLATE utf8mb4_unicode_ci as proposal_title,
+            description COLLATE utf8mb4_unicode_ci as description,
+            submitted_at,
+            review_notes COLLATE utf8mb4_unicode_ci as review_notes
+        FROM program_proposals
+
+        ORDER BY created_at DESC
+    ";
+
     $res = $conn->query($sql);
-    
+
     if (!$res) {
         throw new Exception('SQL Error: ' . $conn->error);
     }
-    
+
     $docs = [];
     while ($row = $res->fetch_assoc()) {
         $docs[] = $row;
     }
-    
+
     echo json_encode(['success' => true, 'data' => $docs]);
     
 } catch (Exception $e) {

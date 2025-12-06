@@ -225,16 +225,6 @@
         </div>
         
         <div class="filter-group">
-          <label for="programFilter">
-            <i class="fas fa-calendar"></i>
-            Program
-          </label>
-          <select id="programFilter" name="programFilter">
-            <option value="">-- All Programs --</option>
-          </select>
-        </div>
-        
-        <div class="filter-group">
           <label for="statusFilter">
             <i class="fas fa-check-circle"></i>
             Status
@@ -399,8 +389,7 @@
   <script>
     let allDocuments = [];
     let currentDocumentId = null;
-    let allPrograms = [];
-    let programsMap = {};
+    let currentRecordType = 'document';
 
     // Simple debounce utility for live search
     function debounce(fn, wait) {
@@ -459,62 +448,6 @@
       }
     }
 
-    async function fetchPrograms() {
-      try {
-        // Request programs including archived ones so admin can filter by them too
-        const res = await fetch('../backend/get_programs.php?include_archived=1');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
-        // Get the response text first to debug JSON parsing issues
-        const responseText = await res.text();
-        let raw;
-        
-        try {
-          raw = JSON.parse(responseText);
-        } catch (jsonError) {
-          console.error('JSON parse error:', jsonError);
-          console.error('Response text:', responseText);
-          throw new Error('Invalid JSON response from server');
-        }
-        
-        // Handle both formats: { success: true, data: [...] } or direct array
-        const data = (raw && raw.success && Array.isArray(raw.data)) ? raw.data : (Array.isArray(raw) ? raw : []);
-        
-        // Optional: sort programs alphabetically by program_name
-        data.sort((a, b) => {
-          const aName = (a.program_name || '').toString().toLowerCase();
-          const bName = (b.program_name || '').toString().toLowerCase();
-          if (aName < bName) return -1;
-          if (aName > bName) return 1;
-          return 0;
-        });
-
-        allPrograms = data;
-        programsMap = {};
-        allPrograms.forEach(program => {
-          programsMap[program.id] = program.program_name || `Program ${program.id}`;
-        });
-        populateProgramFilter();
-      } catch (error) {
-        console.error('Error fetching programs:', error);
-        // Still populate with empty array so the page doesn't break
-        allPrograms = [];
-        programsMap = {};
-        populateProgramFilter();
-      }
-    }
-
-    function populateProgramFilter() {
-      const select = document.getElementById('programFilter');
-      select.innerHTML = '<option value="">-- All Programs --</option>';
-      allPrograms.forEach(program => {
-        const option = document.createElement('option');
-        option.value = program.id;
-        option.textContent = program.program_name || `Program ${program.id}`;
-        select.appendChild(option);
-      });
-    }
-
     function renderDocumentsTable(docs) {
       const tbody = document.getElementById('documentsTableBody');
       tbody.innerHTML = '';
@@ -535,17 +468,20 @@
         const row = document.createElement('tr');
         row.className = `status-${doc.status}`;
         
-        const uploadDate = new Date(doc.upload_date).toLocaleDateString();
+        // Handle different record types
+        const isProposal = doc.record_type === 'proposal';
+        const displayName = isProposal ? (doc.proposal_title || 'Untitled Proposal') : (doc.original_filename || 'Unknown File');
+        const uploadDate = new Date(isProposal ? doc.submitted_at : doc.upload_date).toLocaleDateString();
         const statusBadge = getStatusBadge(doc.status);
         const typeBadge = getTypeBadge(doc.document_type);
         
         row.innerHTML = `
           <td class="document-cell">
             <div class="document-info">
-              <i class="fas fa-file-alt"></i>
+              <i class="fas fa-${isProposal ? 'file-contract' : 'file-alt'}"></i>
               <div>
-                <strong>${doc.original_filename || 'Unknown File'}</strong>
-                <small>ID: ${doc.id}</small>
+                <strong>${displayName}</strong>
+                <small>${isProposal ? 'Proposal' : 'Document'} ID: ${doc.id}</small>
               </div>
             </div>
           </td>
@@ -559,15 +495,21 @@
           <td>${uploadDate}</td>
           <td>${statusBadge}</td>
           <td class="actions-cell">
-            <button class="btn btn-sm btn-info" onclick="viewDocument('${doc.file_path}', ${doc.id})" title="View Document">
-              <i class="fas fa-eye"></i>
-            </button>
+            ${isProposal ? `
+              <button class="btn btn-sm btn-info" onclick="viewProposal(${doc.id})" title="View Proposal Details">
+                <i class="fas fa-eye"></i>
+              </button>
+            ` : `
+              <button class="btn btn-sm btn-info" onclick="viewDocument('${doc.file_path}', ${doc.id})" title="View Document">
+                <i class="fas fa-eye"></i>
+              </button>
+            `}
             ${doc.status === 'pending' ? `
-              <button class="btn btn-sm btn-warning" onclick="showReviewModal(${doc.id}, '${doc.original_filename}', '${doc.document_type}', ${doc.faculty_id})" title="Review">
+              <button class="btn btn-sm btn-warning" onclick="showReviewModal(${doc.id}, '${displayName.replace(/'/g, "\\'")}', '${doc.document_type}', ${doc.faculty_id}, '${doc.record_type}')" title="Review">
                 <i class="fas fa-clipboard-check"></i>
               </button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="deleteDocument(${doc.id})" title="Delete">
+            <button class="btn btn-sm btn-danger" onclick="deleteRecord(${doc.id}, '${doc.record_type}')" title="Delete">
               <i class="fas fa-trash"></i>
             </button>
           </td>
@@ -616,7 +558,6 @@
       const typeFilter = document.getElementById('docTypeFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const dateFilter = document.getElementById('dateFilter').value;
-      const programFilter = document.getElementById('programFilter').value;
       const searchInputEl = document.getElementById('searchInput');
       const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim().toLowerCase() : '';
       
@@ -628,7 +569,6 @@
           const filterDate = new Date(dateFilter).toDateString();
           if (docDate !== filterDate) return false;
         }
-        if (programFilter && doc.program_id != programFilter) return false;
         // Apply search term (combine with other filters)
         if (searchTerm) {
           const needle = searchTerm;
@@ -636,14 +576,12 @@
           const path = (doc.file_path || '').toString().toLowerCase();
           const faculty = (doc.faculty_id || '').toString().toLowerCase();
           const idStr = (doc.id || '').toString().toLowerCase();
-          const programName = programsMap && programsMap[doc.program_id] ? programsMap[doc.program_id].toString().toLowerCase() : '';
 
           if (!(
             filename.includes(needle) ||
             path.includes(needle) ||
             faculty.includes(needle) ||
-            idStr.includes(needle) ||
-            programName.includes(needle)
+            idStr.includes(needle)
           )) return false;
         }
         return true;
@@ -656,13 +594,13 @@
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
-      document.getElementById('programFilter').value = '';
       renderDocumentsTable(allDocuments);
     }
 
-    function showReviewModal(id, filename, type, facultyId) {
+    function showReviewModal(id, filename, type, facultyId, recordType) {
       try {
         currentDocumentId = id;
+        currentRecordType = recordType || 'document';
         
         // Sanitize the data to prevent XSS
         const sanitizedFilename = filename ? filename.replace(/[<>"'&]/g, '') : 'Unknown Document';
@@ -700,6 +638,7 @@
         modal.classList.remove('show');
       }
       currentDocumentId = null;
+      currentRecordType = 'document';
       
       // Clear the form
       document.getElementById('adminRemarks').value = '';
@@ -711,7 +650,12 @@
       const remarks = document.getElementById('adminRemarks').value;
       
       try {
-        const response = await fetch('../backend/review_document.php', {
+        // Use different endpoints based on record type
+        const endpoint = currentRecordType === 'proposal' 
+          ? '../backend/review_proposal.php' 
+          : '../backend/review_document.php';
+          
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -726,24 +670,28 @@
         if (response.ok && result.success) {
           closeReviewModal();
           await loadDocuments();
-          showSuccessMessage(`Document ${status} successfully!`);
+          showSuccessMessage(`${currentRecordType === 'proposal' ? 'Proposal' : 'Document'} ${status} successfully!`);
         } else {
-          throw new Error(result.error || 'Failed to update document status');
+          throw new Error(result.error || `Failed to update ${currentRecordType} status`);
         }
       } catch (error) {
         console.error('Error reviewing document:', error);
-        showErrorMessage(error.message || 'Failed to update document status. Please try again.');
+        showErrorMessage(error.message || `Failed to update ${currentRecordType} status. Please try again.`);
       }
     }
 
-    function showDeleteModal(doc) {
+    function showDeleteModal(record) {
       try {
-        currentDocumentId = doc.id;
+        currentDocumentId = record.id;
+        currentRecordType = record.record_type;
 
         // Sanitize the data to prevent XSS
-        const sanitizedFilename = doc.original_filename ? doc.original_filename.replace(/[<>"'&]/g, '') : 'Unknown Document';
-        const sanitizedType = doc.document_type ? doc.document_type.replace(/[<>"'&]/g, '') : 'Unknown Type';
-        const sanitizedFacultyId = doc.faculty_id || 'Unknown';
+        const displayName = record.record_type === 'proposal' 
+          ? (record.proposal_title || 'Untitled Proposal') 
+          : (record.original_filename || 'Unknown Document');
+        const sanitizedFilename = displayName.replace(/[<>"'&]/g, '');
+        const sanitizedType = (record.document_type || 'Unknown Type').replace(/[<>"'&]/g, '');
+        const sanitizedFacultyId = record.faculty_id || 'Unknown';
 
         document.getElementById('deleteDocName').textContent = sanitizedFilename;
         document.getElementById('deleteDocType').textContent = sanitizedType;
@@ -770,26 +718,32 @@
         modal.classList.remove('show');
       }
       currentDocumentId = null;
+      currentRecordType = 'document';
     }
 
     async function confirmDeleteDocument() {
       if (!currentDocumentId) return;
 
       try {
-        const response = await fetch(`../backend/delete_document.php?id=${currentDocumentId}`, {
+        // Use different endpoints based on record type
+        const endpoint = currentRecordType === 'proposal' 
+          ? `../backend/delete_proposal.php?id=${currentDocumentId}` 
+          : `../backend/delete_document.php?id=${currentDocumentId}`;
+          
+        const response = await fetch(endpoint, {
           method: 'POST'
         });
 
         if (response.ok) {
           closeDeleteModal();
           await loadDocuments();
-          showSuccessMessage('Document deleted successfully!');
+          showSuccessMessage(`${currentRecordType === 'proposal' ? 'Proposal' : 'Document'} deleted successfully!`);
         } else {
-          throw new Error('Failed to delete document');
+          throw new Error(`Failed to delete ${currentRecordType}`);
         }
       } catch (error) {
-        console.error('Error deleting document:', error);
-        showErrorMessage('Failed to delete document. Please try again.');
+        console.error('Error deleting record:', error);
+        showErrorMessage(`Failed to delete ${currentRecordType}. Please try again.`);
       }
     }
 
@@ -802,6 +756,36 @@
       }
 
       showDeleteModal(doc);
+    }
+
+    function viewProposal(proposalId) {
+      // Open proposal details - you might want to create a specific proposal view page
+      // For now, we'll show an alert with proposal details
+      const proposal = allDocuments.find(d => d.id == proposalId && d.record_type === 'proposal');
+      if (proposal) {
+        const details = `
+Proposal Details:
+Title: ${proposal.proposal_title}
+Description: ${proposal.description || 'No description'}
+Faculty ID: ${proposal.faculty_id}
+Status: ${proposal.status}
+Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
+        `;
+        alert(details);
+      } else {
+        showErrorMessage('Proposal not found.');
+      }
+    }
+
+    async function deleteRecord(id, recordType) {
+      // Find the record details to show in the modal
+      const record = allDocuments.find(d => d.id == id && d.record_type === recordType);
+      if (!record) {
+        showErrorMessage(`${recordType === 'proposal' ? 'Proposal' : 'Document'} not found.`);
+        return;
+      }
+
+      showDeleteModal(record);
     }
 
     function showViewDocumentModal(path, docId) {
@@ -947,9 +931,7 @@
         deleteModal.style.display = 'none';
       }
       
-      // Load programs first so program titles are available for search/filtering
-      await fetchPrograms();
-      // Then load documents (so search by program title works immediately)
+      // Load documents
       await loadDocuments();
 
       // Wire up search controls
