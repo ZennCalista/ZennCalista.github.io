@@ -15,7 +15,7 @@ function requireAdminAuth() {
     $token = getTokenFromCookie();
     if ($token) {
         $tokenUser = validateToken($conn, $token);
-        if ($tokenUser && in_array($tokenUser['role'], ['admin', 'faculty'])) {
+        if ($tokenUser && in_array($tokenUser['role'], ['admin', 'faculty', 'super_admin'])) {
             // Token is valid and user has admin/faculty role
             $_SESSION['user_id'] = $tokenUser['id'];
             $_SESSION['role'] = $tokenUser['role'];
@@ -31,7 +31,7 @@ function requireAdminAuth() {
         exit;
     }
 
-    if (!in_array($_SESSION['role'], ['admin', 'faculty'])) {
+    if (!in_array($_SESSION['role'], ['admin', 'faculty', 'super_admin'])) {
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Admin or faculty access required']);
         exit;

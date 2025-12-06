@@ -9,6 +9,9 @@ if (isset($_SESSION['role'])) {
     if ($role === 'admin') {
         header('Location: ../ADMIN/Dashboard.html');
         exit();
+    } elseif ($role === 'super_admin') {
+        header('Location: ../SUPER_ADMIN/Dashboard.html');
+        exit();
     } elseif ($role === 'faculty') {
         header('Location: ../FACULTY/Dashboard.php');
         exit();

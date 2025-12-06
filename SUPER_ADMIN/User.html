@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>eTracker Super Admin Dashboard</title>
+  <link rel="stylesheet" href="User.css" />
+  <link rel="stylesheet" href="admin_notifications.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    .view-only-badge { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-left: 10px; }
+    .sidebar { background: #1B472B; }
+    .btn-primary, .action-buttons button { display: none !important; }
+  </style>
+</head>
+<body>
+
+    
+  <div class="sidebar">
+    <h2>Super Admin</h2>
+    <a href="Dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="Reports.html"><i class="fas fa-chart-bar"></i> Reports & Analytics</a>
+    <a href="User.html"><i class="fas fa-users"></i> User Management</a>
+    <a href="Document.html"><i class="fas fa-folder"></i> Proposal Files</a>
+    <a href="Notifications.html"><i class="fas fa-bell"></i> Notifications</a>
+    <a href="../portal/home/home.html"><i class="fas fa-external-link-alt"></i> Portal</a>
+    
+    <div style="margin-top: auto; padding-top: 20px;">
+  <a href="../register/logout.php" style="color: none; text-decoration: none; display: block; padding: 12px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="user-management">
+        <!-- Header Section with Stats and Search -->
+        <div class="header-section">
+          <div class="page-title">
+            <h1><i class="fas fa-users"></i> User Management</h1>
+            <p>View students and faculty members</p>
+          </div>
+          
+          <!-- Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card students">
+              <div class="stat-icon">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="total-students">0</h3>
+                <p>Total Non-Academic Users</p>
+              </div>
+            </div>
+            <div class="stat-card faculty">
+              <div class="stat-icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="total-faculty">0</h3>
+                <p>Total Faculty Users</p>
+              </div>
+            </div>
+            <div class="stat-card verified">
+              <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="verified-users">0</h3>
+                <p>Verified Users</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-section">
+          <div class="search-container">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="search-users" placeholder="Search users by name, ID, or department...">
+            </div>
+            <div class="filter-controls">
+              <select id="role-filter">
+                <option value="all">All Roles</option>
+                <option value="student">Non-Academic</option>
+                <!-- <option value="non_acad">Non-Acad</option> -->
+                <option value="faculty">Faculty</option>
+              </select>
+              <select id="department-filter">
+                <option value="all">All Departments</option>
+              </select>
+              <select id="status-filter">
+                <option value="all">All Status</option>
+                <option value="verified">Verified</option>
+                <option value="unverified">Unverified</option>
+              </select>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <button class="btn-primary" onclick="openModal('add-user-modal')">
+              <i class="fas fa-user-plus"></i> Add User
+            </button>
+            <button class="btn-secondary" onclick="exportUsers()">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Users Display Section -->
+        <div class="users-display-section">
+          <!-- Tab Navigation -->
+          <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('students')" id="students-tab">
+              <i class="fas fa-user-graduate"></i> Non-Academic
+            </button>
+            <button class="tab-btn" onclick="switchTab('faculty')" id="faculty-tab">
+              <i class="fas fa-chalkboard-teacher"></i> Faculty
+            </button>
+          </div>
+
+          <!-- Students Section -->
+          <div id="students-content" class="tab-content active">
+            <div class="users-grid" id="students-grid">
+              <!-- Students will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Faculty Section -->
+          <div id="faculty-content" class="tab-content">
+            <div class="users-grid" id="faculty-grid">
+              <!-- Faculty will be loaded here -->
+            </div>
+          </div>
+
+          <!-- No Results Message -->
+          <div id="no-results" class="no-results hidden">
+            <i class="fas fa-search"></i>
+            <h3>No users found</h3>
+            <p>Try adjusting your search criteria or filters</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Overlay -->
+<div id="modal-overlay" class="modal-overlay hidden"></div>
+
+<!-- Add Student Modal -->
+<div id="add-student-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Add Student</h2>
+    <span class="close-modal" onclick="closeModal('add-student-modal')">&times;</span>
+  </div>
+  <form class="modal-form" id="add-student-form" onsubmit="return submitStudent(event)">
+    <input type="text" name="firstname" placeholder="First Name" required autocomplete="given-name" />
+    <input type="text" name="lastname" placeholder="Last Name" required autocomplete="family-name" />
+    <input type="text" name="mi" placeholder="Middle Initial" autocomplete="additional-name" />
+    <input type="email" name="email" placeholder="Email" required autocomplete="username" />
+    <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
+    <input type="text" name="department" placeholder="Course/Department" required />
+    <input type="tel" name="phone" placeholder="Phone Number" />
+    <select name="comm_preference">
+      <option value="" disabled selected>Select Communication Preference</option>
+      <option value="email">Email</option>
+      <option value="sms">SMS</option>
+    </select>
+    <button type="submit" class="btn-primary full">Add Student</button>
+  </form>
+</div>
+
+<!-- Add Faculty Modal -->
+<div id="add-faculty-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Add Faculty</h2>
+    <span class="close-modal" onclick="closeModal('add-faculty-modal')">&times;</span>
+  </div>
+  <form class="modal-form" id="add-faculty-form" onsubmit="return submitFaculty(event)">
+    <input type="text" name="fullname" placeholder="Full Name" required />
+    <input type="text" name="faculty_id" placeholder="Faculty ID" required />
+    <input type="text" name="firstname" placeholder="First Name" required />
+    <input type="text" name="lastname" placeholder="Last Name" required />
+    <input type="text" name="mi" placeholder="Middle Initial" />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
+    <select name="department" required>
+      <option value="" disabled selected>Select Department</option>
+      <option>Department of Hospitality Management</option>
+      <option>Department of Language and Mass Communication</option>
+      <option>Department of Physical Education</option>
+      <option>Department of Social Sciences and Humanities</option>
+      <option>Teacher Education Department</option>
+      <option>Department of Administration - ENTREP</option>
+      <option>Department of Administration - BSOA</option>
+      <option>Department of Administration - BM</option>
+      <option>Department of Computer Studies</option>
+      <option>RDE Department</option>
+    </select>
+    <input type="tel" name="phone" placeholder="Phone Number" />
+    <input type="text" name="position" placeholder="Position" />
+    <p><strong>Communication Preference:</strong></p>
+    <select name="comm_preference">
+      <option value="email">Email</option>
+      <option value="sms">SMS</option>
+    </select>
+    <button type="submit" class="btn-primary full">Add Faculty</button>
+  </form>
+</div>
+  
+
+<!-- Add User Modal -->
+<div id="add-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Add User</h2>
+    <span class="close-modal" onclick="closeModal('add-user-modal')">&times;</span>
+  </div>
+  <form class="modal-form" id="add-user-form" onsubmit="return submitAddUser(event)">
+    <select name="role" id="add-role" required onchange="toggleRoleFields()">
+      <option value="" disabled selected>Select Role</option>
+      <option value="student">Non-Academic</option>
+      <!-- <option value="non_acad">Non-Acad</option> -->
+      <option value="faculty">Faculty</option>
+    </select>
+    <div id="common-fields">
+      <input type="text" name="firstname" placeholder="First Name" required autocomplete="given-name" />
+      <input type="text" name="lastname" placeholder="Last Name" required autocomplete="family-name" />
+      <input type="text" name="mi" placeholder="Middle Initial" autocomplete="additional-name" />
+      <input type="email" name="email" placeholder="Email" required autocomplete="username" />
+      <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
+      <input type="text" name="department" placeholder="Course/Department" required />
+      <input type="tel" name="phone" placeholder="Phone Number" />
+      <select name="comm_preference">
+        <option value="" disabled selected>Select Communication Preference</option>
+        <option value="email">Email</option>
+        <option value="sms">SMS</option>
+      </select>
+    </div>
+    <div id="faculty-fields" style="display: none;">
+      <input type="text" name="fullname" placeholder="Full Name" />
+      <input type="text" name="faculty_id" placeholder="Faculty ID" />
+      <input type="text" name="position" placeholder="Position" />
+    </div>
+    <button type="submit" class="btn-primary full">Add User</button>
+  </form>
+</div>
+
+<!-- Edit User Modal -->
+<div id="edit-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Edit User</h2>
+    <span class="close-modal" onclick="closeModal('edit-user-modal')">&times;</span>
+  </div>
+  <form class="modal-form" id="edit-user-form" onsubmit="return submitEditUser(event)">
+    <input type="hidden" name="id" id="edit-id" />
+    <input type="text" name="firstname" id="edit-firstname" placeholder="First Name" required />
+    <input type="text" name="lastname" id="edit-lastname" placeholder="Last Name" required />
+    <input type="text" name="mi" id="edit-mi" placeholder="Middle Initial" />
+    <input type="email" name="email" id="edit-email" placeholder="Email" required />
+    <input type="text" name="department" id="edit-department" placeholder="Department/Course" required />
+    <input type="tel" name="phone" id="edit-phone" placeholder="Phone Number" />
+    <select name="comm_preference" id="edit-comm_preference">
+      <option value="email">Email</option>
+      <option value="sms">SMS</option>
+    </select>
+    <select name="role" id="edit-role" required>
+      <option value="student">Student</option>
+      <option value="non_acad">Non-Acad</option>
+      <option value="faculty">Faculty</option>
+    </select>
+    <button type="submit" class="btn-edit full">Save Changes</button>
+  </form>
+</div>
+
+<!-- View Profile Modal -->
+<div id="view-profile-modal" class="modal hidden">
+    <div class="modal-header">
+      <h2>User Profile</h2>
+      <span class="close-modal" onclick="closeModal('view-profile-modal')">&times;</span>
+    </div>
+    <div class="modal-profile">
+      <p><strong>Full Name:</strong> <span id="profile-name">Loading...</span></p>
+      <p><strong>Role:</strong> <span id="profile-role">-</span></p>
+      <p id="profile-id-row" class="modal-profile-row"><strong id="profile-id-label">ID:</strong> <span id="profile-id">-</span></p>
+      <p><strong>Course/Department:</strong> <span id="profile-dept">-</span></p>
+      <p><strong>Email:</strong> <span id="profile-email">-</span></p>
+      <p><strong>Phone:</strong> <span id="profile-phone">-</span></p>
+      <p><strong>Emergency Contact:</strong> <span id="profile-emergency">-</span></p>
+      <p><strong>Status:</strong> <span id="profile-status">-</span></p>
+    </div>
+  </div>
+
+<!-- Verify User Confirmation Modal -->
+<div id="verify-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Verify User</h2>
+    <span class="close-modal" onclick="closeModal('verify-user-modal')">&times;</span>
+  </div>
+  <div class="modal-body">
+    <div class="confirmation-content">
+      <div class="confirmation-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <p>Are you sure you want to verify this user? This will grant them full access to the system.</p>
+      <div class="user-info-preview">
+        <p><strong>User:</strong> <span id="verify-user-name">-</span></p>
+        <p><strong>Role:</strong> <span id="verify-user-role">-</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-secondary" onclick="closeModal('verify-user-modal')">Cancel</button>
+    <button class="btn-primary" onclick="confirmVerifyUser()">Verify User</button>
+  </div>
+</div>
+
+<!-- Unverify User Confirmation Modal -->
+<div id="unverify-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Unverify User</h2>
+    <span class="close-modal" onclick="closeModal('unverify-user-modal')">&times;</span>
+  </div>
+  <div class="modal-body">
+    <div class="confirmation-content">
+      <div class="confirmation-icon warning">
+        <i class="fas fa-user-times"></i>
+      </div>
+      <p>Are you sure you want to unverify this user? This will restrict their access to the system.</p>
+      <div class="user-info-preview">
+        <p><strong>User:</strong> <span id="unverify-user-name">-</span></p>
+        <p><strong>Role:</strong> <span id="unverify-user-role">-</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-secondary" onclick="closeModal('unverify-user-modal')">Cancel</button>
+    <button class="btn-danger" onclick="confirmUnverifyUser()">Unverify User</button>
+  </div>
+</div>
+
+<!-- Delete User Confirmation Modal -->
+<div id="delete-user-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Delete User</h2>
+    <span class="close-modal" onclick="closeModal('delete-user-modal')">&times;</span>
+  </div>
+  <div class="modal-body">
+    <div class="confirmation-content">
+      <div class="confirmation-icon danger">
+        <i class="fas fa-trash"></i>
+      </div>
+      <p>Are you sure you want to delete this user? This action cannot be undone and will permanently remove all user data.</p>
+      <div class="user-info-preview">
+        <p><strong>User:</strong> <span id="delete-user-name">-</span></p>
+        <p><strong>Role:</strong> <span id="delete-user-role">-</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-secondary" onclick="closeModal('delete-user-modal')">Cancel</button>
+    <button class="btn-danger" onclick="confirmDeleteUser()">Delete User</button>
+  </div>
+</div>
+  
+      
+  
+   
+  </div>
+
+  <script>
+    function openModal(id) {
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      document.getElementById(id).classList.remove('hidden');
+    }
+  
+    function closeModal(id) {
+      document.getElementById('modal-overlay').classList.add('hidden');
+      document.getElementById(id).classList.add('hidden');
+    }
+  
+    function openViewProfile(user) {
+    console.log('Opening view profile for user:', user.id);
+    
+    // Fetch fresh user data to ensure we have complete information
+    fetch('../ADMIN/api_users.php?id=' + user.id)
+      .then(res => {
+        console.log('API response status:', res.status);
+        console.log('API response headers:', res.headers.get('content-type'));
+        
+        if (!res.ok) {
+          throw new Error('HTTP error! status: ' + res.status);
+        }
+        
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return res.json();
+        } else {
+          // If not JSON, get as text and check if it's a redirect
+          return res.text().then(text => {
+            console.log('Non-JSON response:', text.substring(0, 200));
+            throw new Error('Server returned non-JSON response');
+          });
+        }
+      })
+      .then(data => {
+        console.log('API response data:', data);
+        if (data.success && data.data.length > 0) {
+          const freshUser = data.data[0];
+          
+          // Set modal content dynamically
+          document.getElementById("profile-name").textContent = freshUser.firstname + ' ' + freshUser.lastname;
+          document.getElementById("profile-role").textContent = freshUser.role;
+          
+          // Handle ID row based on role
+          const idRow = document.getElementById("profile-id-row");
+          const idLabel = document.getElementById("profile-id-label");
+          const idValue = document.getElementById("profile-id");
+          
+          if (freshUser.role === 'student' || freshUser.role === 'non_acad') {
+            idLabel.textContent = 'Student ID:';
+            idValue.textContent = freshUser.student_id || freshUser.id;
+            idRow.classList.remove('hidden');
+          } else {
+            // Hide ID row for faculty
+            idRow.classList.add('hidden');
+          }
+          
+          document.getElementById("profile-dept").textContent = freshUser.role === 'student' ? (freshUser.course || 'Not specified') : (freshUser.department || 'Not specified');
+          document.getElementById("profile-email").textContent = freshUser.email;
+          document.getElementById("profile-phone").textContent = freshUser.role === 'student' ? (freshUser.contact_no || freshUser.phone || '-') : (freshUser.phone || '-');
+          document.getElementById("profile-emergency").textContent = freshUser.emergency_contact || '-';
+          document.getElementById("profile-status").textContent = freshUser.verification_status || '-';
+
+          openModal('view-profile-modal');
+        } else {
+          console.error('API returned success but no data:', data);
+          alert('Failed to load user data. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+        // Fallback to passed data
+        document.getElementById("profile-name").textContent = user.name || 'Unknown User';
+        document.getElementById("profile-role").textContent = user.role || '-';
+        
+        // Handle ID row based on role
+        const idRow = document.getElementById("profile-id-row");
+        const idLabel = document.getElementById("profile-id-label");
+        const idValue = document.getElementById("profile-id");
+        
+        if (user.role === 'student' || user.role === 'non_acad') {
+          idLabel.textContent = 'Student ID:';
+          idValue.textContent = user.id || '-';
+          idRow.classList.remove('hidden');
+        } else {
+          // Hide ID row for faculty
+          idRow.classList.add('hidden');
+        }
+        
+        document.getElementById("profile-dept").textContent = user.department || 'Not specified';
+        document.getElementById("profile-email").textContent = user.email || '-';
+        document.getElementById("profile-phone").textContent = user.phone || '-';
+        document.getElementById("profile-emergency").textContent = user.emergency_contact || '-';
+        document.getElementById("profile-status").textContent = user.verification || '-';
+
+        openModal('view-profile-modal');
+        alert('Unable to load fresh user data. Showing cached information.');
+      });
+  }
+  
+
+  document.getElementById('modal-overlay').addEventListener('click', function () {
+  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal', 'verify-user-modal', 'unverify-user-modal', 'delete-user-modal'].forEach(id => closeModal(id));
+});
+
+
+// Global variables
+let allUsers = [];
+let currentTab = 'students';
+
+// Fetch and display students
+function loadStudents() {
+  fetch('../ADMIN/api_users.php?role=student')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const studentUsers = data.data.map(user => ({...user, role: 'student'}));
+        allUsers = allUsers.filter(u => u.role !== 'student').concat(studentUsers);
+        displayUsers();
+        updateStats();
+        updateDepartmentFilter();
+      }
+    });
+}
+
+// Fetch and display non_acad users
+function loadNonAcad() {
+  fetch('../ADMIN/api_users.php?role=non_acad')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const nonAcadUsers = data.data.map(user => ({...user, role: 'non_acad'}));
+        allUsers = allUsers.filter(u => u.role !== 'non_acad').concat(nonAcadUsers);
+        displayUsers();
+        updateStats();
+        updateDepartmentFilter();
+      }
+    });
+}
+
+// Fetch and display faculty
+function loadFaculty() {
+  fetch('../ADMIN/api_users.php?role=faculty')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const facultyUsers = data.data.map(user => ({...user, role: 'faculty'}));
+        allUsers = allUsers.filter(u => u.role !== 'faculty').concat(facultyUsers);
+        displayUsers();
+        updateStats();
+        updateDepartmentFilter();
+      }
+    });
+}
+
+// Create user card
+function createUserCard(user) {
+  const isVerified = user.verification_status === 'verified';
+  
+  return `
+    <div class="user-card" data-user-id="${user.id}" data-role="${user.role}">
+      <div class="user-avatar">
+        <img src="https://api.dicebear.com/7.x/initials/svg?seed=${user.firstname} ${user.lastname}" alt="Avatar">
+        <div class="status-indicator ${isVerified ? 'verified' : 'unverified'}"></div>
+      </div>
+      <div class="user-info">
+        <h3>${user.firstname} ${user.lastname}</h3>
+        <p class="user-id">${user.role === 'student' || user.role === 'non_acad' ? 'Student ID: ' + (user.student_id || user.id) : 'Faculty ID: ' + (user.faculty_id || user.id)}</p>
+        <p class="user-department">${user.role === 'student' || user.role === 'non_acad' ? (user.course || 'Not specified') : (user.department || 'Not specified')}</p>
+        <div class="user-contact">
+          <span><i class="fas fa-envelope"></i> ${user.email}</span>
+          ${user.phone ? `<span><i class="fas fa-phone"></i> ${user.phone}</span>` : ''}
+        </div>
+        <div class="verification-badge ${isVerified ? 'verified' : 'unverified'}">
+          <i class="fas ${isVerified ? 'fa-check-circle' : 'fa-clock'}"></i>
+          ${isVerified ? 'Verified' : 'Pending Verification'}
+        </div>
+      </div>
+      <div class="user-actions">
+        <button class="btn-view" onclick='openViewProfile({
+          id: ${user.id},
+          name: "${user.firstname} ${user.lastname}",
+          role: "${user.role}",
+          department: "${user.role === 'student' ? (user.course || 'Not specified') : (user.department || 'Not specified')}",
+          email: "${user.email}",
+          phone: "${user.role === 'student' || user.role === 'non_acad' ? (user.contact_no || user.phone || '-') : (user.phone || '-')}",
+          emergency_contact: "${user.emergency_contact || '-'}",
+          verification: "${user.verification_status}"
+        })' title="View Details">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button class="btn-edit" onclick="editUser(${user.id})" title="Edit User">
+          <i class="fas fa-edit"></i>
+        </button>
+        ${isVerified ? 
+          `<button class="btn-unverify" onclick="showUnverifyModal(${user.id}, '${user.firstname} ${user.lastname}', '${user.role}')" title="Unverify User">
+            <i class="fas fa-user-times"></i>
+          </button>` :
+          `<button class="btn-verify" onclick="showVerifyModal(${user.id}, '${user.firstname} ${user.lastname}', '${user.role}')" title="Verify User">
+            <i class="fas fa-user-check"></i>
+          </button>`
+        }
+        <button class="btn-delete" onclick="deleteUser(${user.id})" title="Delete User">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Display users based on current filters
+function displayUsers() {
+  console.log('displayUsers called');
+  console.log('allUsers length:', allUsers.length);
+  console.log('allUsers:', allUsers);
+
+  // Don't display if data hasn't loaded yet
+  if (allUsers.length === 0) return;
+
+  const searchTerm = document.getElementById('search-users').value.toLowerCase();
+  const roleFilter = document.getElementById('role-filter').value;
+  const departmentFilter = document.getElementById('department-filter').value;
+  const statusFilter = document.getElementById('status-filter').value;
+
+  console.log('Filters:', { searchTerm, roleFilter, departmentFilter, statusFilter });
+
+  let filteredUsers = allUsers.filter(user => {
+    const userDept = user.role === 'student' ? (user.course || '') : (user.department || '');
+    const matchesSearch = searchTerm === '' ||
+                         user.firstname.toLowerCase().includes(searchTerm) ||
+                         user.lastname.toLowerCase().includes(searchTerm) ||
+                         user.email.toLowerCase().includes(searchTerm) ||
+                         userDept.toLowerCase().includes(searchTerm) ||
+                         (user.id && user.id.toString().includes(searchTerm)) ||
+                         (user.student_id && user.student_id.toString().includes(searchTerm)) ||
+                         (user.faculty_id && user.faculty_id.toString().includes(searchTerm));
+
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesDepartment = departmentFilter === 'all' || userDept === departmentFilter;
+    const matchesStatus = statusFilter === 'all' || user.verification_status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesDepartment && matchesStatus;
+  });
+
+  console.log('Filtered users count:', filteredUsers.length);
+
+  // Apply tab-specific filtering
+  if (currentTab === 'students') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'student');
+  } else if (currentTab === 'non_acad') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'non_acad');
+  } else if (currentTab === 'faculty') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'faculty');
+  }
+
+  // Separate students, non_acad, and faculty for display
+  const students = filteredUsers.filter(user => user.role === 'student');
+  const nonAcad = filteredUsers.filter(user => user.role === 'non_acad');
+  const faculty = filteredUsers.filter(user => user.role === 'faculty');
+
+  // Display students
+  const studentsGrid = document.getElementById('students-grid');
+  studentsGrid.innerHTML = students.length > 0 ?
+    students.map(user => createUserCard(user)).join('') :
+    '<div class="empty-state"><i class="fas fa-user-graduate"></i><p>No students found</p></div>';
+
+  // Display faculty
+  const facultyGrid = document.getElementById('faculty-grid');
+  facultyGrid.innerHTML = faculty.length > 0 ?
+    faculty.map(user => createUserCard(user)).join('') :
+    '<div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No faculty found</p></div>';
+
+  console.log('DOM updated - students shown:', students.length, 'faculty shown:', faculty.length);
+
+  // Show/hide no results message
+  const currentTabUsers = currentTab === 'students' ? students : faculty;
+  const hasResults = currentTabUsers.length > 0;
+  document.getElementById('no-results').classList.toggle('hidden', hasResults);
+
+  console.log('displayUsers completed');
+}// Update statistics
+function updateStats() {
+  const students = allUsers.filter(user => user.role === 'student');
+  const nonAcad = allUsers.filter(user => user.role === 'non_acad');
+  const faculty = allUsers.filter(user => user.role === 'faculty');
+  const verifiedUsers = allUsers.filter(user => user.verification_status === 'verified');
+  
+  document.getElementById('total-students').textContent = students.length;
+  document.getElementById('total-faculty').textContent = faculty.length;
+  document.getElementById('verified-users').textContent = verifiedUsers.length;
+}
+
+// Switch between tabs
+function switchTab(tab) {
+  currentTab = tab;
+  
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(tab + '-tab').classList.add('active');
+  
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.getElementById(tab + '-content').classList.add('active');
+  
+  // Re-display users for the current tab
+  displayUsers();
+}
+
+// Export users function
+function exportUsers() {
+  // Show loading indicator
+  showToast('Generating PDF...', 'info');
+  
+  // Get current filters to export only visible users
+  const searchTerm = document.getElementById('search-users').value.toLowerCase();
+  const roleFilter = document.getElementById('role-filter').value;
+  const departmentFilter = document.getElementById('department-filter').value;
+  const statusFilter = document.getElementById('status-filter').value;
+  
+  // Send request to PHP script to generate PDF
+  const params = new URLSearchParams({
+    search: searchTerm,
+    role: roleFilter,
+    department: departmentFilter,
+    status: statusFilter
+  });
+  
+  // Open PDF in new window for download
+  window.open('export_users_pdf.php?' + params.toString(), '_blank');
+}
+
+// Initialize search and filter functionality
+function initializeFilters() {
+  console.log('Initializing filters...');
+
+  // Search functionality
+  const searchInput = document.getElementById('search-users');
+  const roleFilter = document.getElementById('role-filter');
+  const departmentFilter = document.getElementById('department-filter');
+  const statusFilter = document.getElementById('status-filter');
+
+  console.log('Search input found:', !!searchInput);
+
+  // Add event listeners
+  searchInput.addEventListener('input', function() {
+    console.log('Search input event fired, value:', this.value);
+    console.log('allUsers at event time:', allUsers.length);
+    displayUsers();
+  });
+  roleFilter.addEventListener('change', function() {
+    console.log('Role filter changed:', this.value);
+    displayUsers();
+  });
+  departmentFilter.addEventListener('change', function() {
+    console.log('Department filter changed:', this.value);
+    displayUsers();
+  });
+  statusFilter.addEventListener('change', function() {
+    console.log('Status filter changed:', this.value);
+    displayUsers();
+  });
+
+  console.log('Event listeners attached');
+
+  // Test if event listener is working
+  setTimeout(() => {
+    console.log('Testing event listener...');
+    searchInput.dispatchEvent(new Event('input'));
+  }, 1000);
+
+  // Populate department filter
+  updateDepartmentFilter();
+}
+
+// Update department filter options
+function updateDepartmentFilter() {
+  fetch('../ADMIN/api_users.php?action=get_departments')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const departmentFilter = document.getElementById('department-filter');
+
+        // Clear existing options except "All Departments"
+        departmentFilter.innerHTML = '<option value="all">All Departments</option>';
+
+        // Add department options
+        data.data.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept;
+          option.textContent = dept;
+          departmentFilter.appendChild(option);
+        });
+
+        console.log('Department filter updated with departments:', data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error loading departments:', error);
+      // Fallback to hardcoded list if API fails
+      const departments = [
+        'Department of Hospitality Management',
+        'Department of Language and Mass Communication',
+        'Department of Physical Education',
+        'Department of Social Sciences and Humanities',
+        'Teacher Education Department',
+        'Department of Administration - ENTREP',
+        'Department of Administration - BSOA',
+        'Department of Administration - BM',
+        'Department of Computer Studies',
+        'RDE Department'
+      ];
+
+      const departmentFilter = document.getElementById('department-filter');
+      departmentFilter.innerHTML = '<option value="all">All Departments</option>';
+      departments.sort().forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        departmentFilter.appendChild(option);
+      });
+    });
+}
+
+// Call on page load
+window.onload = function() {
+  console.log('Page loaded, initializing...');
+  initializeFilters(); // Initialize filters first
+  loadStudents();
+  loadNonAcad();
+  loadFaculty();
+};
+
+// Add Student
+function submitStudent(e) {
+  e.preventDefault();
+  const form = document.getElementById('add-student-form');
+  const data = new FormData(form);
+  data.append('role', 'student');
+  data.append('action', 'add_user');
+  fetch('../ADMIN/api_users.php', { method: 'POST', body: data })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        closeModal('add-student-modal');
+        loadStudents();
+        form.reset();
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  return false;
+}
+
+// Add Faculty
+function submitFaculty(e) {
+  e.preventDefault();
+  const form = document.getElementById('add-faculty-form');
+  const data = new FormData(form);
+  data.append('role', 'faculty');
+  data.append('action', 'add_user');
+  fetch('../ADMIN/api_users.php', { method: 'POST', body: data })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        closeModal('add-faculty-modal');
+        loadFaculty();
+        form.reset();
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  return false;
+}
+
+// Add User (General)
+function submitAddUser(e) {
+  e.preventDefault();
+  const form = document.getElementById('add-user-form');
+  const data = new FormData(form);
+  data.append('action', 'add_user');
+  fetch('../ADMIN/api_users.php', { method: 'POST', body: data })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        closeModal('add-user-modal');
+        // Reload all user types to ensure data is fresh
+        loadStudents();
+        loadNonAcad();
+        loadFaculty();
+        form.reset();
+        // Reset field visibility
+        document.getElementById('faculty-fields').style.display = 'none';
+        document.getElementById('common-fields').style.display = 'block';
+      } else {
+        alert('Failed to add user: ' + (res.message || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while adding the user.');
+    });
+  return false;
+}
+
+// Toggle role-specific fields
+function toggleRoleFields() {
+  const role = document.getElementById('add-role').value;
+  const facultyFields = document.getElementById('faculty-fields');
+  const commonFields = document.getElementById('common-fields');
+  
+  if (role === 'faculty') {
+    facultyFields.style.display = 'block';
+    // Make faculty-specific fields required
+    document.querySelector('input[name="fullname"]').required = true;
+    document.querySelector('input[name="faculty_id"]').required = true;
+  } else {
+    facultyFields.style.display = 'none';
+    // Remove required from faculty-specific fields
+    document.querySelector('input[name="fullname"]').required = false;
+    document.querySelector('input[name="faculty_id"]').required = false;
+  }
+  
+  commonFields.style.display = 'block';
+}
+
+function editUser(id) {
+  // Fetch user data
+  fetch('../ADMIN/api_users.php?id=' + id)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        const user = data.data[0];
+        document.getElementById('edit-id').value = user.id;
+        document.getElementById('edit-firstname').value = user.firstname;
+        document.getElementById('edit-lastname').value = user.lastname;
+        document.getElementById('edit-mi').value = user.mi || '';
+        document.getElementById('edit-email').value = user.email;
+        document.getElementById('edit-department').value = user.department;
+        document.getElementById('edit-phone').value = user.phone || '';
+        document.getElementById('edit-comm_preference').value = user.comm_preference;
+        document.getElementById('edit-role').value = user.role;
+
+        openModal('edit-user-modal');
+      }
+    });
+}
+
+function deleteUser(id) {
+  // Fetch user data first to show in modal
+  fetch('../ADMIN/api_users.php?id=' + id)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        const user = data.data[0];
+        showDeleteModal(id, user.firstname + ' ' + user.lastname, user.role);
+      }
+    });
+}
+
+function submitEditUser(e) {
+  e.preventDefault();
+  const form = document.getElementById('edit-user-form');
+  const data = new FormData(form);
+  data.append('action', 'update_user');
+  fetch('../ADMIN/api_users.php', { method: 'POST', body: data })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        closeModal('edit-user-modal');
+        loadStudents();
+        loadNonAcad();
+        loadFaculty();
+      } else {
+        alert('Failed to update user.');
+      }
+    });
+  return false;
+}
+
+// Show verify user confirmation modal
+function showVerifyModal(userId, userName, userRole) {
+  document.getElementById('verify-user-name').textContent = userName;
+  document.getElementById('verify-user-role').textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  window.pendingVerifyUserId = userId;
+  openModal('verify-user-modal');
+}
+
+// Show unverify user confirmation modal
+function showUnverifyModal(userId, userName, userRole) {
+  document.getElementById('unverify-user-name').textContent = userName;
+  document.getElementById('unverify-user-role').textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  window.pendingUnverifyUserId = userId;
+  openModal('unverify-user-modal');
+}
+
+// Confirm verify user action
+function confirmVerifyUser() {
+  const userId = window.pendingVerifyUserId;
+  if (!userId) return;
+
+  fetch('../ADMIN/api_users.php', {
+    method: 'POST',
+    body: new URLSearchParams({
+      action: 'verify_user',
+      id: userId
+    })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      closeModal('verify-user-modal');
+      loadStudents();
+      loadNonAcad();
+      loadFaculty();
+      showToast('User verified successfully!', 'success');
+    } else {
+      showToast('Failed to verify user: ' + (res.message || 'Unknown error'), 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('An error occurred while verifying the user.', 'error');
+  });
+}
+
+// Confirm unverify user action
+function confirmUnverifyUser() {
+  const userId = window.pendingUnverifyUserId;
+  if (!userId) return;
+
+  fetch('../ADMIN/api_users.php', {
+    method: 'POST',
+    body: new URLSearchParams({
+      action: 'unverify_user',
+      id: userId
+    })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      closeModal('unverify-user-modal');
+      loadStudents();
+      loadNonAcad();
+      loadFaculty();
+      showToast('User unverified successfully!', 'success');
+    } else {
+      showToast('Failed to unverify user: ' + (res.message || 'Unknown error'), 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('An error occurred while unverifying the user.', 'error');
+  });
+}
+
+// Show delete user confirmation modal
+function showDeleteModal(userId, userName, userRole) {
+  document.getElementById('delete-user-name').textContent = userName;
+  document.getElementById('delete-user-role').textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  window.pendingDeleteUserId = userId;
+  openModal('delete-user-modal');
+}
+
+// Confirm delete user action
+function confirmDeleteUser() {
+  const userId = window.pendingDeleteUserId;
+  if (!userId) return;
+
+  fetch('../ADMIN/api_users.php', {
+    method: 'POST',
+    body: new URLSearchParams({
+      action: 'delete_user',
+      id: userId
+    })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      closeModal('delete-user-modal');
+      loadStudents();
+      loadNonAcad();
+      loadFaculty();
+      showToast('User deleted successfully!', 'success');
+    } else {
+      showToast('Failed to delete user: ' + (res.message || 'Unknown error'), 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('An error occurred while deleting the user.', 'error');
+  });
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  setTimeout(() => toast.classList.add('show'), 10);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Legacy functions (now use modals)
+function verifyUser(id) {
+  // Fetch user data first to show in modal
+  fetch('../ADMIN/api_users.php?id=' + id)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        const user = data.data[0];
+        showVerifyModal(id, user.firstname + ' ' + user.lastname, user.role);
+      }
+    });
+}
+
+function unverifyUser(id) {
+  // Fetch user data first to show in modal
+  fetch('../ADMIN/api_users.php?id=' + id)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        const user = data.data[0];
+        showUnverifyModal(id, user.firstname + ' ' + user.lastname, user.role);
+      }
+    });
+}
+
+// Load initial data
+// loadStudents(); // Removed duplicate calls
+// loadFaculty();
+  </script>
+
+<script src="admin_notifications.js"></script>
+<script>
+  // Initialize admin notifications when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    initAdminNotifications();
+  });
+</script>
+  
+</body>
+</html>
