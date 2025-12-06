@@ -93,13 +93,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Redirect based on role
-    error_log("Login redirect: user_id={$user['id']}, role={$user['role']}, redirect_url=" . (($user['role'] === 'student' || $user['role'] === 'non_acad') ? '../STUDENT/index.php' : '../portal/home/home.html'));
     if ($user['role'] === 'student' || $user['role'] === 'non_acad') {
         $redirect_url = '../STUDENT/index.php';
+    } elseif ($user['role'] === 'super_admin') {
+        $redirect_url = '../SUPER_ADMIN/Dashboard.html';
+    } elseif ($user['role'] === 'admin') {
+        $redirect_url = '../ADMIN/Dashboard.html';
     } else {
-        // Faculty and admin go to portal home page
+        // Faculty goes to portal home page
         $redirect_url = '../portal/home/home.html';
     }
+    error_log("Login redirect: user_id={$user['id']}, role={$user['role']}, redirect_url={$redirect_url}");
     echo json_encode(['status' => 'success', 'redirect_url' => $redirect_url]);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
