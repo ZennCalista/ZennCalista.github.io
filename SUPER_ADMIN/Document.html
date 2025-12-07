@@ -181,6 +181,68 @@
         font-size: 13px;
       }
     }
+    /* Pagination Styles */
+    .pagination-section {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+    }
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid #e8ecec;
+      background: #fff;
+      color: #114d2e;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      min-width: 40px;
+      text-align: center;
+    }
+    .page-btn:hover:not(.disabled):not(.active) {
+      background: #f0f9f4;
+      border-color: #d1e9df;
+    }
+    .page-btn.active {
+      background: #114d2e;
+      color: white;
+      border-color: #114d2e;
+    }
+    .page-btn.disabled {
+      background: #f5f5f5;
+      color: #ccc;
+      cursor: not-allowed;
+      border-color: #e8ecec;
+    }
+    .pagination-dots {
+      padding: 8px 4px;
+      color: #666;
+      font-size: 14px;
+    }
+    .pagination-info {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    /* Responsive pagination */
+    @media (max-width: 768px) {
+      .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .page-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+        min-width: 35px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -232,7 +294,7 @@
           <select id="statusFilter" name="statusFilter">
             <option value="">-- All Status --</option>
             <option value="pending">⏳ Pending</option>
-            <option value="approved">✅ Approved</option>
+            <option value="approved">✅ Endorsed</option>
             <option value="rejected">❌ Rejected</option>
           </select>
         </div>
@@ -273,7 +335,7 @@
         <h2><i class="fas fa-file-alt"></i> Submitted Documents</h2>
         <div class="document-stats">
           <span class="stat-item pending">Pending: <span id="pendingCount">0</span></span>
-          <span class="stat-item approved">Approved: <span id="approvedCount">0</span></span>
+          <span class="stat-item approved">Endorsed: <span id="approvedCount">0</span></span>
           <span class="stat-item rejected">Rejected: <span id="rejectedCount">0</span></span>
         </div>
       </div>
@@ -300,6 +362,11 @@
         </table>
       </div>
     </section>
+    
+    <!-- Pagination Section -->
+    <section class="pagination-section">
+      <div id="paginationContainer"></div>
+    </section>
   </div>
 
   <!-- Review Modal -->
@@ -322,7 +389,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-success" onclick="reviewDocument('approved')">
-          <i class="fas fa-check"></i> Approve
+          <i class="fas fa-check"></i> Endorse
         </button>
         <button class="btn btn-danger" onclick="reviewDocument('rejected')">
           <i class="fas fa-times"></i> Reject
@@ -388,8 +455,13 @@
 
   <script>
     let allDocuments = [];
+    let filteredDocuments = [];
     let currentDocumentId = null;
     let currentRecordType = 'document';
+    
+    // Pagination variables
+    let currentPage = 1;
+    const itemsPerPage = 10;
 
     // Simple debounce utility for live search
     function debounce(fn, wait) {
@@ -448,7 +520,7 @@
       }
     }
 
-    function renderDocumentsTable(docs) {
+    function renderDocumentsTable(docs, page = 1) {
       const tbody = document.getElementById('documentsTableBody');
       tbody.innerHTML = '';
       
@@ -461,10 +533,18 @@
             </td>
           </tr>
         `;
+        renderPagination(0);
         return;
       }
       
-      docs.forEach(doc => {
+      // Calculate pagination
+      const totalItems = docs.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageItems = docs.slice(startIndex, endIndex);
+      
+      pageItems.forEach(doc => {
         const row = document.createElement('tr');
         row.className = `status-${doc.status}`;
         
@@ -518,12 +598,75 @@
       });
       
       updateStats(docs);
+      renderPagination(totalItems, page, totalPages);
+    }
+
+    function renderPagination(totalItems, currentPage, totalPages) {
+      const paginationContainer = document.getElementById('paginationContainer');
+      if (!paginationContainer) return;
+      
+      if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+      }
+      
+      let paginationHTML = '<div class="pagination">';
+      
+      // Previous button
+      if (currentPage > 1) {
+        paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i> Previous</button>`;
+      } else {
+        paginationHTML += `<button class="page-btn disabled"><i class="fas fa-chevron-left"></i> Previous</button>`;
+      }
+      
+      // Page numbers
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, currentPage + 2);
+      
+      if (startPage > 1) {
+        paginationHTML += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+        if (startPage > 2) {
+          paginationHTML += '<span class="pagination-dots">...</span>';
+        }
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        if (i === currentPage) {
+          paginationHTML += `<button class="page-btn active">${i}</button>`;
+        } else {
+          paginationHTML += `<button class="page-btn" onclick="changePage(${i})">${i}</button>`;
+        }
+      }
+      
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          paginationHTML += '<span class="pagination-dots">...</span>';
+        }
+        paginationHTML += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+      }
+      
+      // Next button
+      if (currentPage < totalPages) {
+        paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Next <i class="fas fa-chevron-right"></i></button>`;
+      } else {
+        paginationHTML += `<button class="page-btn disabled">Next <i class="fas fa-chevron-right"></i></button>`;
+      }
+      
+      paginationHTML += '</div>';
+      paginationHTML += `<div class="pagination-info">Showing ${Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} documents</div>`;
+      
+      paginationContainer.innerHTML = paginationHTML;
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      renderDocumentsTable(filteredDocuments, currentPage);
     }
 
     function getStatusBadge(status) {
       const badges = {
         'pending': '<span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>',
-        'approved': '<span class="badge badge-success"><i class="fas fa-check"></i> Approved</span>',
+        'approved': '<span class="badge badge-success"><i class="fas fa-check"></i> Endorsed</span>',
         'rejected': '<span class="badge badge-danger"><i class="fas fa-times"></i> Rejected</span>'
       };
       return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
@@ -561,7 +704,7 @@
       const searchInputEl = document.getElementById('searchInput');
       const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim().toLowerCase() : '';
       
-      let filteredDocs = allDocuments.filter(doc => {
+      filteredDocuments = allDocuments.filter(doc => {
         if (typeFilter && doc.document_type !== typeFilter) return false;
         if (statusFilter && doc.status !== statusFilter) return false;
         if (dateFilter) {
@@ -587,14 +730,17 @@
         return true;
       });
       
-      renderDocumentsTable(filteredDocs);
+      currentPage = 1; // Reset to first page when filtering
+      renderDocumentsTable(filteredDocuments, currentPage);
     }
 
     function clearFilters() {
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
-      renderDocumentsTable(allDocuments);
+      filteredDocuments = [...allDocuments];
+      currentPage = 1;
+      renderDocumentsTable(filteredDocuments, currentPage);
     }
 
     function showReviewModal(id, filename, type, facultyId, recordType) {
@@ -670,7 +816,8 @@
         if (response.ok && result.success) {
           closeReviewModal();
           await loadDocuments();
-          showSuccessMessage(`${currentRecordType === 'proposal' ? 'Proposal' : 'Document'} ${status} successfully!`);
+          const displayStatus = status === 'approved' ? 'endorsed' : status;
+          showSuccessMessage(`${currentRecordType === 'proposal' ? 'Proposal' : 'Document'} ${displayStatus} successfully!`);
         } else {
           throw new Error(result.error || `Failed to update ${currentRecordType} status`);
         }
@@ -903,7 +1050,9 @@ Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
 
     async function loadDocuments() {
       const docs = await fetchDocuments();
-      renderDocumentsTable(docs);
+      filteredDocuments = [...docs];
+      currentPage = 1;
+      renderDocumentsTable(filteredDocuments, currentPage);
     }
 
     // Initial load
