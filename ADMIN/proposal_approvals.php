@@ -89,13 +89,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $update_stmt->close();
             
             // Redirect to prevent form resubmission
-            header('Location: proposal_approvals.php');
+            header('Location: ' . $_SERVER['REQUEST_URI']);
             exit();
             
         } catch (Exception $e) {
             error_log("Error in proposal approval: " . $e->getMessage());
             $_SESSION['error_message'] = "Failed to update proposal status. Please try again.";
-            header('Location: proposal_approvals.php');
+            header('Location: ' . $_SERVER['REQUEST_URI']);
             exit();
         }
     }
