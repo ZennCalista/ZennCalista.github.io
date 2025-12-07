@@ -21,6 +21,16 @@ if ($user_role !== 'admin') {
     die('Access denied. Admin privileges required.');
 }
 
+// Function to map backend status to display status
+function getDisplayStatus($status) {
+    $statusMap = [
+        'approved' => 'endorsed',
+        'pending' => 'pending',
+        'rejected' => 'rejected'
+    ];
+    return isset($statusMap[$status]) ? $statusMap[$status] : $status;
+}
+
 // Handle approval/rejection actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $proposal_id = $_POST['proposal_id'];
@@ -53,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $faculty_query->close();
                         
                         $faculty_name = $faculty_firstname . ' ' . $faculty_lastname;
-                        $message = "Your proposal has been " . ($status === 'approved' ? 'approved' : 'rejected') . " by admin.";
+                        $message = "Your proposal has been " . ($status === 'approved' ? 'endorsed' : 'rejected') . " by admin.";
                         if (!empty($review_notes)) {
                             $message .= " Notes: " . $review_notes;
                         }
@@ -72,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     }
                 }
 
-                $_SESSION['success_message'] = "Proposal " . ($status === 'approved' ? 'approved' : 'rejected') . " successfully!";
+                $_SESSION['success_message'] = "Proposal " . ($status === 'approved' ? 'endorsed' : 'rejected') . " successfully!";
             } else {
                 throw new Exception("Failed to execute update: " . $update_stmt->error);
             }
@@ -131,7 +141,7 @@ if ($proposals_result) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proposal Approvals - Admin</title>
+    <title>Proposal Endorsement - Admin</title>
     <link rel="stylesheet" href="Document.css">
     <link rel="stylesheet" href="admin_notifications.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -533,7 +543,7 @@ if ($proposals_result) {
         <a href="User.html"><i class="fas fa-users"></i> User Management</a>
         <a href="Programs.html"><i class="fas fa-calendar-alt"></i> Project Management</a>
         <!-- <a href="ProjectEvaluation.html"><i class="fas fa-clipboard-check"></i> Project Evaluation</a> -->
-        <a href="proposal_approvals.php" class="active"><i class="fas fa-check-circle"></i> Proposal Approvals</a>
+        <a href="proposal_approvals.php" class="active"><i class="fas fa-check-circle"></i> Proposal Endorsement</a>
         <a href="Attendance.html"><i class="fas fa-check-square"></i> Attendance Tracker</a>
         <a href="Evaluation.html"><i class="fas fa-poll"></i> Evaluation & Feedback</a>
         <a href="Document.html"><i class="fas fa-folder"></i> Document Management</a>
@@ -548,7 +558,7 @@ if ($proposals_result) {
     </div>
 
     <div class="main">
-        <h1><i class="fas fa-check-circle"></i> Proposal Approvals</h1>
+        <h1><i class="fas fa-check-circle"></i> Proposal Endorsement</h1>
 
         <?php if (isset($success_message)): ?>
             <div class="success-message">
@@ -576,7 +586,7 @@ if ($proposals_result) {
             </div>
             <div class="stat-card">
                 <div class="stat-number approved"><?php echo $stats['approved']; ?></div>
-                <div class="stat-label">Approved</div>
+                <div class="stat-label">Endorsed</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number rejected"><?php echo $stats['rejected']; ?></div>
@@ -595,7 +605,7 @@ if ($proposals_result) {
                 <select id="statusFilter" onchange="filterProposals()">
                     <option value="">All Status</option>
                     <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
+                    <option value="approved">Endorsed</option>
                     <option value="rejected">Rejected</option>
                 </select>
                 <select id="departmentFilter" onchange="filterProposals()">
@@ -662,7 +672,7 @@ if ($proposals_result) {
                         <!-- Status -->
                         <td>
                             <span class="status-badge status-<?php echo $proposal['status']; ?>">
-                                <?php echo ucfirst($proposal['status']); ?>
+                                <?php echo ucfirst(getDisplayStatus($proposal['status'])); ?>
                             </span>
                             <?php if ($proposal['reviewed_at']): ?>
                                 <div class="date-info">
@@ -690,7 +700,7 @@ if ($proposals_result) {
                                         <input type="hidden" name="action" value="approve">
                                         <textarea name="review_notes" class="review-notes" placeholder="Optional notes..." id="approveNotes<?php echo $proposal['id']; ?>"></textarea>
                                         <button type="button" class="btn-approve" onclick="showConfirmModal('approve', <?php echo $proposal['id']; ?>)">
-                                            <i class="fas fa-check"></i> Approve
+                                            <i class="fas fa-check"></i> Endorse
                                         </button>
                                     </form>
 
@@ -839,6 +849,16 @@ if ($proposals_result) {
         let rowsPerPage = 5;
         let allRows = [];
         let filteredRows = [];
+
+        // Status display mapping function
+        function getDisplayStatus(status) {
+            const statusMap = {
+                'approved': 'endorsed',
+                'pending': 'pending',
+                'rejected': 'rejected'
+            };
+            return statusMap[status] || status;
+        }
 
         // Initialize pagination on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1093,12 +1113,12 @@ if ($proposals_result) {
             pendingProposalId = proposalId;
 
             if (action === 'approve') {
-                title.textContent = 'Approve Proposal';
-                message.textContent = 'Are you sure you want to approve this proposal?';
+                title.textContent = 'Endorse Proposal';
+                message.textContent = 'Are you sure you want to endorse this proposal?';
                 icon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 icon.style.color = '#28a745';
                 button.style.background = '#28a745';
-                button.innerHTML = '<i class="fas fa-check"></i> Approve';
+                button.innerHTML = '<i class="fas fa-check"></i> Endorse';
             } else if (action === 'reject') {
                 const notes = document.getElementById('rejectNotes' + proposalId).value.trim();
                 if (!notes) {
