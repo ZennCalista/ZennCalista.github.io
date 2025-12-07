@@ -461,7 +461,11 @@
     
     // Pagination variables
     let currentPage = 1;
-    const itemsPerPage = 10;
+    let itemsPerPage = 25; // Increased for better performance with server-side pagination
+    let totalDocuments = 0;
+    let totalPages = 0;
+    let currentDocuments = [];
+    let currentFilters = {};
 
     // Simple debounce utility for live search
     function debounce(fn, wait) {
@@ -472,17 +476,54 @@
       };
     }
 
-    async function fetchDocuments() {
+    async function fetchDocumentById(id, recordType) {
       try {
-        console.log('Fetching documents...');
+        const params = new URLSearchParams({
+          id: id,
+          record_type: recordType
+        });
         
         const possiblePaths = [
-          '../backend/get_documents.php',
-          'get_documents.php',
-          '/backend/get_documents.php'
+          `../backend/get_document.php?${params}`,
+          `get_document.php?${params}`,
+          `/backend/get_document.php?${params}`
         ];
         
-        let docs = null;
+        for (let path of possiblePaths) {
+          try {
+            const res = await fetch(path);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
+            const responseData = await res.json();
+            if (responseData.success && responseData.data) {
+              return responseData.data;
+            }
+          } catch (error) {
+            continue;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching document:', error);
+        return null;
+      }
+    }
+      try {
+        console.log('Fetching documents...', { page, filters });
+        
+        const params = new URLSearchParams({
+          page: page,
+          limit: itemsPerPage,
+          ...filters
+        });
+        
+        const possiblePaths = [
+          `../backend/get_documents.php?${params}`,
+          `get_documents.php?${params}`,
+          `/backend/get_documents.php?${params}`
+        ];
+        
+        let responseData = null;
         let lastError = null;
         
         for (let path of possiblePaths) {
@@ -490,37 +531,68 @@
             const res = await fetch(path);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             
-            const responseText = await res.text();
-            const responseData = JSON.parse(responseText);
-            
-            // Handle new response format with success/data structure
-            if (responseData.success && responseData.data) {
-              docs = responseData.data;
-            } else {
-              // Fallback for old format (direct array)
-              docs = Array.isArray(responseData) ? responseData : [];
+            responseData = await res.json();
+            if (responseData.success) {
+              break;
             }
-            break;
           } catch (error) {
             lastError = error;
             continue;
           }
         }
         
-        if (docs === null) {
+        if (!responseData || !responseData.success) {
           throw lastError || new Error('Failed to fetch documents');
         }
         
-        allDocuments = docs;
-        return docs;
+        // Store the current page data
+        currentDocuments = responseData.data;
+        totalDocuments = responseData.total;
+        totalPages = responseData.totalPages;
+        currentPage = responseData.page;
+        
+        return responseData;
       } catch (error) {
         console.error('Error fetching documents:', error);
         showErrorMessage('Failed to load documents. Please check your connection and try again.');
-        return [];
+        return { data: [], total: 0, totalPages: 0, page: 1 };
       }
     }
 
-    function renderDocumentsTable(docs, page = 1) {
+    async function fetchDocumentById(id, recordType) {
+      try {
+        const params = new URLSearchParams({
+          id: id,
+          record_type: recordType
+        });
+        
+        const possiblePaths = [
+          `../backend/get_document.php?${params}`,
+          `get_document.php?${params}`,
+          `/backend/get_document.php?${params}`
+        ];
+        
+        for (let path of possiblePaths) {
+          try {
+            const res = await fetch(path);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
+            const responseData = await res.json();
+            if (responseData.success && responseData.data) {
+              return responseData.data;
+            }
+          } catch (error) {
+            continue;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching document:', error);
+        return null;
+      }
+    }
+
+    function renderDocumentsTable(docs) {
       const tbody = document.getElementById('documentsTableBody');
       tbody.innerHTML = '';
       
@@ -533,18 +605,11 @@
             </td>
           </tr>
         `;
-        renderPagination(0);
+        renderPagination(totalPages);
         return;
       }
       
-      // Calculate pagination
-      const totalItems = docs.length;
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const pageItems = docs.slice(startIndex, endIndex);
-      
-      pageItems.forEach(doc => {
+      docs.forEach(doc => {
         const row = document.createElement('tr');
         row.className = `status-${doc.status}`;
         
@@ -601,7 +666,7 @@
       renderPagination(totalItems, page, totalPages);
     }
 
-    function renderPagination(totalItems, currentPage, totalPages) {
+    function renderPagination(totalPages) {
       const paginationContainer = document.getElementById('paginationContainer');
       if (!paginationContainer) return;
       
@@ -653,14 +718,14 @@
       }
       
       paginationHTML += '</div>';
-      paginationHTML += `<div class="pagination-info">Showing ${Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} documents</div>`;
+      paginationHTML += `<div class="pagination-info">Showing ${Math.min((currentPage - 1) * itemsPerPage + 1, totalDocuments)} to ${Math.min(currentPage * itemsPerPage, totalDocuments)} of ${totalDocuments} documents</div>`;
       
       paginationContainer.innerHTML = paginationHTML;
     }
 
-    function changePage(page) {
+    async function changePage(page) {
       currentPage = page;
-      renderDocumentsTable(filteredDocuments, currentPage);
+      await loadDocuments(currentPage, currentFilters);
     }
 
     function getStatusBadge(status) {
@@ -697,50 +762,33 @@
       document.getElementById('rejectedCount').textContent = stats.rejected || 0;
     }
 
-    function applyFilters() {
+    async function applyFilters() {
       const typeFilter = document.getElementById('docTypeFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const dateFilter = document.getElementById('dateFilter').value;
       const searchInputEl = document.getElementById('searchInput');
-      const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim().toLowerCase() : '';
+      const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim() : '';
       
-      filteredDocuments = allDocuments.filter(doc => {
-        if (typeFilter && doc.document_type !== typeFilter) return false;
-        if (statusFilter && doc.status !== statusFilter) return false;
-        if (dateFilter) {
-          const docDate = new Date(doc.upload_date).toDateString();
-          const filterDate = new Date(dateFilter).toDateString();
-          if (docDate !== filterDate) return false;
-        }
-        // Apply search term (combine with other filters)
-        if (searchTerm) {
-          const needle = searchTerm;
-          const filename = (doc.original_filename || '').toString().toLowerCase();
-          const path = (doc.file_path || '').toString().toLowerCase();
-          const faculty = (doc.faculty_id || '').toString().toLowerCase();
-          const idStr = (doc.id || '').toString().toLowerCase();
-
-          if (!(
-            filename.includes(needle) ||
-            path.includes(needle) ||
-            faculty.includes(needle) ||
-            idStr.includes(needle)
-          )) return false;
-        }
-        return true;
-      });
+      const filters = {};
+      if (typeFilter) filters.type = typeFilter;
+      if (statusFilter) filters.status = statusFilter;
+      if (dateFilter) filters.date = dateFilter;
+      if (searchTerm) filters.search = searchTerm;
       
+      currentFilters = filters;
       currentPage = 1; // Reset to first page when filtering
-      renderDocumentsTable(filteredDocuments, currentPage);
+      await loadDocuments(currentPage, currentFilters);
     }
 
-    function clearFilters() {
+    async function clearFilters() {
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
-      filteredDocuments = [...allDocuments];
+      const searchInputEl = document.getElementById('searchInput');
+      if (searchInputEl) searchInputEl.value = '';
+      currentFilters = {};
       currentPage = 1;
-      renderDocumentsTable(filteredDocuments, currentPage);
+      await loadDocuments(currentPage, currentFilters);
     }
 
     function showReviewModal(id, filename, type, facultyId, recordType) {
@@ -896,7 +944,7 @@
 
     async function deleteDocument(id) {
       // Find the document details to show in the modal
-      const doc = allDocuments.find(d => d.id == id);
+      const doc = currentDocuments.find(d => d.id == id);
       if (!doc) {
         showErrorMessage('Document not found.');
         return;
@@ -908,7 +956,7 @@
     function viewProposal(proposalId) {
       // Open proposal details - you might want to create a specific proposal view page
       // For now, we'll show an alert with proposal details
-      const proposal = allDocuments.find(d => d.id == proposalId && d.record_type === 'proposal');
+      const proposal = currentDocuments.find(d => d.id == proposalId && d.record_type === 'proposal');
       if (proposal) {
         const details = `
 Proposal Details:
@@ -926,7 +974,7 @@ Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
 
     async function deleteRecord(id, recordType) {
       // Find the record details to show in the modal
-      const record = allDocuments.find(d => d.id == id && d.record_type === recordType);
+      const record = currentDocuments.find(d => d.id == id && d.record_type === recordType);
       if (!record) {
         showErrorMessage(`${recordType === 'proposal' ? 'Proposal' : 'Document'} not found.`);
         return;
@@ -1048,11 +1096,10 @@ Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
       alert(message);
     }
 
-    async function loadDocuments() {
-      const docs = await fetchDocuments();
-      filteredDocuments = [...docs];
-      currentPage = 1;
-      renderDocumentsTable(filteredDocuments, currentPage);
+    async function loadDocuments(page = 1, filters = {}) {
+      const result = await fetchDocuments(page, filters);
+      renderDocumentsTable(result.data);
+      renderPagination(totalPages);
     }
 
     // Initial load
