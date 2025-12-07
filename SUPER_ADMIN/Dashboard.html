@@ -132,7 +132,7 @@ async function loadDashboardStats() {
         labels: ['Present', 'Absent'],
         datasets: [{
           data: [stats.attendanceRate || 0, 100 - (stats.attendanceRate || 0)],
-          backgroundColor: ['#667eea', '#e5e7eb'],
+          backgroundColor: ['#1B472B', '#e5e7eb'],
           borderWidth: 0
         }]
       },
@@ -165,8 +165,16 @@ async function loadDashboardStats() {
     const deptData = stats.programsByDept?.data || [];
     if (deptLabels.length > 0 && deptData.length > 0) {
       const deptColors = [
-        '#667eea', '#764ba2', '#2563EB', '#DC2626', '#EA580C',
-        '#7C3AED', '#059669', '#DB2777', '#D97706', '#4F46E5'
+        '#1B472B', // Dark green
+        '#2563EB', // Blue
+        '#DC2626', // Red
+        '#EA580C', // Orange
+        '#7C3AED', // Purple
+        '#059669', // Emerald
+        '#DB2777', // Pink
+        '#D97706', // Amber
+        '#4F46E5', // Indigo
+        '#0891B2'  // Cyan
       ];
 
       const deptSum = deptData.reduce((sum, count) => sum + count, 0);
