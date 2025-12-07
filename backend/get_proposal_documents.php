@@ -11,7 +11,7 @@ $proposal_id = $_GET['proposal_id'];
 
 $sql = "SELECT id, original_filename, file_path, document_type, upload_date
         FROM document_uploads
-        WHERE proposal_id = ? AND status = 'pending'
+        WHERE proposal_id = ?
         ORDER BY upload_date DESC";
 
 $stmt = $conn->prepare($sql);
