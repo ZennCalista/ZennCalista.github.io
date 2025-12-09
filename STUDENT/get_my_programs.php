@@ -2,7 +2,9 @@
 session_start();
 header('Content-Type: application/json');
 
+// Enable error logging but hide from output
 ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 // Function to return JSON error
@@ -11,13 +13,14 @@ function returnJsonError($message) {
     exit;
 }
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    returnJsonError('Unauthorized: Please log in as a student');
+require_once 'db.php';
+
+if (!$conn) {
+    returnJsonError('Database connection failed');
 }
 
-require_once 'db.php';
-if ($conn->connect_error) {
-    returnJsonError('Database connection failed: ' . $conn->connect_error);
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
+    returnJsonError('Unauthorized: Please log in as a student');
 }
 
 if (!isset($_SESSION['user_id'])) {

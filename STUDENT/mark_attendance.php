@@ -1,7 +1,18 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-require_once 'db_connect.php';
+
+// Enable error logging but hide from output
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+require_once 'db.php';
+
+if (!$conn) {
+    echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
+    exit;
+}
 
 $data = json_decode(file_get_contents('php://input'), true);
 
