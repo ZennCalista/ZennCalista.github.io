@@ -138,58 +138,58 @@ if ($user_id) {
               <label><b>Quality of Content</b></label>
               <div class="eval-radio-group">
                 
-                <label><input type="radio" name="content" value="1" required>1</label>
-                <label><input type="radio" name="content" value="2">2</label>
-                <label><input type="radio" name="content" value="3">3</label>
+                <label><input type="radio" name="content" value="5" required>5</label>
                 <label><input type="radio" name="content" value="4">4</label>
-                <label><input type="radio" name="content" value="5">5</label>
+                <label><input type="radio" name="content" value="3">3</label>
+                <label><input type="radio" name="content" value="2">2</label>
+                <label><input type="radio" name="content" value="1">1</label>
               </div>
             </div>
             <div class="eval-group">
               <label><b>Effectiveness of Facilitators</b></label>
               <div class="eval-radio-group">
-                <label><input type="radio" name="facilitators" value="1" required>1</label>
-                <label><input type="radio" name="facilitators" value="2">2</label>
-                <label><input type="radio" name="facilitators" value="3">3</label>
+                <label><input type="radio" name="facilitators" value="5" required>5</label>
                 <label><input type="radio" name="facilitators" value="4">4</label>
-                <label><input type="radio" name="facilitators" value="5">5</label>
+                <label><input type="radio" name="facilitators" value="3">3</label>
+                <label><input type="radio" name="facilitators" value="2">2</label>
+                <label><input type="radio" name="facilitators" value="1">1</label>
               </div>
             </div>
             <div class="eval-group">
               <label><b>Relevance to Community Service Goals</b></label>
               <div class="eval-radio-group">
-                <label><input type="radio" name="relevance" value="1" required>1</label>
-                <label><input type="radio" name="relevance" value="2">2</label>
-                <label><input type="radio" name="relevance" value="3">3</label>
+                <label><input type="radio" name="relevance" value="5" required>5</label>
                 <label><input type="radio" name="relevance" value="4">4</label>
-                <label><input type="radio" name="relevance" value="5">5</label>
+                <label><input type="radio" name="relevance" value="3">3</label>
+                <label><input type="radio" name="relevance" value="2">2</label>
+                <label><input type="radio" name="relevance" value="1">1</label>
               </div>
             </div>
             <div class="eval-group">
               <label><b>Organization and Schedule</b></label>
               <div class="eval-radio-group">
-                <label><input type="radio" name="organization" value="1" required>1</label>
-                <label><input type="radio" name="organization" value="2">2</label>
-                <label><input type="radio" name="organization" value="3">3</label>
+                <label><input type="radio" name="organization" value="5" required>5</label>
                 <label><input type="radio" name="organization" value="4">4</label>
-                <label><input type="radio" name="organization" value="5">5</label>
+                <label><input type="radio" name="organization" value="3">3</label>
+                <label><input type="radio" name="organization" value="2">2</label>
+                <label><input type="radio" name="organization" value="1">1</label>
               </div>
             </div>
             <div class="eval-group">
               <label><b>Overall Experience</b></label>
               <div class="eval-radio-group">
-                <label><input type="radio" name="experience" value="1" required>1</label>
-                <label><input type="radio" name="experience" value="2">2</label>
-                <label><input type="radio" name="experience" value="3">3</label>
+                <label><input type="radio" name="experience" value="5" required>5</label>
                 <label><input type="radio" name="experience" value="4">4</label>
-                <label><input type="radio" name="experience" value="5">5</label>
+                <label><input type="radio" name="experience" value="3">3</label>
+                <label><input type="radio" name="experience" value="2">2</label>
+                <label><input type="radio" name="experience" value="1">1</label>
               </div>
             </div>
             <div class="eval-group" style="margin-top:18px;">
               <b>ADDITIONAL FEEDBACK</b>
               <div style="margin-top:8px;">
                 <label>Suggestion for the improvement</label>
-                <input type="text" name="suggestion" placeholder="Enter your suggestions for improvement..." style="width:60%;padding:6px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;">
+                <textarea name="suggestion" placeholder="Enter your suggestions for improvement..." rows="4" style="width:100%;padding:10px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;font-family:inherit;font-size:1em;resize:vertical;"></textarea>
               </div>
               <div style="margin-top:12px;">
                 <label>Would you Recommend this Program?</label>
