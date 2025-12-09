@@ -78,9 +78,13 @@ try {
     ";
 
     $countStmt = $conn->prepare($countSql);
-    if (!empty($params)) {
-        $countBindParams = array_merge([$types], $params);
-        call_user_func_array([$countStmt, 'bind_param'], $countBindParams);
+    if (!empty($params) && !empty($types)) {
+        // Build reference array for bind_param
+        $bindParams = [$types];
+        foreach ($params as $key => $value) {
+            $bindParams[] = &$params[$key];
+        }
+        call_user_func_array([$countStmt, 'bind_param'], $bindParams);
     }
     $countStmt->execute();
     $countResult = $countStmt->get_result();
@@ -134,7 +138,16 @@ try {
     ";
 
     $stmt = $conn->prepare($sql);
-    $bindParams = array_merge([$types . 'ii'], $params, [$limit, $offset]);
+    
+    // Build bind params with limit and offset
+    $allParams = array_merge($params, [$limit, $offset]);
+    $allTypes = $types . 'ii';
+    
+    // Build reference array for bind_param
+    $bindParams = [$allTypes];
+    foreach ($allParams as $key => $value) {
+        $bindParams[] = &$allParams[$key];
+    }
     call_user_func_array([$stmt, 'bind_param'], $bindParams);
 
     $stmt->execute();

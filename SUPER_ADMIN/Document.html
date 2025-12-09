@@ -461,7 +461,7 @@
     
     // Pagination variables
     let currentPage = 1;
-    let itemsPerPage = 25; // Increased for better performance with server-side pagination
+    let itemsPerPage = 10; // 10 documents per page
     let totalDocuments = 0;
     let totalPages = 0;
     let currentDocuments = [];
@@ -484,9 +484,8 @@
         });
         
         const possiblePaths = [
-          `../backend/get_document.php?${params}`,
-          `get_document.php?${params}`,
-          `/backend/get_document.php?${params}`
+          `../ADMIN/get_document.php?${params}`,
+          `../backend/get_document.php?${params}`
         ];
         
         for (let path of possiblePaths) {
@@ -508,8 +507,11 @@
         return null;
       }
     }
+
+    async function fetchDocuments(page = 1, filters = {}) {
       try {
-        console.log('Fetching documents...', { page, filters });
+        const CACHE_BUSTER = 'v3_20251209_backend_first';
+        console.log(`[${CACHE_BUSTER}] Fetching documents with BACKEND FIRST...`, { page, filters });
         
         const params = new URLSearchParams({
           page: page,
@@ -517,10 +519,10 @@
           ...filters
         });
         
+        // IMPORTANT: Try backend FIRST (no auth required), then ADMIN as fallback
         const possiblePaths = [
           `../backend/get_documents.php?${params}`,
-          `get_documents.php?${params}`,
-          `/backend/get_documents.php?${params}`
+          `../ADMIN/get_documents.php?${params}`
         ];
         
         let responseData = null;
@@ -528,14 +530,19 @@
         
         for (let path of possiblePaths) {
           try {
+            console.log(`[${CACHE_BUSTER}] Trying path: ${path}`);
             const res = await fetch(path);
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            console.log(`[${CACHE_BUSTER}] Response status for ${path}: ${res.status}`);
+            
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status} for ${path}`);
             
             responseData = await res.json();
             if (responseData.success) {
+              console.log(`[${CACHE_BUSTER}] SUCCESS! Got data from: ${path}`);
               break;
             }
           } catch (error) {
+            console.warn(`[${CACHE_BUSTER}] Failed to fetch from ${path}:`, error.message);
             lastError = error;
             continue;
           }
@@ -556,39 +563,6 @@
         console.error('Error fetching documents:', error);
         showErrorMessage('Failed to load documents. Please check your connection and try again.');
         return { data: [], total: 0, totalPages: 0, page: 1 };
-      }
-    }
-
-    async function fetchDocumentById(id, recordType) {
-      try {
-        const params = new URLSearchParams({
-          id: id,
-          record_type: recordType
-        });
-        
-        const possiblePaths = [
-          `../backend/get_document.php?${params}`,
-          `get_document.php?${params}`,
-          `/backend/get_document.php?${params}`
-        ];
-        
-        for (let path of possiblePaths) {
-          try {
-            const res = await fetch(path);
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            
-            const responseData = await res.json();
-            if (responseData.success && responseData.data) {
-              return responseData.data;
-            }
-          } catch (error) {
-            continue;
-          }
-        }
-        return null;
-      } catch (error) {
-        console.error('Error fetching document:', error);
-        return null;
       }
     }
 
@@ -663,7 +637,7 @@
       });
       
       updateStats(docs);
-      renderPagination(totalItems, page, totalPages);
+      renderPagination(totalPages);
     }
 
     function renderPagination(totalPages) {
