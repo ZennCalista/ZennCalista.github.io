@@ -137,25 +137,35 @@ while ($row = $result->fetch_assoc()) {
             $row['attendance_percentage'] = 0;
         }
         
-        // Get upcoming sessions for active programs
+        // Get upcoming sessions for active programs (if sessions table exists)
         if ($row['program_status'] === 'ongoing') {
-            $session_sql = "SELECT session_title, session_date, session_start, session_end, location 
-                           FROM sessions 
-                           WHERE program_id = ? AND session_date >= CURDATE() 
-                           ORDER BY session_date, session_start LIMIT 3";
-            $session_stmt = $conn->prepare($session_sql);
-            if ($session_stmt) {
-                $session_stmt->bind_param('i', $row['id']);
-                $session_stmt->execute();
-                $session_result = $session_stmt->get_result();
-                
-                $upcoming_sessions = [];
-                while ($session = $session_result->fetch_assoc()) {
-                    $upcoming_sessions[] = $session;
+            try {
+                $session_sql = "SELECT session_title, session_date, session_start, session_end, location 
+                               FROM sessions 
+                               WHERE program_id = ? AND session_date >= CURDATE() 
+                               ORDER BY session_date, session_start LIMIT 3";
+                $session_stmt = $conn->prepare($session_sql);
+                if ($session_stmt) {
+                    $session_stmt->bind_param('i', $row['id']);
+                    $session_stmt->execute();
+                    $session_result = $session_stmt->get_result();
+                    
+                    $upcoming_sessions = [];
+                    while ($session = $session_result->fetch_assoc()) {
+                        $upcoming_sessions[] = $session;
+                    }
+                    $row['upcoming_sessions'] = $upcoming_sessions;
+                    $session_stmt->close();
+                } else {
+                    $row['upcoming_sessions'] = [];
                 }
-                $row['upcoming_sessions'] = $upcoming_sessions;
-                $session_stmt->close();
+            } catch (Exception $e) {
+                // Sessions table doesn't exist or query failed - skip upcoming sessions
+                error_log("Sessions query error: " . $e->getMessage());
+                $row['upcoming_sessions'] = [];
             }
+        } else {
+            $row['upcoming_sessions'] = [];
         }
     } else {
         // For non-approved enrollments, set default values
