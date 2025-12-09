@@ -189,7 +189,15 @@ if ($user_id) {
               <b>ADDITIONAL FEEDBACK</b>
               <div style="margin-top:8px;">
                 <label>Suggestion for the improvement</label>
-                <textarea name="suggestion" placeholder="Enter your suggestions for improvement..." rows="4" style="width:100%;padding:10px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;font-family:inherit;font-size:1em;resize:vertical;"></textarea>
+                <select id="suggestion-dropdown" name="suggestion-dropdown" style="width:100%;padding:10px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;font-family:inherit;font-size:1em;cursor:pointer;">
+                  <option value="">Select a suggestion</option>
+                  <option value="More interactive activities">More interactive activities</option>
+                  <option value="Better time management">Better time management</option>
+                  <option value="Improve venue/facilities">Improve venue/facilities</option>
+                  <option value="More clear instructions">More clear instructions</option>
+                  <option value="other">Other (please specify)</option>
+                </select>
+                <textarea id="suggestion-other-text" name="suggestion-other" placeholder="Please specify your suggestion..." rows="4" style="display:none;width:100%;padding:10px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;font-family:inherit;font-size:1em;resize:vertical;margin-top:8px;"></textarea>
               </div>
               <div style="margin-top:12px;">
                 <label>Would you Recommend this Program?</label>

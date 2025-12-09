@@ -211,6 +211,20 @@ if ($user_id) {
       color: #555;
     }
 
+    select.profile-input {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    select.profile-input:disabled {
+      cursor: not-allowed;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    }
+
     .button-group {
       display: flex;
       justify-content: center;
@@ -292,7 +306,19 @@ if ($user_id) {
 
           <div class="label">Program:</div>
           <div class="value">
-            <input type="text" class="profile-input" id="profile-course" disabled>
+            <select class="profile-input" id="profile-course" disabled>
+              <option value="Bachelor Of Arts In Journalism">Bachelor Of Arts In Journalism</option>
+              <option value="Bachelor Of Early Childhood Education">Bachelor Of Early Childhood Education</option>
+              <option value="Bachelor Of Elementary Education">Bachelor Of Elementary Education</option>
+              <option value="Bachelor Of Science In Business Administration">Bachelor Of Science In Business Administration</option>
+              <option value="Bachelor Of Science In Computer Science">Bachelor Of Science In Computer Science</option>
+              <option value="Bachelor Of Science In Entrepreneurship">Bachelor Of Science In Entrepreneurship</option>
+              <option value="Bachelor Of Science In Hospitality Management">Bachelor Of Science In Hospitality Management</option>
+              <option value="Bachelor Of Science In Information Technology">Bachelor Of Science In Information Technology</option>
+              <option value="Bachelor Of Science In Office Administration">Bachelor Of Science In Office Administration</option>
+              <option value="Bachelor Of Science In Psychology">Bachelor Of Science In Psychology</option>
+              <option value="Bachelor Of Secondary Education">Bachelor Of Secondary Education</option>
+            </select>
           </div>
 
           <div class="label">Email:</div>

@@ -43,7 +43,22 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('modal-program-title').textContent = programName;
     document.getElementById('detailed-eval-form').reset();
     document.getElementById('detailed-eval-message').textContent = '';
+    document.getElementById('suggestion-other-text').style.display = 'none';
     document.getElementById('detailed-eval-modal').style.display = 'block';
+    
+    // Toggle "Other" textarea based on dropdown selection
+    const suggestionDropdown = document.getElementById('suggestion-dropdown');
+    suggestionDropdown.onchange = function() {
+      const otherTextarea = document.getElementById('suggestion-other-text');
+      if (this.value === 'other') {
+        otherTextarea.style.display = 'block';
+        otherTextarea.required = true;
+      } else {
+        otherTextarea.style.display = 'none';
+        otherTextarea.required = false;
+        otherTextarea.value = '';
+      }
+    };
   }
 
   // Close modal logic
@@ -71,6 +86,12 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById('detailed-eval-form').onsubmit = function(e) {
     e.preventDefault();
     const form = e.target;
+    const suggestionDropdown = form.querySelector('[name="suggestion-dropdown"]');
+    const suggestionOther = form.querySelector('[name="suggestion-other"]');
+    const suggestionValue = suggestionDropdown.value === 'other' 
+      ? suggestionOther.value 
+      : suggestionDropdown.value;
+    
     const data = {
       program_id: form.program_id.value,
       content: form.content.value,
@@ -78,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
       relevance: form.relevance.value,
       organization: form.organization.value,
       experience: form.experience.value,
-      suggestion: form.suggestion.value,
+      suggestion: suggestionValue,
       recommend: Array.from(form.recommend)
         .filter(cb => cb.checked)
         .map(cb => cb.value)
