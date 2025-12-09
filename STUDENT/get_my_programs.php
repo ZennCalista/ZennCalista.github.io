@@ -13,18 +13,17 @@ function returnJsonError($message) {
     exit;
 }
 
-require_once 'db.php';
-
-if (!$conn) {
-    returnJsonError('Database connection failed');
-}
-
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
     returnJsonError('Unauthorized: Please log in as a student');
 }
 
-if (!isset($_SESSION['user_id'])) {
-    returnJsonError('User not logged in');
+// Suppress die() from db.php and handle connection errors
+ob_start();
+require_once 'db.php';
+ob_end_clean();
+
+if (!isset($conn) || !$conn) {
+    returnJsonError('Database connection failed');
 }
 
 $user_id = $_SESSION['user_id'];
