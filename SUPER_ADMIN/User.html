@@ -62,6 +62,15 @@
             </div>
             <div class="stat-card verified">
               <div class="stat-icon">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="total-admins">0</h3>
+                <p>Total Admin Users</p>
+              </div>
+            </div>
+            <div class="stat-card verified">
+              <div class="stat-icon">
                 <i class="fas fa-user-check"></i>
               </div>
               <div class="stat-info">
@@ -85,6 +94,7 @@
                 <option value="student">Non-Academic</option>
                 <!-- <option value="non_acad">Non-Acad</option> -->
                 <option value="faculty">Faculty</option>
+                <option value="admin">Admin</option>
               </select>
               <select id="department-filter">
                 <option value="all">All Departments</option>
@@ -116,6 +126,9 @@
             <button class="tab-btn" onclick="switchTab('faculty')" id="faculty-tab">
               <i class="fas fa-chalkboard-teacher"></i> Faculty
             </button>
+            <button class="tab-btn" onclick="switchTab('admins')" id="admins-tab">
+              <i class="fas fa-user-shield"></i> Admins
+            </button>
           </div>
 
           <!-- Students Section -->
@@ -129,6 +142,13 @@
           <div id="faculty-content" class="tab-content">
             <div class="users-grid" id="faculty-grid">
               <!-- Faculty will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Admins Section -->
+          <div id="admins-content" class="tab-content">
+            <div class="users-grid" id="admins-grid">
+              <!-- Admins will be loaded here -->
             </div>
           </div>
 
@@ -520,6 +540,21 @@ function loadFaculty() {
     });
 }
 
+// Fetch and display admins
+function loadAdmins() {
+  fetch('../ADMIN/api_users.php?role=admin')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const adminUsers = data.data.map(user => ({...user, role: 'admin'}));
+        allUsers = allUsers.filter(u => u.role !== 'admin').concat(adminUsers);
+        displayUsers();
+        updateStats();
+        updateDepartmentFilter();
+      }
+    });
+}
+
 // Create user card
 function createUserCard(user) {
   const isVerified = user.verification_status === 'verified';
@@ -618,12 +653,15 @@ function displayUsers() {
     filteredUsers = filteredUsers.filter(user => user.role === 'non_acad');
   } else if (currentTab === 'faculty') {
     filteredUsers = filteredUsers.filter(user => user.role === 'faculty');
+  } else if (currentTab === 'admins') {
+    filteredUsers = filteredUsers.filter(user => user.role === 'admin');
   }
 
-  // Separate students, non_acad, and faculty for display
+  // Separate students, non_acad, faculty, and admins for display
   const students = filteredUsers.filter(user => user.role === 'student');
   const nonAcad = filteredUsers.filter(user => user.role === 'non_acad');
   const faculty = filteredUsers.filter(user => user.role === 'faculty');
+  const admins = filteredUsers.filter(user => user.role === 'admin');
 
   // Display students
   const studentsGrid = document.getElementById('students-grid');
@@ -637,10 +675,16 @@ function displayUsers() {
     faculty.map(user => createUserCard(user)).join('') :
     '<div class="empty-state"><i class="fas fa-chalkboard-teacher"></i><p>No faculty found</p></div>';
 
-  console.log('DOM updated - students shown:', students.length, 'faculty shown:', faculty.length);
+  // Display admins
+  const adminsGrid = document.getElementById('admins-grid');
+  adminsGrid.innerHTML = admins.length > 0 ?
+    admins.map(user => createUserCard(user)).join('') :
+    '<div class="empty-state"><i class="fas fa-user-shield"></i><p>No admins found</p></div>';
+
+  console.log('DOM updated - students shown:', students.length, 'faculty shown:', faculty.length, 'admins shown:', admins.length);
 
   // Show/hide no results message
-  const currentTabUsers = currentTab === 'students' ? students : faculty;
+  const currentTabUsers = currentTab === 'students' ? students : currentTab === 'faculty' ? faculty : admins;
   const hasResults = currentTabUsers.length > 0;
   document.getElementById('no-results').classList.toggle('hidden', hasResults);
 
@@ -650,10 +694,12 @@ function updateStats() {
   const students = allUsers.filter(user => user.role === 'student');
   const nonAcad = allUsers.filter(user => user.role === 'non_acad');
   const faculty = allUsers.filter(user => user.role === 'faculty');
+  const admins = allUsers.filter(user => user.role === 'admin');
   const verifiedUsers = allUsers.filter(user => user.verification_status === 'verified');
   
   document.getElementById('total-students').textContent = students.length;
   document.getElementById('total-faculty').textContent = faculty.length;
+  document.getElementById('total-admins').textContent = admins.length;
   document.getElementById('verified-users').textContent = verifiedUsers.length;
 }
 
@@ -795,6 +841,7 @@ window.onload = function() {
   loadStudents();
   loadNonAcad();
   loadFaculty();
+  loadAdmins();
 };
 
 // Add Student
@@ -852,6 +899,7 @@ function submitAddUser(e) {
         loadStudents();
         loadNonAcad();
         loadFaculty();
+        loadAdmins();
         form.reset();
         // Reset field visibility
         document.getElementById('faculty-fields').style.display = 'none';
@@ -935,6 +983,7 @@ function submitEditUser(e) {
         loadStudents();
         loadNonAcad();
         loadFaculty();
+        loadAdmins();
       } else {
         alert('Failed to update user.');
       }
@@ -977,6 +1026,7 @@ function confirmVerifyUser() {
       loadStudents();
       loadNonAcad();
       loadFaculty();
+      loadAdmins();
       showToast('User verified successfully!', 'success');
     } else {
       showToast('Failed to verify user: ' + (res.message || 'Unknown error'), 'error');
@@ -1007,6 +1057,7 @@ function confirmUnverifyUser() {
       loadStudents();
       loadNonAcad();
       loadFaculty();
+      loadAdmins();
       showToast('User unverified successfully!', 'success');
     } else {
       showToast('Failed to unverify user: ' + (res.message || 'Unknown error'), 'error');
@@ -1045,6 +1096,7 @@ function confirmDeleteUser() {
       loadStudents();
       loadNonAcad();
       loadFaculty();
+      loadAdmins();
       showToast('User deleted successfully!', 'success');
     } else {
       showToast('Failed to delete user: ' + (res.message || 'Unknown error'), 'error');
