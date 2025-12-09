@@ -7,13 +7,10 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
-// Suppress die() from db.php and handle connection errors
-ob_start();
 require_once 'db.php';
-ob_end_clean();
 
-if (!isset($conn) || !$conn) {
-    echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
+if (!$conn || isset($db_error)) {
+    echo json_encode(['status' => 'error', 'message' => $db_error ?? 'Database connection failed']);
     exit;
 }
 
