@@ -16,10 +16,8 @@ try {
         error_log("MySQL Connection failed: " . $conn->connect_error);
         $db_error = "Database connection failed. Please try again later.";
         $conn = null;
-        // Only die if not called from an API endpoint (JSON content type)
-        if (!headers_sent() && !isset($_SERVER['HTTP_ACCEPT']) || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') === false) {
-            die($db_error);
-        }
+        // Only die if not called from an API endpoint - don't die for API calls
+        // API endpoints will check $conn and $db_error variables
     } else {
         $conn->set_charset('utf8mb4');
         // error_log("Database connected successfully to $host"); // Commented out to prevent output in API responses
@@ -28,9 +26,7 @@ try {
     error_log("Database error: " . $e->getMessage());
     $db_error = "Database error occurred. Please contact support.";
     $conn = null;
-    // Only die if not called from an API endpoint (JSON content type)
-    if (!headers_sent() && (!isset($_SERVER['HTTP_ACCEPT']) || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') === false)) {
-        die($db_error);
-    }
+    // Only die if not called from an API endpoint - don't die for API calls
+    // API endpoints will check $conn and $db_error variables
 }
 ?>
