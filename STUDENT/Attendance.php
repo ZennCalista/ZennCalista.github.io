@@ -339,9 +339,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set default time-in to current time
     const now = new Date();
     timeInInput.value = now.toTimeString().slice(0,5);
+    programSelect.innerHTML = '<option value="">Loading...</option>';
     // Fetch approved programs for the user
     fetch('get_my_programs.php')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.text().then(text => {
+            console.error('Server error response:', text);
+            throw new Error('Server returned ' + res.status + ': ' + text.substring(0, 200));
+          });
+        }
+        return res.json();
+      })
       .then(data => {
         programSelect.innerHTML = '';
         if (data.status === 'success' && data.programs.length > 0) {
@@ -352,9 +361,17 @@ document.addEventListener('DOMContentLoaded', function() {
             opt.textContent = p.program_name;
             programSelect.appendChild(opt);
           });
+        } else if (data.status === 'error') {
+          programSelect.innerHTML = '<option value="">Error: ' + data.message + '</option>';
         } else {
           programSelect.innerHTML = '<option value="">No approved programs</option>';
         }
+      })
+      .catch(err => {
+        console.error('Error loading programs:', err);
+        programSelect.innerHTML = '<option value="">Error loading programs</option>';
+        manualMsg.textContent = 'Failed to load programs: ' + err.message;
+        manualMsg.style.color = 'red';
       });
     };
   }
@@ -410,9 +427,18 @@ document.addEventListener('DOMContentLoaded', function() {
   openQrBtn.onclick = function() {
         qrModal.style.display = 'block';
         qrImageContainer.style.display = 'none';
+        qrProgramSelect.innerHTML = '<option value="">Loading...</option>';
         // Fetch approved programs for the user
         fetch('get_my_programs.php')
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) {
+              return res.text().then(text => {
+                console.error('Server error response:', text);
+                throw new Error('Server returned ' + res.status + ': ' + text.substring(0, 200));
+              });
+            }
+            return res.json();
+          })
           .then(data => {
             qrProgramSelect.innerHTML = '';
             if (data.status === 'success' && data.programs.length > 0) {
@@ -430,9 +456,16 @@ document.addEventListener('DOMContentLoaded', function() {
               if (!hasApproved) {
                 qrProgramSelect.innerHTML = '<option value="">No approved programs</option>';
               }
+            } else if (data.status === 'error') {
+              qrProgramSelect.innerHTML = '<option value="">Error: ' + data.message + '</option>';
             } else {
               qrProgramSelect.innerHTML = '<option value="">No approved programs</option>';
             }
+          })
+          .catch(err => {
+            console.error('Error loading programs:', err);
+            qrProgramSelect.innerHTML = '<option value="">Error loading programs</option>';
+            alert('Failed to load programs: ' + err.message);
           });
       };
 
