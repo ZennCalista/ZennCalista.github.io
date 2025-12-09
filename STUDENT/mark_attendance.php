@@ -7,6 +7,18 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
+// Catch any fatal errors and return JSON
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        ob_clean();
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Server error: ' . $error['message'] . ' in ' . basename($error['file']) . ' on line ' . $error['line']
+        ]);
+    }
+});
+
 require_once 'db.php';
 
 if (!$conn || isset($db_error)) {

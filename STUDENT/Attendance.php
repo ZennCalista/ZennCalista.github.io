@@ -6,7 +6,7 @@ require 'db.php'; // your DB connection file
 $user_id = $_SESSION['user_id'] ?? null;
 $user = null;
 
-if ($user_id) {
+if ($user_id && $conn) {
     $stmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
