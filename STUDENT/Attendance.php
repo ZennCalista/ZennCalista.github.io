@@ -258,9 +258,6 @@ function generateCode($length = 4) {
       </div>
     </div>
   </div>
-
-  <button id="scan-qr-btn">Scan QR Code</button>
-  <div id="qr-reader" style="width:300px"></div>
 </body>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
@@ -506,44 +503,6 @@ document.addEventListener('DOMContentLoaded', function() {
       };
 
   // END of openQrBtn.onclick
-
-  const scanQrBtn = document.getElementById('scan-qr-btn');
-  if (scanQrBtn) {
-    scanQrBtn.onclick = function() {
-      document.getElementById('qr-reader').style.display = 'block';
-      const qrReader = new Html5Qrcode("qr-reader");
-    qrReader.start(
-      { facingMode: "environment" }, // Use rear camera if available
-      { fps: 10, qrbox: 250 },
-      qrCodeMessage => {
-        // Send scanned data to your backend to mark attendance
-        fetch('mark_attendance.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ qr_data: qrCodeMessage })
-        })
-        .then(res => res.json())
-        .then(data => {
-          alert(data.message || "Attendance marked!");
-          qrReader.stop();
-          document.getElementById('qr-reader').style.display = 'none';
-        })
-        .catch(() => {
-          alert("Failed to mark attendance.");
-          qrReader.stop();
-          document.getElementById('qr-reader').style.display = 'none';
-        });
-      },
-      errorMessage => {
-        // Optionally handle scan errors
-      }
-    ).catch(err => {
-      // Handle camera start errors
-      alert("Unable to start QR scanner: " + err);
-      document.getElementById('qr-reader').style.display = 'none';
-    });
-    }; // <-- Make sure this closes the onclick function
-  } // Close the null check for scanQrBtn
 
 // QR Code manual entry
 const submitQrCodeBtn = document.getElementById('submit-qr-code');
