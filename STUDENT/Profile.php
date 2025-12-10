@@ -289,6 +289,11 @@ if ($user_id) {
           </div>
 
         <div class="profile-info">
+          <div class="label">Student Number:</div>
+          <div class="value">
+            <input type="text" class="profile-input" id="profile-student-id" disabled>
+          </div>
+
           <div class="label">First Name:</div>
           <div class="value">
             <input type="text" class="profile-input" id="profile-firstname" disabled>
@@ -297,11 +302,6 @@ if ($user_id) {
           <div class="label">Last Name:</div>
           <div class="value">
             <input type="text" class="profile-input" id="profile-lastname" disabled>
-          </div>
-          
-          <div class="label">Student Number:</div>
-          <div class="value">
-            <input type="text" class="profile-input" id="profile-student-id" disabled>
           </div>
 
           <div class="label">Program:</div>
