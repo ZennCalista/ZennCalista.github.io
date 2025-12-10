@@ -232,7 +232,7 @@ if (!$faculty_id) {
             <td><?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($upload['upload_date']))); ?></td>
             <td>
               <span class="status <?php echo htmlspecialchars($upload['status']); ?>">
-                <?php echo ucfirst($upload['status']); ?>
+                <?php echo ($upload['status'] === 'approved') ? 'Endorsed' : ucfirst($upload['status']); ?>
               </span>
             </td>
             <td class="remarks"><?php echo htmlspecialchars($upload['admin_remarks'] ?? ''); ?></td>
