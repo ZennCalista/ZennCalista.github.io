@@ -171,8 +171,24 @@ async function loadDashboardStats() {
     const deptLabels = stats.programsByDept?.labels || [];
     const deptData = stats.programsByDept?.data || [];
     if (deptLabels.length > 0 && deptData.length > 0) {
-      // Create a diverse color palette for departments
-      const deptColors = [
+      // Department-specific color mapping
+      const deptColorMap = {
+        'Department of Biological and Physical Sciences': '#FDC202',
+        'Department of Computer Studies': '#167C2E',
+        'Department of Hospitality Management': '#043C89',
+        'Department of Languages and Mass Communication': '#3C84B2',
+        'Department of Management': '#5BBE29',
+        'Department of Physical Education': '#000C26',
+        'Department of Social Sciences and Humanities': '#FF8838',
+        'Teacher Education Department': '#0217BF',
+        'Department of Administration - ENTREP': '#0D9488',
+        'Department of Administration - BSOA': '#7C2D12',
+        'Department of Administration - BM': '#B91C1C',
+        'RDE Department': '#8B5CF6'
+      };
+
+      // Fallback color palette for departments not in the map
+      const fallbackDeptColors = [
         '#1B472B', // Dark green
         '#2563EB', // Blue
         '#DC2626', // Red
@@ -246,7 +262,7 @@ async function loadDashboardStats() {
       const archivedLabel = 'archived';
       const deptLabelsPlus = deptLabels.concat(archivedLabel);
       const deptDataPlus = deptData.concat(archivedCount);
-      const deptColorsPlus = deptColors.concat('#6b7280'); // gray for archived
+      const deptColorsPlus = fallbackDeptColors.concat('#6b7280'); // gray for archived
 
       new Chart(ctxDept, {
         type: 'doughnut',
@@ -254,7 +270,7 @@ async function loadDashboardStats() {
           labels: deptLabelsPlus,
           datasets: [{
             data: deptDataPlus,
-            backgroundColor: deptLabelsPlus.map((lbl, i) => lbl === archivedLabel ? '#6b7280' : deptColors[i % deptColors.length]),
+            backgroundColor: deptLabelsPlus.map((lbl, i) => lbl === archivedLabel ? '#6b7280' : (deptColorMap[lbl] || fallbackDeptColors[i % fallbackDeptColors.length])),
             borderWidth: 0
           }]
         },
@@ -279,7 +295,7 @@ async function loadDashboardStats() {
             datasets: [{
               label: 'Programs',
               data: barData,
-              backgroundColor: barLabels.map((lbl, i) => lbl === archivedLabel ? '#6b7280' : deptColors[i % deptColors.length])
+              backgroundColor: barLabels.map((lbl, i) => lbl === archivedLabel ? '#6b7280' : (deptColorMap[lbl] || fallbackDeptColors[i % fallbackDeptColors.length]))
             }]
           },
           options: {

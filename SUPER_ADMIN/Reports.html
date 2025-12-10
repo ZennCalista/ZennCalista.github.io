@@ -512,8 +512,24 @@
         const popularityData = await fetchChartData('programs_by_department');
         if (popularityData.success && popularityData.data && popularityData.data.length > 0) {
           const data = popularityData.data;
-          // Use the same diverse color palette as Dashboard
-          const deptColors = [
+          // Department-specific color mapping
+          const deptColorMap = {
+            'Department of Biological and Physical Sciences': '#FDC202',
+            'Department of Computer Studies': '#167C2E',
+            'Department of Hospitality Management': '#043C89',
+            'Department of Languages and Mass Communication': '#3C84B2',
+            'Department of Management': '#5BBE29',
+            'Department of Physical Education': '#000C26',
+            'Department of Social Sciences and Humanities': '#FF8838',
+            'Teacher Education Department': '#0217BF',
+            'Department of Administration - ENTREP': '#0D9488',
+            'Department of Administration - BSOA': '#7C2D12',
+            'Department of Administration - BM': '#B91C1C',
+            'RDE Department': '#8B5CF6'
+          };
+
+          // Fallback color palette for departments not in the map
+          const fallbackDeptColors = [
             '#1B472B', // Dark green
             '#2563EB', // Blue
             '#DC2626', // Red
@@ -532,7 +548,7 @@
               datasets: [{
                 label: 'Programs',
                 data: data.map(item => item.program_count || 0),
-                backgroundColor: data.map((item, i) => deptColors[i % deptColors.length]),
+                backgroundColor: data.map((item, i) => deptColorMap[item.department] || fallbackDeptColors[i % fallbackDeptColors.length]),
                 borderRadius: 6,
                 borderWidth: 0
               }]
