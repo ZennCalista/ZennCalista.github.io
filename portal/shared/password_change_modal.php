@@ -38,7 +38,7 @@
                         <i class="fas fa-lock"></i> Current Password
                     </label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="currentPassword" class="password-form-input" placeholder="Enter current password">
+                        <input type="password" id="currentPassword" class="password-form-input" placeholder="Enter current password" onpaste="return false;" oncopy="return false;" oncut="return false;">
                         <button type="button" class="password-toggle-btn" onclick="PasswordChangeModal.togglePassword('currentPassword')">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -51,7 +51,7 @@
                     </label>
                     <div class="password-input-wrapper">
                         <input type="password" id="newPassword" class="password-form-input" 
-                               placeholder="Enter new password" onkeyup="PasswordChangeModal.checkPasswordStrength()">
+                               placeholder="Enter new password" onkeyup="PasswordChangeModal.checkPasswordStrength()" onpaste="return false;" oncopy="return false;" oncut="return false;">
                         <button type="button" class="password-toggle-btn" onclick="PasswordChangeModal.togglePassword('newPassword')">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -64,7 +64,7 @@
                     </label>
                     <div class="password-input-wrapper">
                         <input type="password" id="confirmPassword" class="password-form-input" 
-                               placeholder="Re-enter new password" onkeyup="PasswordChangeModal.checkPasswordMatch()">
+                               placeholder="Re-enter new password" onkeyup="PasswordChangeModal.checkPasswordMatch()" onpaste="return false;" oncopy="return false;" oncut="return false;">
                         <button type="button" class="password-toggle-btn" onclick="PasswordChangeModal.togglePassword('confirmPassword')">
                             <i class="fas fa-eye"></i>
                         </button>
