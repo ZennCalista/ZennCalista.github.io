@@ -18,6 +18,11 @@ $user_result = $user_query->get_result();
 $user = $user_result->fetch_assoc();
 $student_name = $user['firstname'] . ' ' . $user['lastname'];
 
+// Pagination parameters
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$items_per_page = 10;
+$offset = ($page - 1) * $items_per_page;
+
 // Get all programs the student is enrolled in
 $sql = "SELECT p.id as program_id, p.program_name, e.status, p.end_date
         FROM enrollments e
@@ -54,10 +59,36 @@ while ($row = $result->fetch_assoc()) {
         'program_name' => $row['program_name'],
         'status' => $row['status'],
         'can_evaluate' => !$evaluated && $program_ended,
-        'submitted_date' => $submitted_date
+        'submitted_date' => $submitted_date,
+        'evaluated' => $evaluated
     ];
     if ($evaluated) $total_evals++;
 }
-echo json_encode(['total_evaluations' => $total_evals, 'programs' => $programs]);
+
+// Sort: unevaluated programs first, then evaluated programs
+usort($programs, function($a, $b) {
+    // First sort by evaluation status (unevaluated first)
+    if ($a['evaluated'] != $b['evaluated']) {
+        return $a['evaluated'] ? 1 : -1;
+    }
+    // Then sort by program name alphabetically
+    return strcmp($a['program_name'], $b['program_name']);
+});
+
+// Calculate pagination
+$total_programs = count($programs);
+$total_pages = ceil($total_programs / $items_per_page);
+$paginated_programs = array_slice($programs, $offset, $items_per_page);
+
+echo json_encode([
+    'total_evaluations' => $total_evals,
+    'programs' => $paginated_programs,
+    'pagination' => [
+        'current_page' => $page,
+        'total_pages' => $total_pages,
+        'total_programs' => $total_programs,
+        'items_per_page' => $items_per_page
+    ]
+]);
 $conn->close();
 ?>

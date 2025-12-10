@@ -1,41 +1,109 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Fetch evaluation summary and program-specific evaluations
-  fetch('get_evaluations.php')
-    .then(res => res.json())
-    .then(data => {
-      // Overview
-      document.getElementById('total-evals').textContent = data.total_evaluations;
+  let currentPage = 1;
 
-      // Table
-      const tbody = document.getElementById('eval-table-body');
-      tbody.innerHTML = '';
-      data.programs.forEach(row => {
-        const tr = document.createElement('tr');
-        const statusClass = row.status.toLowerCase();
-        tr.innerHTML = `
-          <td>${row.program_name}</td>
-          <td><span class="status-badge status-${statusClass}">${row.status}</span></td>
-          <td>${row.submitted_date || ''}</td>
-          <td>
-            ${row.can_evaluate
-              ? `<button class="eval-btn" data-pid="${row.program_id}" data-pname="${row.program_name}">Evaluate</button>`
-              : `<button class="evaluated-btn" disabled>Evaluated</button>`
-            }
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+  // Function to load evaluations with pagination
+  function loadEvaluations(page = 1) {
+    fetch(`get_evaluations.php?page=${page}`)
+      .then(res => res.json())
+      .then(data => {
+        // Overview
+        document.getElementById('total-evals').textContent = data.total_evaluations;
 
-      // Button event
-      document.querySelectorAll('.eval-btn').forEach(btn => {
-        btn.onclick = function() {
-          openDetailedEvalModal(
-            btn.getAttribute('data-pid'),
-            btn.getAttribute('data-pname')
-          );
-        };
+        // Table
+        const tbody = document.getElementById('eval-table-body');
+        tbody.innerHTML = '';
+        data.programs.forEach(row => {
+          const tr = document.createElement('tr');
+          const statusClass = row.status.toLowerCase();
+          tr.innerHTML = `
+            <td>${row.program_name}</td>
+            <td><span class="status-badge status-${statusClass}">${row.status}</span></td>
+            <td>${row.submitted_date || ''}</td>
+            <td>
+              ${row.can_evaluate
+                ? `<button class="eval-btn" data-pid="${row.program_id}" data-pname="${row.program_name}">Evaluate</button>`
+                : `<button class="evaluated-btn" disabled>Evaluated</button>`
+              }
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Button event
+        document.querySelectorAll('.eval-btn').forEach(btn => {
+          btn.onclick = function() {
+            openDetailedEvalModal(
+              btn.getAttribute('data-pid'),
+              btn.getAttribute('data-pname')
+            );
+          };
+        });
+
+        // Render pagination
+        renderPagination(data.pagination);
       });
-    });
+  }
+
+  // Function to render pagination controls
+  function renderPagination(pagination) {
+    const existingPagination = document.querySelector('.pagination-container');
+    if (existingPagination) {
+      existingPagination.remove();
+    }
+
+    if (pagination.total_pages <= 1) return;
+
+    const paginationContainer = document.createElement('div');
+    paginationContainer.className = 'pagination-container';
+    paginationContainer.style.cssText = 'display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; padding: 20px;';
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Previous';
+    prevBtn.style.cssText = 'padding: 8px 16px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px;';
+    prevBtn.disabled = pagination.current_page === 1;
+    if (prevBtn.disabled) {
+      prevBtn.style.opacity = '0.5';
+      prevBtn.style.cursor = 'not-allowed';
+    }
+    prevBtn.onclick = () => {
+      if (pagination.current_page > 1) {
+        currentPage = pagination.current_page - 1;
+        loadEvaluations(currentPage);
+      }
+    };
+    paginationContainer.appendChild(prevBtn);
+
+    // Page numbers
+    const pageInfo = document.createElement('span');
+    pageInfo.textContent = `Page ${pagination.current_page} of ${pagination.total_pages}`;
+    pageInfo.style.cssText = 'margin: 0 15px; font-weight: 500;';
+    paginationContainer.appendChild(pageInfo);
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next';
+    nextBtn.style.cssText = 'padding: 8px 16px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px;';
+    nextBtn.disabled = pagination.current_page === pagination.total_pages;
+    if (nextBtn.disabled) {
+      nextBtn.style.opacity = '0.5';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    nextBtn.onclick = () => {
+      if (pagination.current_page < pagination.total_pages) {
+        currentPage = pagination.current_page + 1;
+        loadEvaluations(currentPage);
+      }
+    };
+    paginationContainer.appendChild(nextBtn);
+
+    // Insert pagination after table
+    const tableWrapper = document.querySelector('.program-eval-section .table-wrapper');
+    tableWrapper.parentNode.insertBefore(paginationContainer, tableWrapper.nextSibling);
+  }
+
+  // Initial load
+  loadEvaluations(currentPage);
 
   // Show the detailed evaluation modal
   function openDetailedEvalModal(programId, programName) {
