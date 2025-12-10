@@ -698,7 +698,7 @@ if ($proposals_result) {
                                     <form method="post" id="approveForm<?php echo $proposal['id']; ?>">
                                         <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
                                         <input type="hidden" name="action" value="approve">
-                                        <textarea name="review_notes" class="review-notes" placeholder="Optional notes..." id="approveNotes<?php echo $proposal['id']; ?>"></textarea>
+                                        <input type="hidden" name="review_notes" id="approveNotesInput<?php echo $proposal['id']; ?>" value="">
                                         <button type="button" class="btn-approve" onclick="showConfirmModal('approve', <?php echo $proposal['id']; ?>)">
                                             <i class="fas fa-check"></i> Endorse
                                         </button>
@@ -707,7 +707,7 @@ if ($proposals_result) {
                                     <form method="post" id="rejectForm<?php echo $proposal['id']; ?>" style="margin-top: 8px;">
                                         <input type="hidden" name="proposal_id" value="<?php echo $proposal['id']; ?>">
                                         <input type="hidden" name="action" value="reject">
-                                        <textarea name="review_notes" class="review-notes" placeholder="Rejection reason (required)..." required id="rejectNotes<?php echo $proposal['id']; ?>"></textarea>
+                                        <input type="hidden" name="review_notes" id="rejectNotesInput<?php echo $proposal['id']; ?>" value="">
                                         <button type="button" class="btn-reject" onclick="showConfirmModal('reject', <?php echo $proposal['id']; ?>)">
                                             <i class="fas fa-times"></i> Reject
                                         </button>
@@ -813,6 +813,10 @@ if ($proposals_result) {
                         <i class="fas fa-question-circle"></i>
                     </div>
                     <p id="confirmationMessage" style="margin:0; color:#374151; line-height:1.5;">Are you sure?</p>
+                </div>
+                <div id="confirmationNotesContainer" style="margin-top:20px; display:none;">
+                    <label for="confirmationNotes" style="display:block; margin-bottom:8px; color:#374151; font-weight:600;" id="confirmationNotesLabel">Notes:</label>
+                    <textarea id="confirmationNotes" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; resize:vertical; min-height:80px; font-family:inherit;" placeholder="Enter notes here..."></textarea>
                 </div>
             </div>
             <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
@@ -1108,9 +1112,15 @@ if ($proposals_result) {
             const message = document.getElementById('confirmationMessage');
             const icon = document.getElementById('confirmationIcon');
             const button = document.getElementById('confirmationButton');
+            const notesContainer = document.getElementById('confirmationNotesContainer');
+            const notesTextarea = document.getElementById('confirmationNotes');
+            const notesLabel = document.getElementById('confirmationNotesLabel');
             
             pendingAction = action;
             pendingProposalId = proposalId;
+
+            // Clear previous notes
+            notesTextarea.value = '';
 
             if (action === 'approve') {
                 title.textContent = 'Endorse Proposal';
@@ -1119,18 +1129,25 @@ if ($proposals_result) {
                 icon.style.color = '#28a745';
                 button.style.background = '#28a745';
                 button.innerHTML = '<i class="fas fa-check"></i> Endorse';
+                
+                // Show notes as optional
+                notesContainer.style.display = 'block';
+                notesLabel.innerHTML = 'Notes <span style="color:#6b7280; font-weight:400;">(optional)</span>:';
+                notesTextarea.placeholder = 'Add optional notes...';
+                notesTextarea.required = false;
             } else if (action === 'reject') {
-                const notes = document.getElementById('rejectNotes' + proposalId).value.trim();
-                if (!notes) {
-                    showAlertModal('Required Field', 'Please provide a rejection reason before rejecting.', 'warning');
-                    return;
-                }
                 title.textContent = 'Reject Proposal';
                 message.textContent = 'Are you sure you want to reject this proposal? This action will notify the faculty member.';
                 icon.innerHTML = '<i class="fas fa-times-circle"></i>';
                 icon.style.color = '#dc3545';
                 button.style.background = '#dc3545';
                 button.innerHTML = '<i class="fas fa-times"></i> Reject';
+                
+                // Show notes as required
+                notesContainer.style.display = 'block';
+                notesLabel.innerHTML = 'Rejection Reason <span style="color:#dc3545;">*</span>:';
+                notesTextarea.placeholder = 'Please provide a reason for rejection...';
+                notesTextarea.required = true;
             }
 
             modal.classList.add('show');
@@ -1145,6 +1162,23 @@ if ($proposals_result) {
 
         function executeConfirmAction() {
             if (pendingAction && pendingProposalId) {
+                const notesTextarea = document.getElementById('confirmationNotes');
+                const notes = notesTextarea.value.trim();
+                
+                // Validate rejection notes
+                if (pendingAction === 'reject' && !notes) {
+                    showAlertModal('Required Field', 'Please provide a rejection reason before rejecting.', 'warning');
+                    return;
+                }
+                
+                // Set the notes value in the hidden input
+                const notesInputId = pendingAction + 'NotesInput' + pendingProposalId;
+                const notesInput = document.getElementById(notesInputId);
+                if (notesInput) {
+                    notesInput.value = notes;
+                }
+                
+                // Submit the form
                 const formId = pendingAction + 'Form' + pendingProposalId;
                 const form = document.getElementById(formId);
                 if (form) {
