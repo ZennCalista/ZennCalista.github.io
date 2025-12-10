@@ -19,6 +19,27 @@ $user_result = $user_query->get_result();
 $user = $user_result->fetch_assoc();
 $student_name = $user['firstname'] . ' ' . $user['lastname'];
 
+// Check if program has ended before allowing evaluation
+$program_check = $conn->prepare("SELECT end_date FROM programs WHERE id = ?");
+$program_check->bind_param('i', $data['program_id']);
+$program_check->execute();
+$program_result = $program_check->get_result();
+$program = $program_result->fetch_assoc();
+
+if (!$program || !$program['end_date'] || strtotime($program['end_date']) >= time()) {
+    echo json_encode(['status' => 'error', 'message' => 'You can only evaluate programs that have ended.']);
+    exit;
+}
+
+// Check if already evaluated
+$eval_check = $conn->prepare("SELECT id FROM detailed_evaluations WHERE student_id = ? AND program_id = ?");
+$eval_check->bind_param('ii', $user_id, $data['program_id']);
+$eval_check->execute();
+if ($eval_check->get_result()->num_rows > 0) {
+    echo json_encode(['status' => 'error', 'message' => 'You have already submitted an evaluation for this program.']);
+    exit;
+}
+
 $stmt = $conn->prepare("INSERT INTO detailed_evaluations
   (program_id, student_id, student_name, content, facilitators, relevance, organization, experience, suggestion, recommend)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

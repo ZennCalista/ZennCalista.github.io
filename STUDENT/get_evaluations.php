@@ -19,7 +19,7 @@ $user = $user_result->fetch_assoc();
 $student_name = $user['firstname'] . ' ' . $user['lastname'];
 
 // Get all programs the student is enrolled in
-$sql = "SELECT p.id as program_id, p.program_name, e.status
+$sql = "SELECT p.id as program_id, p.program_name, e.status, p.end_date
         FROM enrollments e
         JOIN programs p ON e.program_id = p.id
         WHERE e.user_id = ? AND e.status = 'approved'";
@@ -42,11 +42,18 @@ while ($row = $result->fetch_assoc()) {
         $eval_row = $eval_result->fetch_assoc();
         $submitted_date = $eval_row['eval_date'];
     }
+    
+    // Check if program has ended (end_date is in the past)
+    $program_ended = false;
+    if ($row['end_date']) {
+        $program_ended = strtotime($row['end_date']) < time();
+    }
+    
     $programs[] = [
         'program_id' => $row['program_id'],
         'program_name' => $row['program_name'],
         'status' => $row['status'],
-        'can_evaluate' => !$evaluated,
+        'can_evaluate' => !$evaluated && $program_ended,
         'submitted_date' => $submitted_date
     ];
     if ($evaluated) $total_evals++;
