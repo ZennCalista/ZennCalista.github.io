@@ -105,7 +105,7 @@
                            placeholder="000000" maxlength="6" pattern="[0-9]{6}">
                 </div>
                 <div class="password-otp-timer" id="otpTimer">
-                    <i class="fas fa-clock"></i> Time remaining: <span id="otpTimeLeft">10:00</span>
+                    <i class="fas fa-clock"></i> Time remaining: <span id="otpTimeLeft">3:00</span>
                 </div>
                 <button type="button" class="password-resend-btn" id="resendOtpBtn" onclick="PasswordChangeModal.resendOTP()" disabled>
                     <i class="fas fa-redo"></i> Resend OTP

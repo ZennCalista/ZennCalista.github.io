@@ -32,7 +32,7 @@ return [
     ],
     'otp' => [
         'length' => 6, // OTP code length
-        'expiry_minutes' => 10, // OTP expiry time in minutes
+        'expiry_minutes' => 3, // OTP expiry time in minutes
         'max_attempts_per_hour' => 3 // Max OTP requests per hour per user
     ]
 ];

@@ -72,7 +72,7 @@ class OTPUtils {
                     <p style='color: #718096; font-size: 14px; text-align: center;'>CVSU Imus - Extension Services</p>
                 </div>
             ";
-            $mail->AltBody = "Your eTracker verification code is: {$otp_code}. This code will expire in 10 minutes.";
+            $mail->AltBody = "Your eTracker verification code is: {$otp_code}. This code will expire in 3 minutes.";
 
             $mail->send();
             return ['status' => 'success', 'message' => 'OTP sent successfully'];

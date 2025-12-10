@@ -185,7 +185,7 @@
             if (data.success) {
                 // OTP sent successfully
                 document.getElementById('otpEmail').textContent = data.email;
-                this.startOtpTimer(data.expires_in || 600);
+                this.startOtpTimer(data.expires_in || 180);
                 this.updateStep(2);
             } else {
                 this.showError(1, data.message || 'Failed to verify password');
@@ -277,7 +277,7 @@
 
             if (data.success) {
                 document.getElementById('otpCode').value = '';
-                this.startOtpTimer(data.expires_in || 600);
+                this.startOtpTimer(data.expires_in || 180);
                 this.showAlert('New OTP sent to your email', 'success');
             } else {
                 this.showAlert('Failed to resend OTP. Please try again.', 'error');

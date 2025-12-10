@@ -94,7 +94,7 @@ try {
                 'success' => true,
                 'message' => 'OTP sent to your email',
                 'email' => $email,
-                'expires_in' => 600 // 10 minutes in seconds
+                'expires_in' => 180 // 3 minutes in seconds
             ]);
         } else {
             ob_clean();
