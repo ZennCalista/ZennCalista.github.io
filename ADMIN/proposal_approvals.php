@@ -453,7 +453,27 @@ if ($proposals_result) {
             font-size: 0.9rem;
             cursor: pointer;
         }
-    </style>
+
+        .quick-response-btn {
+            padding: 6px 10px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .quick-response-btn:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+
+        .quick-response-btn:active {
+            background: #d1d5db;
+        }
         <style>
             /* Viewer modal overrides (copied from Document.html) to ensure consistent look */
             .modal-content.large-modal {
@@ -816,7 +836,11 @@ if ($proposals_result) {
                 </div>
                 <div id="confirmationNotesContainer" style="margin-top:20px; display:none;">
                     <label for="confirmationNotes" style="display:block; margin-bottom:8px; color:#374151; font-weight:600;" id="confirmationNotesLabel">Notes:</label>
-                    <textarea id="confirmationNotes" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; resize:vertical; min-height:80px; font-family:inherit;" placeholder="Enter notes here..."></textarea>
+                    <textarea id="confirmationNotes" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; resize:vertical; min-height:120px; font-family:inherit;" placeholder="Enter notes here..."></textarea>
+                    <div id="quickResponseButtons" style="margin-top:10px; display:none;">
+                        <div style="margin-bottom:8px; color:#6b7280; font-size:12px;">Quick responses:</div>
+                        <div id="quickResponseContainer" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+                    </div>
                 </div>
             </div>
             <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
@@ -1106,6 +1130,24 @@ if ($proposals_result) {
         let pendingAction = null;
         let pendingProposalId = null;
 
+        // Quick response templates
+        const approveTemplates = [
+            "Approved - Well structured proposal",
+            "Approved - Aligns with department goals",
+            "Approved - Innovative approach",
+            "Approved with minor suggestions for implementation",
+            "Approved - Budget justified"
+        ];
+
+        const rejectTemplates = [
+            "Insufficient budget justification",
+            "Does not align with current departmental priorities",
+            "Proposal lacks specific objectives and measurable outcomes",
+            "Timeline concerns",
+            "Overlaps with existing program",
+            "Requires additional documentation"
+        ];
+
         function showConfirmModal(action, proposalId) {
             const modal = document.getElementById('confirmationModal');
             const title = document.getElementById('confirmationTitle');
@@ -1115,12 +1157,15 @@ if ($proposals_result) {
             const notesContainer = document.getElementById('confirmationNotesContainer');
             const notesTextarea = document.getElementById('confirmationNotes');
             const notesLabel = document.getElementById('confirmationNotesLabel');
+            const quickResponseButtons = document.getElementById('quickResponseButtons');
+            const quickResponseContainer = document.getElementById('quickResponseContainer');
             
             pendingAction = action;
             pendingProposalId = proposalId;
 
-            // Clear previous notes
+            // Clear previous notes and buttons
             notesTextarea.value = '';
+            quickResponseContainer.innerHTML = '';
 
             if (action === 'approve') {
                 title.textContent = 'Endorse Proposal';
@@ -1135,6 +1180,17 @@ if ($proposals_result) {
                 notesLabel.innerHTML = 'Notes <span style="color:#6b7280; font-weight:400;">(optional)</span>:';
                 notesTextarea.placeholder = 'Add optional notes...';
                 notesTextarea.required = false;
+
+                // Show quick response buttons
+                quickResponseButtons.style.display = 'block';
+                approveTemplates.forEach(template => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'quick-response-btn';
+                    button.textContent = template;
+                    button.onclick = () => insertTemplate(template);
+                    quickResponseContainer.appendChild(button);
+                });
             } else if (action === 'reject') {
                 title.textContent = 'Reject Proposal';
                 message.textContent = 'Are you sure you want to reject this proposal? This action will notify the faculty member.';
@@ -1148,9 +1204,32 @@ if ($proposals_result) {
                 notesLabel.innerHTML = 'Rejection Reason <span style="color:#dc3545;">*</span>:';
                 notesTextarea.placeholder = 'Please provide a reason for rejection...';
                 notesTextarea.required = true;
+
+                // Show quick response buttons
+                quickResponseButtons.style.display = 'block';
+                rejectTemplates.forEach(template => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'quick-response-btn';
+                    button.textContent = template;
+                    button.onclick = () => insertTemplate(template);
+                    quickResponseContainer.appendChild(button);
+                });
             }
 
             modal.classList.add('show');
+        }
+
+        function insertTemplate(template) {
+            const notesTextarea = document.getElementById('confirmationNotes');
+            const currentValue = notesTextarea.value.trim();
+            
+            // Append template to existing content (with newline if there's existing content)
+            if (currentValue === '') {
+                notesTextarea.value = template;
+            } else {
+                notesTextarea.value = currentValue + '\n\n' + template;
+            }
         }
 
         function closeConfirmationModal() {
