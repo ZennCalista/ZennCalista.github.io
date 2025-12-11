@@ -36,7 +36,112 @@ if (json_last_error() !== JSON_ERROR_NONE || $data === null) {
     }
 }
 
-// If initial registration payload
+// If streamlined registration payload (with user_info from master tables)
+if (!empty($data['email']) && !empty($data['password']) && !empty($data['user_info']) && !empty($data['role'])) {
+    $email = $data['email'];
+    $password = password_hash($data['password'], PASSWORD_DEFAULT);
+    $user_info = $data['user_info'];
+    $role = $data['role'];
+
+    // Extract user info based on role
+    if ($role === 'student') {
+        $firstname = $user_info['firstname'];
+        $lastname = $user_info['lastname'];
+        $mi = $user_info['middle_initial'] ?? '';
+        $student_id = $user_info['student_id'];
+        $course = $user_info['course'];
+    } else if ($role === 'faculty') {
+        $firstname = $user_info['firstname'];
+        $lastname = $user_info['lastname'];
+        $mi = $user_info['middle_initial'] ?? '';
+        $faculty_id = $user_info['faculty_id'];
+        $department = $user_info['department'];
+        $position = $user_info['position'];
+    } else {
+        echo json_encode(["status" => "error", "message" => "Invalid role specified"]);
+        $conn->close();
+        exit;
+    }
+
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(["status" => "error", "message" => "Invalid email format"]);
+        $conn->close();
+        exit;
+    }
+
+    // Check if email already exists
+    $email_check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $email_check->bind_param("s", $email);
+    $email_check->execute();
+    $email_result = $email_check->get_result();
+
+    if ($email_result->num_rows > 0) {
+        echo json_encode(["status" => "error", "message" => "Email already registered"]);
+        $email_check->close();
+        $conn->close();
+        exit;
+    }
+    $email_check->close();
+
+    // Insert into the users table with verification_status = unverified
+    $sql = "INSERT INTO users (firstname, lastname, middle_initial, email, password, role, verification_status) VALUES (?, ?, ?, ?, ?, ?, 'unverified')";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        error_log('register.php prepare failed: ' . $conn->error);
+        echo json_encode(["status" => "error", "message" => "Server error: could not prepare statement", "detail" => $conn->error]);
+        $conn->close();
+        exit;
+    }
+    $stmt->bind_param("ssssss", $firstname, $lastname, $mi, $email, $password, $role);
+
+    if ($stmt->execute()) {
+        $user_id = $stmt->insert_id;
+
+        // Insert role-specific data
+        if ($role === 'student') {
+            $student_sql = "INSERT INTO students (user_id, student_id, course) VALUES (?, ?, ?)";
+            $student_stmt = $conn->prepare($student_sql);
+            $student_stmt->bind_param("iss", $user_id, $student_id, $course);
+            if (!$student_stmt->execute()) {
+                error_log('register.php student insert failed: ' . $student_stmt->error);
+                echo json_encode(["status" => "error", "message" => "Failed to create student record", "detail" => $student_stmt->error]);
+                $student_stmt->close();
+                $conn->close();
+                exit;
+            }
+            $student_stmt->close();
+        } else if ($role === 'faculty') {
+            $faculty_sql = "INSERT INTO faculty (user_id, faculty_id, department, position) VALUES (?, ?, ?, ?)";
+            $faculty_stmt = $conn->prepare($faculty_sql);
+            $faculty_stmt->bind_param("isss", $user_id, $faculty_id, $department, $position);
+            if (!$faculty_stmt->execute()) {
+                error_log('register.php faculty insert failed: ' . $faculty_stmt->error);
+                echo json_encode(["status" => "error", "message" => "Failed to create faculty record", "detail" => $faculty_stmt->error]);
+                $faculty_stmt->close();
+                $conn->close();
+                exit;
+            }
+            $faculty_stmt->close();
+        }
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Registration initiated successfully.",
+            "user_id" => $user_id,
+            "role" => $role
+        ]);
+    } else {
+        error_log('register.php user insert failed: ' . $stmt->error);
+        echo json_encode(["status" => "error", "message" => "Failed to register user", "detail" => $stmt->error]);
+    }
+
+    $stmt->close();
+    $conn->close();
+    exit;
+}
+
+// If initial registration payload (legacy support)
 if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['email']) && !empty($data['password'])) {
     $firstname = $data['firstname'];
     $lastname = $data['lastname'];

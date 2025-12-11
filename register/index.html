@@ -148,7 +148,8 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.25s ease-out;
-      z-index: 150;
+      z-index: 1000;
+      pointer-events: none;
     }
     .password-requirements::before {
       content: '';
@@ -233,7 +234,8 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.25s ease-out;
-      z-index: 150;
+      z-index: 1000;
+      pointer-events: none;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -264,12 +266,38 @@
     }
 
     
-    /* Right card overflow handling for tooltips */
-    .right-card {
-      overflow: visible !important;
+    .confirmation-info {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid #e2e8f0;
     }
-    .right-card .panel-content {
-      overflow: visible !important;
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    .info-value {
+      color: #1f2937;
+      font-size: 14px;
+      text-align: right;
+      flex: 1;
+      margin-left: 20px;
     }
     
     /* Mobile responsive - show below on small screens */
@@ -308,6 +336,7 @@
         width: 100%;
         max-width: 100%;
         transform: translateY(-5px);
+        z-index: 1000;
       }
       .password-mismatch::before {
         right: auto;
@@ -381,7 +410,7 @@
     </div>
 
     <!-- Right Panel -->
-    <div class="right-card" id="right-panel">
+    <div class="right-card" id="right-panel" style="overflow: visible;">
       <div class="panel-content" id="panel-content">
         <!-- <img src="etracker.png" alt="eTracker Icon" class="w-42 h-32 mb-4" /> -->
         <div class="button" onclick="showRegisterForm()">REGISTER</div>
@@ -426,11 +455,9 @@
         rightPanel.innerHTML = `
           <div class="panel-content enter-start" id="panel-content">
             <div class="form-title">REGISTER</div>
-            <input type="text" id="firstname" placeholder="Firstname" class="form-input" />
-            <div class="name-row">
-              <input type="text" id="lastname" placeholder="Lastname" class="form-input lastname" />
-              <input type="text" id="mi" placeholder="M.I." class="form-input mi" />
-            </div>
+            <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
+              Enter your CVSU email address. Your information will be automatically populated from our records.
+            </p>
             <input type="email" id="email" placeholder="Email (@cvsu.edu.ph only)" class="form-input" />
             <div class="password-wrapper">
               <input type="password" id="password" placeholder="Password" class="form-input" />
@@ -472,7 +499,7 @@
             </div>
             <div class="flex gap-4 mt-4">
               <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
-              <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
+              <button class="button" onclick="lookupUserData()" style="flex:2;">REGISTER</button>
             </div>
           </div>
         `;
@@ -489,8 +516,29 @@
           
           if (passwordInput) {
             passwordInput.addEventListener('focus', () => {
-              document.getElementById('password-requirements').classList.add('show');
-              document.getElementById('password-requirements').classList.remove('all-met');
+              const requirementsEl = document.getElementById('password-requirements');
+              requirementsEl.classList.add('show');
+              requirementsEl.classList.remove('all-met');
+              
+              // Check if tooltip would go off-screen and reposition if needed
+              setTimeout(() => {
+                const rect = requirementsEl.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                
+                if (rect.left < 0) {
+                  // Tooltip is going off the left edge, position it below instead
+                  requirementsEl.style.right = 'auto';
+                  requirementsEl.style.left = '0';
+                  requirementsEl.style.top = 'calc(100% + 8px)';
+                  requirementsEl.style.transform = 'translateY(0)';
+                } else {
+                  // Reset to default positioning
+                  requirementsEl.style.right = 'calc(100% + 16px)';
+                  requirementsEl.style.left = 'auto';
+                  requirementsEl.style.top = '50%';
+                  requirementsEl.style.transform = 'translateY(-50%) translateX(10px)';
+                }
+              }, 10);
             });
             passwordInput.addEventListener('blur', () => {
               setTimeout(() => {
@@ -618,16 +666,13 @@
       });
     }
 
-    function submitInitialForm() {
-      const firstname = document.getElementById('firstname').value;
-      const lastname = document.getElementById('lastname').value;
-      const mi = document.getElementById('mi').value;
+    function lookupUserData() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
 
       // Validate required fields
-      if (!firstname || !lastname || !email || !password || !confirmPassword) {
+      if (!email || !password || !confirmPassword) {
         showModal("Please fill out all required fields.");
         return;
       }
@@ -644,7 +689,7 @@
         showModal("Password does not meet the requirements. Please ensure it has at least 8 characters, one uppercase letter, one lowercase letter, and one number.", "Invalid Password");
         return;
       }
-      
+
       // Validate password match
       if (password !== confirmPassword) {
         showModal("Passwords do not match!");
@@ -654,48 +699,43 @@
       // Store email for OTP use
       userEmail = email;
 
-      // Send initial registration data to the server
-      fetch('register.php', {
+      // Show loading state
+      const lookupBtn = document.querySelector('.button:not([onclick*="showMainPanel"])');
+      const originalText = lookupBtn.innerHTML;
+      lookupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> LOADING...';
+      lookupBtn.disabled = true;
+
+      // Lookup user data from master tables
+      fetch('lookup_user.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          firstname,
-          lastname,
-          mi,
-          email,
-          password
-        })
+        body: JSON.stringify({ email })
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-        return response.text(); // Get text first to handle empty responses
-      })
-      .then(text => {
-        try {
-          const data = JSON.parse(text);
-          if (data.status === 'success') {
-            userData = { user_id: data.user_id, role: data.role };
-            showRoleSpecificForm();
-          } else {
-            // Log full error details to console
-            console.error('Registration error:', data);
-            // Show detailed error if available
-            const errorMsg = data.message + (data.detail ? '\n\nDetails: ' + data.detail : '');
-            showModal(errorMsg);
-          }
-        } catch (e) {
-          console.error('JSON parse error:', e);
-          console.error('Response text:', text);
-          showModal('Server returned invalid response. Please check console for details.');
+      .then(response => response.json())
+      .then(data => {
+        lookupBtn.innerHTML = originalText;
+        lookupBtn.disabled = false;
+
+        if (data.status === 'success') {
+          // Store user data and proceed to confirmation
+          userData = {
+            email: email,
+            password: password,
+            user_info: data.user_info,
+            role: data.role
+          };
+          showUserConfirmation(data.user_info, data.role);
+        } else {
+          showModal(data.message, 'User Not Found', 'warning');
         }
       })
       .catch(error => {
+        lookupBtn.innerHTML = originalText;
+        lookupBtn.disabled = false;
         console.error('Error:', error);
-        showModal('An error occurred during registration: ' + error.message);
+        showModal('An error occurred while looking up your information. Please try again.');
       });
     }
 
@@ -772,66 +812,98 @@
         });
     }
 
-    function showRoleSpecificForm() {
+    function showUserConfirmation(userInfo, role) {
       const rightPanel = document.getElementById('right-panel');
       const panelContent = rightPanel.querySelector('.panel-content');
 
       // Trigger exit animation
       panelContent.classList.add('exit');
 
-      // Wait for the exit animation to finish, then replace with new content
+      // Wait for the exit animation to finish, then show confirmation
       setTimeout(() => {
-        let newContentHTML = '';
-        if (userData.role === 'student' || userData.role === 'non_acad') {
-          const roleTitle = userData.role === 'student' ? 'STUDENT' : 'NON-ACAD';
-          newContentHTML = `
+        let confirmationHTML = '';
+
+        if (role === 'student') {
+          confirmationHTML = `
             <div class="panel-content enter-start" id="panel-content">
-              <div class="form-title text-green-800">${roleTitle}</div>
-              <input type="text" id="student-id" placeholder="Student ID" class="form-input" />
-              <input type="text" id="contact-no" placeholder="Contact No." class="form-input" />
-              <input type="text" id="emergency-contact" placeholder="Emergency Contact" class="form-input" />
-              <!-- <div class="flex items-center my-4">
-                <input type="checkbox" id="terms-student" class="mr-2 accent-green-800 transform scale-125" />
-                <label for="terms-student" class="text-sm text-gray-600">I have read and agree to the Terms and Condition</label>
-              </div> -->
-              <div class="flex gap-4">
-                <button class="button" onclick="goBackToRoleSelection()" style="flex: 1; background-color: #6b7280;">BACK</button>
-                <button class="button" onclick="submitRoleSpecificForm()" style="flex: 2;">REGISTER</button>
+              <div class="form-title">CONFIRM YOUR INFO</div>
+              <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
+                Please verify that this information is correct before proceeding.
+              </p>
+
+              <div class="confirmation-info">
+                <div class="info-row">
+                  <span class="info-label">Student ID:</span>
+                  <span class="info-value">${userInfo.student_id}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Name:</span>
+                  <span class="info-value">${userInfo.firstname} ${userInfo.middle_initial ? userInfo.middle_initial + ' ' : ''}${userInfo.lastname}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Course:</span>
+                  <span class="info-value">${userInfo.course}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email:</span>
+                  <span class="info-value">${userInfo.email}</span>
+                </div>
+              </div>
+
+              <div class="flex gap-4 mt-6">
+                <button class="button" onclick="goBackToRegistration()" style="flex:1; background-color:#6b7280;">BACK</button>
+                <button class="button" onclick="proceedWithRegistration()" style="flex:2;">CONFIRM & CONTINUE</button>
               </div>
             </div>
           `;
-        } else if (userData.role === 'faculty') {
-          newContentHTML = `
+        } else if (role === 'faculty') {
+          confirmationHTML = `
             <div class="panel-content enter-start" id="panel-content">
-              <div class="form-title text-green-800">FACULTY</div>
-              <select id="department" class="form-input">
-                <option value="" disabled selected>Loading departments...</option>
-              </select>
-              <input type="text" id="position" placeholder="Position" class="form-input" />
-              <!-- <div class="flex items-center my-4">
-                <input type="checkbox" id="terms-faculty" class="mr-2 accent-green-800 transform scale-125" />
-                <label for="terms-faculty" class="text-sm text-gray-600">I have read and agree to the Terms and Condition</label>
-              </div> -->
-              <div class="button" onclick="submitRoleSpecificForm()">REGISTER</div>
+              <div class="form-title">CONFIRM YOUR INFO</div>
+              <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
+                Please verify that this information is correct before proceeding.
+              </p>
+
+              <div class="confirmation-info">
+                <div class="info-row">
+                  <span class="info-label">Faculty ID:</span>
+                  <span class="info-value">${userInfo.faculty_id}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Name:</span>
+                  <span class="info-value">${userInfo.firstname} ${userInfo.middle_initial ? userInfo.middle_initial + ' ' : ''}${userInfo.lastname}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Department:</span>
+                  <span class="info-value">${userInfo.department}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Position:</span>
+                  <span class="info-value">${userInfo.position}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email:</span>
+                  <span class="info-value">${userInfo.email}</span>
+                </div>
+              </div>
+
+              <div class="flex gap-4 mt-6">
+                <button class="button" onclick="goBackToRegistration()" style="flex:1; background-color:#6b7280;">BACK</button>
+                <button class="button" onclick="proceedWithRegistration()" style="flex:2;">CONFIRM & CONTINUE</button>
+              </div>
             </div>
           `;
         }
 
-        // Replace the entire panel content
-        rightPanel.innerHTML = newContentHTML;
-
-        // Load departments if faculty form
-        if (userData.role === 'faculty') {
-          loadDepartments();
-        }
+        rightPanel.innerHTML = confirmationHTML;
 
         // Find the new panel content and apply the enter animation
         const newContent = rightPanel.querySelector('.panel-content');
         setTimeout(() => {
           newContent.classList.remove('enter-start');
           newContent.classList.add('enter');
-        }, 10); // Small delay to ensure the animation triggers
-      }, 600); // Match the transition duration (0.6s)
+        }, 10);
+      }, 600);
     }
 
     function submitRoleSpecificForm() {
@@ -965,8 +1037,12 @@
               showModal('OTP verified but failed to complete registration: ' + error.message, 'Error', 'error');
             });
           } else {
-            // From login verification, show role-specific form
-            showRoleSpecificForm();
+            // From login verification or streamlined registration - redirect to appropriate page
+            const redirect_url = (userData.role === 'student' || userData.role === 'non_acad') ? '../STUDENT/index.php' : '../portal/home/home.html';
+            showModal('Email verified successfully! Redirecting...', 'Success', 'success');
+            setTimeout(() => {
+              window.location.href = redirect_url;
+            }, 1500);
           }
         } else {
           showModal('Verification failed: ' + data.message);
@@ -1065,39 +1141,63 @@
       }, 1000);
     }
 
-    function goBackToInitialForm() {
+    function goBackToRegistration() {
       const rightPanel = document.getElementById('right-panel');
       const panelContent = rightPanel.querySelector('.panel-content');
 
       // Trigger exit animation
       panelContent.classList.add('exit');
 
-      // Wait for the exit animation to finish, then replace with initial registration form
+      // Wait for the exit animation to finish, then go back to registration form
       setTimeout(() => {
         rightPanel.innerHTML = `
-          <div class="panel-content enter-start">
+          <div class="panel-content enter-start" id="panel-content">
             <div class="form-title">REGISTER</div>
-            <input type="text" id="firstname" placeholder="Firstname" class="form-input" />
-            <div class="name-row">
-              <input type="text" id="lastname" placeholder="Lastname" class="form-input lastname" />
-              <input type="text" id="mi" placeholder="M.I." class="form-input mi" />
-            </div>
-            <input type="email" id="email" placeholder="Email" class="form-input" />
+            <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
+              Enter your CVSU email address. Your information will be automatically populated from our records.
+            </p>
+            <input type="email" id="email" placeholder="Email (@cvsu.edu.ph only)" class="form-input" value="${userData.email}" />
             <div class="password-wrapper">
               <input type="password" id="password" placeholder="Password" class="form-input" />
-              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password-back')\" id="toggle-password-back">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', 'toggle-password')" id="toggle-password">
                 <i class="fas fa-eye"></i>
               </button>
+              <div id="password-requirements" class="password-requirements">
+                <div class="password-requirements-title">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>Password Requirements</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-length">
+                  <i class="fas fa-times-circle"></i>
+                  <span>At least 8 characters</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-uppercase">
+                  <i class="fas fa-times-circle"></i>
+                  <span>One uppercase letter</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-lowercase">
+                  <i class="fas fa-times-circle"></i>
+                  <span>One lowercase letter</span>
+                </div>
+                <div class="requirement-item requirement-unmet" id="req-number">
+                  <i class="fas fa-times-circle"></i>
+                  <span>One number</span>
+                </div>
+              </div>
             </div>
             <div class="password-wrapper">
               <input type="password" id="confirm-password" placeholder="Confirm Password" class="form-input" />
-              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'toggle-confirm-password-back')\" id="toggle-confirm-password-back">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'toggle-confirm-password')" id="toggle-confirm-password">
                 <i class="fas fa-eye"></i>
               </button>
+              <div id="password-mismatch" class="password-mismatch">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Passwords do not match</span>
+              </div>
             </div>
             <div class="flex gap-4 mt-4">
               <button class="button" onclick="showMainPanel()" style="flex:1; background-color:#6b7280;">BACK</button>
-              <button class="button" onclick="submitInitialForm()" style="flex:2;">NEXT</button>
+              <button class="button" onclick="lookupUserData()" style="flex:2;">LOOKUP INFO</button>
             </div>
           </div>
         `;
@@ -1106,8 +1206,102 @@
         setTimeout(() => {
           newContent.classList.remove('enter-start');
           newContent.classList.add('enter');
+
+          // Setup password validation again
+          const passwordInput = document.getElementById('password');
+          const confirmPasswordInput = document.getElementById('confirm-password');
+
+          if (passwordInput) {
+            passwordInput.addEventListener('focus', () => {
+              const requirementsEl = document.getElementById('password-requirements');
+              requirementsEl.classList.add('show');
+              requirementsEl.classList.remove('all-met');
+              
+              // Check if tooltip would go off-screen and reposition if needed
+              setTimeout(() => {
+                const rect = requirementsEl.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                
+                if (rect.left < 0) {
+                  // Tooltip is going off the left edge, position it below instead
+                  requirementsEl.style.right = 'auto';
+                  requirementsEl.style.left = '0';
+                  requirementsEl.style.top = 'calc(100% + 8px)';
+                  requirementsEl.style.transform = 'translateY(0)';
+                } else {
+                  // Reset to default positioning
+                  requirementsEl.style.right = 'calc(100% + 16px)';
+                  requirementsEl.style.left = 'auto';
+                  requirementsEl.style.top = '50%';
+                  requirementsEl.style.transform = 'translateY(-50%) translateX(10px)';
+                }
+              }, 10);
+            });
+            passwordInput.addEventListener('blur', () => {
+              setTimeout(() => {
+                const requirementsEl = document.getElementById('password-requirements');
+                if (requirementsEl && !requirementsEl.matches(':hover')) {
+                  requirementsEl.classList.remove('show');
+                }
+              }, 200);
+            });
+            passwordInput.addEventListener('input', (e) => {
+              const validation = validatePassword(e.target.value);
+              checkPasswordMatch();
+
+              // Auto-hide tooltip when all requirements are met
+              if (validation.isValid) {
+                setTimeout(() => {
+                  document.getElementById('password-requirements').classList.add('all-met');
+                }, 500);
+              }
+            });
+          }
+
+          if (confirmPasswordInput) {
+            confirmPasswordInput.addEventListener('input', () => {
+              checkPasswordMatch();
+            });
+            confirmPasswordInput.addEventListener('focus', () => {
+              checkPasswordMatch();
+            });
+            confirmPasswordInput.addEventListener('blur', () => {
+              setTimeout(() => {
+                document.getElementById('password-mismatch').classList.remove('show');
+              }, 200);
+            });
+          }
         }, 10);
       }, 600);
+    }
+
+    function proceedWithRegistration() {
+      // Create the user account with the looked-up data
+      fetch('register.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          password: userData.password,
+          user_info: userData.user_info,
+          role: userData.role
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          userData.user_id = data.user_id;
+          showOTPVerificationForm();
+        } else {
+          showModal(data.message, 'Registration Error', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showModal('An error occurred during registration setup.');
+      });
     }
 
     function goBackToRoleSelection() {

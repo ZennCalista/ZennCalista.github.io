@@ -425,7 +425,20 @@ function loadProfile() {
         document.getElementById('profile-mi').value = p.middle_initial || '';
         document.getElementById('profile-lastname').value = p.lastname || '-';
         document.getElementById('profile-student-id').value = p.student_id || '-';
-        document.getElementById('profile-course').value = p.course || '-';
+        
+        // Set course value - ensure it matches an option
+        const courseSelect = document.getElementById('profile-course');
+        courseSelect.value = p.course || '';
+        // If value didn't set properly, try to find and select the option manually
+        if (courseSelect.value !== p.course && p.course) {
+          for (let i = 0; i < courseSelect.options.length; i++) {
+            if (courseSelect.options[i].value === p.course) {
+              courseSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }
+        
         document.getElementById('profile-email').value = p.contact_email || '-';
         document.getElementById('profile-phone').value = p.contact_no || '-';
         document.getElementById('profile-emergency').value = p.emergency_contact || '-';
@@ -463,7 +476,20 @@ function cancelEdit() {
   document.getElementById('profile-mi').value = originalProfileData.middle_initial || '';
   document.getElementById('profile-lastname').value = originalProfileData.lastname || '-';
   document.getElementById('profile-student-id').value = originalProfileData.student_id || '-';
-  document.getElementById('profile-course').value = originalProfileData.course || '-';
+  
+  // Set course value - ensure it matches an option
+  const courseSelect = document.getElementById('profile-course');
+  courseSelect.value = originalProfileData.course || '';
+  // If value didn't set properly, try to find and select the option manually
+  if (courseSelect.value !== originalProfileData.course && originalProfileData.course) {
+    for (let i = 0; i < courseSelect.options.length; i++) {
+      if (courseSelect.options[i].value === originalProfileData.course) {
+        courseSelect.selectedIndex = i;
+        break;
+      }
+    }
+  }
+  
   document.getElementById('profile-phone').value = originalProfileData.contact_no || '-';
   document.getElementById('profile-emergency').value = originalProfileData.emergency_contact || '-';
   
