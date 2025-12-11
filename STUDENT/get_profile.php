@@ -16,6 +16,7 @@ $sql = "SELECT
             students.contact_no, 
             students.emergency_contact,
             users.firstname, 
+            users.middle_initial, 
             users.lastname, 
             users.email
         FROM students
@@ -27,10 +28,11 @@ $stmt->execute();
 $result = $stmt->get_result();
 if ($row = $result->fetch_assoc()) {
     // Build full name
-    $full_name = trim($row['firstname'] . ' ' . $row['lastname']);
+    $full_name = trim($row['firstname'] . ($row['middle_initial'] ? ' ' . $row['middle_initial'] . ' ' : ' ') . $row['lastname']);
     $profile = [
         'full_name' => $full_name,
         'firstname' => $row['firstname'],
+        'mi' => $row['middle_initial'],
         'lastname' => $row['lastname'],
         'student_id' => $row['student_id'],
         'course' => $row['course'],

@@ -7,12 +7,12 @@ $user_id = $_SESSION['user_id'] ?? null;
 $user = null;
 
 if ($user_id) {
-    $stmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT firstname, lastname, middle_initial FROM users WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stmt->bind_result($firstname, $lastname);
+    $stmt->bind_result($firstname, $lastname, $middle_initial);
     if ($stmt->fetch()) {
-        $user = ['firstname' => $firstname, 'lastname' => $lastname];
+        $user = ['firstname' => $firstname, 'lastname' => $lastname, 'middle_initial' => $middle_initial];
     }
     $stmt->close();
 }
@@ -299,6 +299,11 @@ if ($user_id) {
             <input type="text" class="profile-input" id="profile-firstname" disabled>
           </div>
 
+          <div class="label">Middle Initial:</div>
+          <div class="value">
+            <input type="text" class="profile-input" id="profile-mi" disabled maxlength="10" placeholder="M.I.">
+          </div>
+
           <div class="label">Last Name:</div>
           <div class="value">
             <input type="text" class="profile-input" id="profile-lastname" disabled>
@@ -417,6 +422,7 @@ function loadProfile() {
         
         // Use firstname and lastname directly from backend
         document.getElementById('profile-firstname').value = p.firstname || '-';
+        document.getElementById('profile-mi').value = p.middle_initial || '';
         document.getElementById('profile-lastname').value = p.lastname || '-';
         document.getElementById('profile-student-id').value = p.student_id || '-';
         document.getElementById('profile-course').value = p.course || '-';
@@ -437,6 +443,7 @@ function toggleEditMode() {
   
   // Enable editable fields
   document.getElementById('profile-firstname').disabled = false;
+  document.getElementById('profile-mi').disabled = false;
   document.getElementById('profile-lastname').disabled = false;
   document.getElementById('profile-student-id').disabled = false;
   document.getElementById('profile-course').disabled = false;
@@ -453,6 +460,7 @@ function cancelEdit() {
   
   // Restore original values
   document.getElementById('profile-firstname').value = originalProfileData.firstname || '-';
+  document.getElementById('profile-mi').value = originalProfileData.middle_initial || '';
   document.getElementById('profile-lastname').value = originalProfileData.lastname || '-';
   document.getElementById('profile-student-id').value = originalProfileData.student_id || '-';
   document.getElementById('profile-course').value = originalProfileData.course || '-';
@@ -461,6 +469,7 @@ function cancelEdit() {
   
   // Disable fields
   document.getElementById('profile-firstname').disabled = true;
+  document.getElementById('profile-mi').disabled = true;
   document.getElementById('profile-lastname').disabled = true;
   document.getElementById('profile-student-id').disabled = true;
   document.getElementById('profile-course').disabled = true;
@@ -474,6 +483,7 @@ function cancelEdit() {
 
 function saveProfile() {
   const firstName = document.getElementById('profile-firstname').value.trim();
+  const mi = document.getElementById('profile-mi').value.trim();
   const lastName = document.getElementById('profile-lastname').value.trim();
   const studentId = document.getElementById('profile-student-id').value.trim();
   const course = document.getElementById('profile-course').value.trim();
@@ -504,6 +514,7 @@ function saveProfile() {
   
   const profileData = {
     firstname: firstName,
+    mi: mi,
     lastname: lastName,
     student_id: studentId,
     course: course,
@@ -534,8 +545,9 @@ function saveProfile() {
       
       // Update original data
       originalProfileData.firstname = firstName;
+      originalProfileData.mi = mi;
       originalProfileData.lastname = lastName;
-      originalProfileData.full_name = firstName + ' ' + lastName;
+      originalProfileData.full_name = firstName + (mi ? ' ' + mi + ' ' : ' ') + lastName;
       originalProfileData.student_id = studentId;
       originalProfileData.course = course;
       originalProfileData.contact_no = contactNo;
@@ -544,6 +556,7 @@ function saveProfile() {
       // Exit edit mode
       isEditMode = false;
       document.getElementById('profile-firstname').disabled = true;
+      document.getElementById('profile-mi').disabled = true;
       document.getElementById('profile-lastname').disabled = true;
       document.getElementById('profile-student-id').disabled = true;
       document.getElementById('profile-course').disabled = true;

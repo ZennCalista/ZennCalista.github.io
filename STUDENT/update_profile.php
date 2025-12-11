@@ -31,6 +31,7 @@ if (empty($data['contact_no']) || empty($data['emergency_contact'])) {
 }
 
 $firstname = trim($data['firstname']);
+$mi = !empty($data['mi']) ? trim($data['mi']) : null;
 $lastname = trim($data['lastname']);
 $student_id = !empty($data['student_id']) ? trim($data['student_id']) : null;
 $course = !empty($data['course']) ? trim($data['course']) : null;
@@ -54,9 +55,9 @@ if ($student_id) {
 }
 
 // Update the users table (firstname and lastname)
-$user_sql = "UPDATE users SET firstname = ?, lastname = ? WHERE id = ?";
+$user_sql = "UPDATE users SET firstname = ?, middle_initial = ?, lastname = ? WHERE id = ?";
 $user_stmt = $conn->prepare($user_sql);
-$user_stmt->bind_param('ssi', $firstname, $lastname, $user_id);
+$user_stmt->bind_param('sssi', $firstname, $mi, $lastname, $user_id);
 $user_updated = $user_stmt->execute();
 $user_stmt->close();
 

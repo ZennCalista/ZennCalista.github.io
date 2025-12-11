@@ -40,6 +40,7 @@ if (json_last_error() !== JSON_ERROR_NONE || $data === null) {
 if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['email']) && !empty($data['password'])) {
     $firstname = $data['firstname'];
     $lastname = $data['lastname'];
+    $mi = $data['mi'] ?? ''; // Middle initial, optional field
     $email = $data['email'];
     $password = password_hash($data['password'], PASSWORD_DEFAULT); // Hash the password
     // Determine role based on email
@@ -74,7 +75,7 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
     $email_check->close();
 
     // Insert into the users table with verification_status = unverified
-    $sql = "INSERT INTO users (firstname, lastname, email, password, role, verification_status) VALUES (?, ?, ?, ?, ?, 'unverified')";
+    $sql = "INSERT INTO users (firstname, lastname, middle_initial, email, password, role, verification_status) VALUES (?, ?, ?, ?, ?, ?, 'unverified')";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         error_log('register.php prepare failed: ' . $conn->error);
@@ -82,7 +83,7 @@ if (!empty($data['firstname']) && !empty($data['lastname']) && !empty($data['ema
         $conn->close();
         exit;
     }
-    $stmt->bind_param("sssss", $firstname, $lastname, $email, $password, $role);
+    $stmt->bind_param("ssssss", $firstname, $lastname, $mi, $email, $password, $role);
 
     if ($stmt->execute()) {
         $user_id = $stmt->insert_id;
