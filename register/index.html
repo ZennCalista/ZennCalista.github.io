@@ -864,7 +864,7 @@
 
         // Validate required fields
         if (!department || !position) {
-          alert("Please fill out all required fields.");
+          showModal("Please fill out all required fields.", 'Validation Error', 'warning');
           return;
         }
 
@@ -929,7 +929,7 @@
       .then(response => response.json())
       .then(data => {
         if (data.status === 'success') {
-          alert(data.message);
+          showModal(data.message, 'Success', 'success');
           // If we have role-specific data, submit it now
           if (roleSpecificData) {
             fetch('register.php', {
@@ -962,7 +962,7 @@
             })
             .catch(error => {
               console.error('Error submitting role-specific data:', error);
-              alert('OTP verified but failed to complete registration: ' + error.message);
+              showModal('OTP verified but failed to complete registration: ' + error.message, 'Error', 'error');
             });
           } else {
             // From login verification, show role-specific form
