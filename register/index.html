@@ -559,6 +559,17 @@
                 }, 500);
               }
             });
+            // Disable copy and paste for password fields
+            passwordInput.addEventListener('paste', (e) => {
+              e.preventDefault();
+              showModal('Copy and paste is not allowed for password fields.', 'Security Notice', 'warning');
+            });
+            passwordInput.addEventListener('copy', (e) => {
+              e.preventDefault();
+            });
+            passwordInput.addEventListener('cut', (e) => {
+              e.preventDefault();
+            });
           }
           
           if (confirmPasswordInput) {
@@ -572,6 +583,17 @@
               setTimeout(() => {
                 document.getElementById('password-mismatch').classList.remove('show');
               }, 200);
+            });
+            // Disable copy and paste for confirm password field
+            confirmPasswordInput.addEventListener('paste', (e) => {
+              e.preventDefault();
+              showModal('Copy and paste is not allowed for password fields.', 'Security Notice', 'warning');
+            });
+            confirmPasswordInput.addEventListener('copy', (e) => {
+              e.preventDefault();
+            });
+            confirmPasswordInput.addEventListener('cut', (e) => {
+              e.preventDefault();
             });
           }
         }, 10); // Small delay to ensure the animation triggers
@@ -1256,6 +1278,17 @@
                 }, 500);
               }
             });
+            // Disable copy and paste for password fields
+            passwordInput.addEventListener('paste', (e) => {
+              e.preventDefault();
+              showModal('Copy and paste is not allowed for password fields.', 'Security Notice', 'warning');
+            });
+            passwordInput.addEventListener('copy', (e) => {
+              e.preventDefault();
+            });
+            passwordInput.addEventListener('cut', (e) => {
+              e.preventDefault();
+            });
           }
 
           if (confirmPasswordInput) {
@@ -1269,6 +1302,17 @@
               setTimeout(() => {
                 document.getElementById('password-mismatch').classList.remove('show');
               }, 200);
+            });
+            // Disable copy and paste for confirm password field
+            confirmPasswordInput.addEventListener('paste', (e) => {
+              e.preventDefault();
+              showModal('Copy and paste is not allowed for password fields.', 'Security Notice', 'warning');
+            });
+            confirmPasswordInput.addEventListener('copy', (e) => {
+              e.preventDefault();
+            });
+            confirmPasswordInput.addEventListener('cut', (e) => {
+              e.preventDefault();
             });
           }
         }, 10);
