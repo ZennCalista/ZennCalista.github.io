@@ -113,8 +113,8 @@ if ($user_id) {
                 <th>Relevance</th>
                 <th>Organization</th>
                 <th>Experience</th>
-                <!-- <th>Suggestion</th> -->
-                <th>Recommend</th>
+                <th>Suggestion</th>
+                <th>Expectations Met</th>
               </tr>
             </thead>
             <tbody id="all-evals-table-body">
@@ -129,7 +129,7 @@ if ($user_id) {
         <div class="eval-modal-content" style="max-width:600px;">
           <span class="close-modal" id="close-detailed-eval-modal">&times;</span>
           <h2>Evaluation Form: <span id="modal-program-title">Program Name</span></h2>
-          <div class="eval-instructions">
+          <div class="eval-instructions" style="margin-bottom: 16px;">
             <b>Instructions:</b> Please complete the evaluation by rating each aspect of the program on a scale of 1 to 5 (1 = Poor, 5 = Excellent) and provide any additional comments.
           </div>
           <form id="detailed-eval-form" style="background:#e8f5e9; padding:24px 32px; border-radius:16px; border:2px solid #66bb6a; margin-top:0;">
@@ -200,9 +200,14 @@ if ($user_id) {
                 <textarea id="suggestion-other-text" name="suggestion-other" placeholder="Please specify your suggestion..." rows="4" style="display:none;width:100%;padding:10px;border-radius:4px;border:1px solid #ccc;background:#f1f8e9;font-family:inherit;font-size:1em;resize:vertical;margin-top:8px;"></textarea>
               </div>
               <div style="margin-top:12px;">
-                <label>Would you Recommend this Program?</label>
-                <input type="radio" name="recommend" value="yes" required> yes
-                <input type="radio" name="recommend" value="no"> no
+                <label>How well did the program meet your expectations?</label>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                  <label><input type="radio" name="expectations_met" value="5" required> 5 - Far Exceeded Expectations</label>
+                  <label><input type="radio" name="expectations_met" value="4"> 4 - Exceeded Expectations</label>
+                  <label><input type="radio" name="expectations_met" value="3"> 3 - Met Expectations</label>
+                  <label><input type="radio" name="expectations_met" value="2"> 2 - Below Expectations</label>
+                  <label><input type="radio" name="expectations_met" value="1"> 1 - Far Below Expectations</label>
+                </div>
               </div>
             </div>
             <button type="submit" style="margin-top:22px;padding:10px 40px;font-size:1.1em;background:#f1f8e9;border:1.5px solid #66bb6a;border-radius:6px;">SUBMIT</button>
@@ -228,7 +233,7 @@ if ($user_id) {
                   <th>Organization</th>
                   <th>Experience</th>
                   <th>Suggestion</th>
-                  <th>Recommend</th>
+                  <th>Expectations Met</th>
                 </tr>
               </thead>
               <tbody id="all-evals-table-body">

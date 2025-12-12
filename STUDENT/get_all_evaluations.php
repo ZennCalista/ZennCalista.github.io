@@ -30,7 +30,7 @@ while ($row = $result->fetch_assoc()) {
         'organization' => $row['organization'],
         'experience' => $row['experience'],
         'suggestion' => $row['suggestion'],
-        'recommend' => $row['recommend']
+        'expectations_met' => $row['expectations_met']
     ];
 }
 echo json_encode(['evaluations' => $evaluations]);

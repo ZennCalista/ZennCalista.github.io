@@ -1,6 +1,18 @@
 document.addEventListener("DOMContentLoaded", function () {
   let currentPage = 1;
 
+  // Helper function to convert expectations values to labels
+  function getExpectationsLabel(value) {
+    const labels = {
+      '5': 'Far Exceeded',
+      '4': 'Exceeded', 
+      '3': 'Met',
+      '2': 'Below',
+      '1': 'Far Below'
+    };
+    return labels[value] || value;
+  }
+
   // Function to load evaluations with pagination
   function loadEvaluations(page = 1) {
     fetch(`get_evaluations.php?page=${page}`)
@@ -168,10 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
       organization: form.organization.value,
       experience: form.experience.value,
       suggestion: suggestionValue,
-      recommend: Array.from(form.recommend)
-        .filter(cb => cb.checked)
-        .map(cb => cb.value)
-        .join(', ')
+      expectations_met: form.expectations_met.value
     };
     fetch('submit_detailed_evaluation.php', {
       method: 'POST',
@@ -210,7 +219,8 @@ document.addEventListener("DOMContentLoaded", function () {
           <td>${ev.relevance}</td>
           <td>${ev.organization}</td>
           <td>${ev.experience}</td>
-          <td>${ev.recommend || ''}</td>
+          <td>${ev.suggestion || ''}</td>
+          <td>${getExpectationsLabel(ev.expectations_met) || ''}</td>
         `;
         tbody.appendChild(tr);
       });

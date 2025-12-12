@@ -41,10 +41,10 @@ if ($eval_check->get_result()->num_rows > 0) {
 }
 
 $stmt = $conn->prepare("INSERT INTO detailed_evaluations
-  (program_id, student_id, student_name, content, facilitators, relevance, organization, experience, suggestion, recommend)
+  (program_id, student_id, student_name, content, facilitators, relevance, organization, experience, suggestion, expectations_met)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 $stmt->bind_param(
-  'iissiiiiis',
+  'iissiiiiss',
   $data['program_id'],
   $user_id,
   $student_name,
@@ -54,7 +54,7 @@ $stmt->bind_param(
   $data['organization'],
   $data['experience'],
   $data['suggestion'],
-  $data['recommend']
+  $data['expectations_met']
 );
 
 if ($stmt->execute()) {

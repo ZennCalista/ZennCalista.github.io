@@ -80,7 +80,29 @@ if ($eval_result) {
 }
 $eval_stmt->close();
 
-// Fetch active notifications
+// Helper function to convert expectations values to labels
+function getExpectationsLabel($value) {
+    $labels = [
+        '5' => 'Far Exceeded',
+        '4' => 'Exceeded',
+        '3' => 'Met',
+        '2' => 'Below',
+        '1' => 'Far Below'
+    ];
+    return $labels[$value] ?? 'Not Rated';
+}
+
+// Helper function to get CSS class for expectations level
+function getExpectationsClass($value) {
+    switch ($value) {
+        case '5': return 'excellent';
+        case '4': return 'good';
+        case '3': return 'average';
+        case '2': return 'needs-improvement';
+        case '1': return 'critical';
+        default: return 'unknown';
+    }
+}
 $notifications_query = "SELECT message, priority
                        FROM notifications
                        WHERE is_active = 1 AND (expires_at IS NULL OR expires_at >= CURDATE())
@@ -427,12 +449,12 @@ if ($notifications_result) {
                 </div>
                 <div class="eval-suggestion">
                   <strong>Suggestion:</strong>
-                  <span><?php echo nl2br(htmlspecialchars(($eval['suggestion'] && $eval['suggestion'] !== '0') ? $eval['suggestion'] : '-')); ?></span>
+                  <span><?php echo nl2br(htmlspecialchars($eval['suggestion'] ?: '-')); ?></span>
                 </div>
-                <div class="eval-recommend">
-                  <span class="recommend-badge <?php echo strtolower($eval['recommend'] ?? ''); ?>">
-                    <i class="fas fa-thumbs-up"></i>
-                    <?php echo htmlspecialchars($eval['recommend'] ?? '-'); ?>
+                <div class="eval-expectations">
+                  <span class="expectations-badge <?php echo getExpectationsClass($eval['expectations_met'] ?? ''); ?>">
+                    <i class="fas fa-chart-line"></i>
+                    <?php echo getExpectationsLabel($eval['expectations_met'] ?? ''); ?>
                   </span>
                   <?php if ($program_info && ($program_info['status'] === 'needs-improvement' || $program_info['status'] === 'critical')): ?>
                     <button class="improvement-btn" onclick="showImprovementTips('<?php echo htmlspecialchars($program_name); ?>', <?php echo $program_info['average']; ?>)">
@@ -593,13 +615,13 @@ if ($notifications_result) {
       margin-bottom: 2px;
       min-height: 32px;
     }
-    .eval-recommend {
+    .eval-expectations {
       margin-top: 4px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .recommend-badge {
+    .expectations-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -613,11 +635,23 @@ if ($notifications_result) {
       letter-spacing: 0.5px;
       animation: fadeInUp 0.7s;
     }
-    .recommend-badge.no {
+    .expectations-badge.excellent {
+      background: #27ae60;
+    }
+    .expectations-badge.good {
+      background: #3498db;
+    }
+    .expectations-badge.average {
+      background: #f39c12;
+    }
+    .expectations-badge.needs-improvement {
+      background: #e67e22;
+    }
+    .expectations-badge.critical {
       background: #e74c3c;
     }
-    .recommend-badge.yes {
-      background: #59a96a;
+    .expectations-badge.unknown {
+      background: #95a5a6;
     }
     .eval-card.empty {
       background: #fffbe4;
