@@ -132,7 +132,7 @@
     <!-- Edit Actions -->
     <div class="edit-actions" id="edit-actions">
       <button class="save-btn" id="save-btn">Save Changes</button>
-      <button class="cancel-btn" id="cancel-btn">✖ Cancel</button>
+      <button class="cancel-btn" id="cancel-btn" style="display: none;">✖ Cancel</button>
     </div>
 
     <!-- Coordinators Grid -->
@@ -343,7 +343,7 @@
       const editModeBtn = document.getElementById('edit-mode-btn');
       const editActions = document.getElementById('edit-actions');
       const saveBtn = document.getElementById('save-btn');
-      const cancelBtn = document.getElementById('cancel-btn');
+      // const cancelBtn = document.getElementById('cancel-btn');
       const addCoordinatorBtn = document.getElementById('add-coordinator-btn');
 
       // Modal elements
@@ -507,11 +507,11 @@
         }
       });
 
-      cancelBtn.addEventListener('click', function() {
-        isEditMode = false;
-        toggleEditMode();
-        loadCoordinators(); // Reload original data
-      });
+      // cancelBtn.addEventListener('click', function() {
+      //   isEditMode = false;
+      //   toggleEditMode();
+      //   loadCoordinators(); // Reload original data
+      // });
 
       // Department dropdown handler - show/hide "Others" input
       const departmentSelect = document.getElementById('coordinator-department');
