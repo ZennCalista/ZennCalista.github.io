@@ -630,6 +630,21 @@
         setTimeout(() => {
           newContent.classList.remove('enter-start');
           newContent.classList.add('enter');
+          
+          // Add security restrictions to login password field
+          const loginPasswordInput = document.getElementById('login-password');
+          if (loginPasswordInput) {
+            loginPasswordInput.addEventListener('paste', (e) => {
+              e.preventDefault();
+              showModal('Copy and paste is not allowed for password fields.', 'Security Notice', 'warning');
+            });
+            loginPasswordInput.addEventListener('copy', (e) => {
+              e.preventDefault();
+            });
+            loginPasswordInput.addEventListener('cut', (e) => {
+              e.preventDefault();
+            });
+          }
         }, 10);
       }, 600);
     }
