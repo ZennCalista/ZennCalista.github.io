@@ -353,6 +353,7 @@ if ($user_id) {
             <a href="Feedback.php" class="nav-item"><i class="fas fa-comment-dots"></i> Feedback</a>
             <a href="Reports.php" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
             <!-- <a href="Profile.php" class="nav-item active"><i class="fas fa-user"></i> Profile</a> -->
+            <a href="certificates.php" class="nav-item"><i class="fas fa-certificate"></i> Certificates</a>
         </nav>
         <div class="sidebar-bottom">
             <a href="Profile.php" class="user-info" style="text-decoration: none; color: inherit; cursor: pointer;">
