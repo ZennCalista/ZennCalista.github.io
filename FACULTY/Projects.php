@@ -1109,32 +1109,42 @@ $unique_sdgs = count(array_unique($all_sdgs));
                 </div>
                 
                 <div class="notifications">
-                    <h3>🎯 Project Insights</h3>
-                    
-                    <div class="note">
-                        <strong>📊 Quick Stats:</strong><br>
-                        • <?php echo $total_projects; ?> individual projects<br>
-                        • <?php echo count($active_projects); ?> active projects<br>
-                        • <?php echo $unique_sdgs; ?> SDG goals targeted
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3>🔔 Notifications</h3>
+                        <button id="clear-notifications-btn" style="background: #b30000; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; font-weight: bold;">Clear All</button>
                     </div>
-
-                    <?php if (count($active_projects) > 0): ?>
-                        <div class="note">
-                            <strong>🔄 Active Projects:</strong><br>
-                            <?php foreach (array_slice($active_projects, 0, 3) as $project): ?>
-                                • <?php echo htmlspecialchars($project['project_title']); ?><br>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="note">
-                        <strong>💡 Quick Actions:</strong><br>
-                        • <a href="Create.php" style="color: #28a745;">Create new program</a><br>
-                        <?php if ($use_new_table): ?>
-                        • <a href="#" onclick="openProjectModal()" style="color: #28a745;">Add individual project</a><br>
-                        <?php endif; ?>
-                        • <a href="reports.php" style="color: #28a745;">View project reports</a>
-                    </div>
+                    <?php if (empty($notifications)) { ?>
+                        <p class="no-notifications">No notifications at this time.</p>
+                    <?php } else { ?>
+                        <?php foreach ($notifications as $notification) { 
+                            // Icon, label, and class for priority
+                            switch ($notification['priority']) {
+                                case 'high':
+                                    $icon = '<i class="fas fa-exclamation-circle" style="color:#e53935;"></i>';
+                                    $label = 'Urgent';
+                                    $class = 'notif-high';
+                                    break;
+                                case 'medium':
+                                    $icon = '<i class="fas fa-exclamation-triangle" style="color:#fbc02d;"></i>';
+                                    $label = 'Reminder';
+                                    $class = 'notif-medium';
+                                    break;
+                                default:
+                                    $icon = '<i class="fas fa-check-circle" style="color:#43a047;"></i>';
+                                    $label = 'FYI';
+                                    $class = 'notif-low';
+                            }
+                        ?>
+                            <div class="note <?php echo $class; ?>">
+                                <span class="notif-icon"><?php echo $icon; ?></span>
+                                <span class="notif-label"><?php echo $label; ?></span>
+                                <?php echo htmlspecialchars($notification['message']); ?>
+                                <?php if ($notification['expires_at']): ?>
+                                    <div class="notif-date">Expires: <?php echo htmlspecialchars($notification['expires_at']); ?></div>
+                                <?php endif; ?>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
                 </div>
             </div>
         </div>
@@ -1350,6 +1360,106 @@ $unique_sdgs = count(array_unique($all_sdgs));
         }
         <?php endif; ?>
 
+        // Clear notifications handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const clearBtn = document.getElementById('clear-notifications-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', showClearModal);
+            }
+
+            // Close modal when clicking outside
+            const overlay = document.getElementById('clearModalOverlay');
+            if (overlay) {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        closeClearModal();
+                    }
+                });
+            }
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeClearModal();
+                }
+            });
+        });
+
+        // Modal functions
+        function showClearModal() {
+            document.getElementById('clearModalOverlay').style.display = 'block';
+        }
+
+        function closeClearModal() {
+            document.getElementById('clearModalOverlay').style.display = 'none';
+        }
+
+        function confirmClearNotifications() {
+            fetch('clear_notifications.php')
+                .then(response => response.text())
+                .then(text => {
+                    if (text === 'Notifications cleared successfully') {
+                        // Hide all notification notes
+                        document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
+                        // Show no notifications message if not already present
+                        if (!document.querySelector('.no-notifications')) {
+                            const noNotif = document.createElement('p');
+                            noNotif.className = 'no-notifications';
+                            noNotif.textContent = 'No notifications at this time.';
+                            document.querySelector('.notifications').appendChild(noNotif);
+                        }
+                        closeClearModal();
+                        showGeneralModal('Notifications cleared successfully!', 'success');
+                    } else {
+                        closeClearModal();
+                        showGeneralModal('Failed to clear notifications: ' + text, 'error');
+                    }
+                })
+                .catch(error => {
+                    closeClearModal();
+                    showGeneralModal('Error clearing notifications: ' + error.message, 'error');
+                });
+        }
+
+        // General Modal functions
+        function showGeneralModal(message, type = 'info') {
+            const modal = document.getElementById('generalModalOverlay');
+            const icon = document.getElementById('general-modal-icon');
+            const title = document.getElementById('general-modal-title');
+            const messageEl = document.getElementById('general-modal-message');
+
+            messageEl.textContent = message;
+
+            // Update icon and title based on type
+            switch (type) {
+                case 'success':
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = '#43a047';
+                    title.textContent = 'Success';
+                    break;
+                case 'warning':
+                    icon.className = 'fas fa-exclamation-triangle';
+                    icon.style.color = '#f39c12';
+                    title.textContent = 'Warning';
+                    break;
+                case 'error':
+                    icon.className = 'fas fa-times-circle';
+                    icon.style.color = '#e74c3c';
+                    title.textContent = 'Error';
+                    break;
+                default:
+                    icon.className = 'fas fa-info-circle';
+                    icon.style.color = '#2196f3';
+                    title.textContent = 'Information';
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function closeGeneralModal() {
+            document.getElementById('generalModalOverlay').style.display = 'none';
+        }
+
         // Add smooth animations
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.project-card');
@@ -1362,6 +1472,23 @@ $unique_sdgs = count(array_unique($all_sdgs));
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
+            });
+
+            // Close general modal when clicking outside
+            const generalOverlay = document.getElementById('generalModalOverlay');
+            if (generalOverlay) {
+                generalOverlay.addEventListener('click', function(e) {
+                    if (e.target === generalOverlay) {
+                        closeGeneralModal();
+                    }
+                });
+            }
+
+            // Close general modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeGeneralModal();
+                }
             });
         });
     </script>

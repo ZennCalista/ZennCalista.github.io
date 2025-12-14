@@ -202,7 +202,7 @@ if ($selected_program_id != 'all') {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>eTracker Faculty Attendance</title>
+  <title>eTracker Attendance</title>
   <link rel="stylesheet" href="sample.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -360,7 +360,7 @@ if ($selected_program_id != 'all') {
       <!-- Center Content -->
       <div class="main-content">
         <header class="topbar">
-          <div class="role-label">Faculty Attendance</div>
+          <div class="role-label">Attendance</div>
           <div class="last-login">Last login: <?php echo date('m-d-y H:i:s'); ?></div>
 </header>
 
@@ -675,6 +675,9 @@ if ($selected_program_id != 'all') {
       width: 80%;
       max-width: 500px;
       border-radius: 15px;
+    }
+    .modal-content h2 {
+      padding-bottom: 10px;
     }
     .close {
       color: #aaa;

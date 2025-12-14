@@ -190,6 +190,138 @@
       background: rgba(0, 0, 0, 0.5);
       z-index: 10000;
     }
+
+    /* Pagination Styles */
+    .pagination-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 15px;
+      border-top: 1px solid #e0e0e0;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .pagination-info {
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pagination-btn {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 8px 16px;
+      color: #495057;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: #3bb77e;
+      color: white;
+      border-color: #3bb77e;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(59, 183, 126, 0.2);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .pagination-numbers {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 0 15px;
+    }
+
+    .pagination-number {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #495057;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .pagination-number:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+    }
+
+    .pagination-number.active {
+      background: #3bb77e;
+      color: white;
+      border-color: #3bb77e;
+      font-weight: 600;
+    }
+
+    .pagination-ellipsis {
+      color: #6c757d;
+      padding: 0 8px;
+      font-size: 14px;
+    }
+
+    /* Responsive pagination */
+    @media (max-width: 768px) {
+      .pagination-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+      }
+
+      .pagination-controls {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .pagination-numbers {
+        margin: 0;
+        order: -1;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .pagination-info {
+        text-align: center;
+        order: 1;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .pagination-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      .pagination-number {
+        padding: 6px 10px;
+        min-width: 35px;
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -436,6 +568,11 @@
     let allPrograms = [];
     let programsMap = {};
 
+    // Pagination variables
+    let currentPage = 1;
+    const pageSize = 10; // Show 10 documents per page
+    let currentFilteredDocs = []; // Store current filtered documents for pagination
+
     // Simple debounce utility for live search
     function debounce(fn, wait) {
       let timeout;
@@ -552,7 +689,7 @@
     function renderDocumentsTable(docs) {
       const tbody = document.getElementById('documentsTableBody');
       tbody.innerHTML = '';
-      
+
       if (!docs || docs.length === 0) {
         tbody.innerHTML = `
           <tr>
@@ -562,17 +699,31 @@
             </td>
           </tr>
         `;
+        // Remove pagination if no documents
+        removePagination();
         return;
       }
+
+      // Calculate pagination
+      const totalPages = Math.ceil(docs.length / pageSize);
       
-      docs.forEach(doc => {
+      // Adjust currentPage if out of bounds
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+      
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, docs.length);
+      const pageDocs = docs.slice(startIndex, endIndex);
+
+      // Render current page documents
+      pageDocs.forEach(doc => {
         const row = document.createElement('tr');
         row.className = `status-${doc.status}`;
-        
+
         const uploadDate = new Date(doc.upload_date).toLocaleDateString();
         const statusBadge = getStatusBadge(doc.status);
         const typeBadge = getTypeBadge(doc.document_type);
-        
+
         row.innerHTML = `
           <td class="document-cell">
             <div class="document-info">
@@ -608,8 +759,92 @@
         `;
         tbody.appendChild(row);
       });
-      
+
+      // Add pagination controls
+      renderPagination(totalPages, docs.length);
+
       updateStats(docs);
+    }
+
+    function renderPagination(totalPages, totalItems) {
+      // Remove existing pagination
+      removePagination();
+
+      if (totalPages <= 1) return;
+
+      const tableContainer = document.querySelector('.table-container');
+      const paginationDiv = document.createElement('div');
+      paginationDiv.className = 'pagination-container';
+      paginationDiv.innerHTML = `
+        <div class="pagination-info">
+          Showing ${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, totalItems)} of ${totalItems} documents
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+
+          <div class="pagination-numbers">
+            ${generatePageNumbers(totalPages)}
+          </div>
+
+          <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      `;
+
+      tableContainer.appendChild(paginationDiv);
+    }
+
+    function generatePageNumbers(totalPages) {
+      let pages = '';
+
+      // Show max 5 page numbers
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      // Adjust start page if we're near the end
+      if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      // Add first page and ellipsis if needed
+      if (startPage > 1) {
+        pages += `<button class="pagination-number" onclick="changePage(1)">1</button>`;
+        if (startPage > 2) {
+          pages += `<span class="pagination-ellipsis">...</span>`;
+        }
+      }
+
+      // Add page numbers
+      for (let i = startPage; i <= endPage; i++) {
+        pages += `<button class="pagination-number ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+      }
+
+      // Add last page and ellipsis if needed
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          pages += `<span class="pagination-ellipsis">...</span>`;
+        }
+        pages += `<button class="pagination-number" onclick="changePage(${totalPages})">${totalPages}</button>`;
+      }
+
+      return pages;
+    }
+
+    function removePagination() {
+      const existingPagination = document.querySelector('.pagination-container');
+      if (existingPagination) {
+        existingPagination.remove();
+      }
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      // Re-render the table with current filtered documents
+      renderDocumentsTable(currentFilteredDocs);
     }
 
     function getStatusBadge(status) {
@@ -647,6 +882,8 @@
     }
 
     function applyFilters() {
+      currentPage = 1; // Reset to first page when applying filters
+      
       const typeFilter = document.getElementById('docTypeFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const dateFilter = document.getElementById('dateFilter').value;
@@ -683,14 +920,18 @@
         return true;
       });
       
+      currentFilteredDocs = filteredDocs; // Store filtered docs for pagination
       renderDocumentsTable(filteredDocs);
     }
 
     function clearFilters() {
+      currentPage = 1; // Reset to first page when clearing filters
+      
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
       document.getElementById('programFilter').value = '';
+      currentFilteredDocs = allDocuments; // Store all docs as filtered docs
       renderDocumentsTable(allDocuments);
     }
 
@@ -1000,6 +1241,7 @@
 
     async function loadDocuments() {
       const docs = await fetchDocuments();
+      currentFilteredDocs = docs; // Store all docs as initial filtered docs
       renderDocumentsTable(docs);
     }
 

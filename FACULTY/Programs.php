@@ -898,9 +898,9 @@ if ($notifications_result) {
             <?php endforeach; ?>
           <?php endif; ?>
           <div class="pagination">
-            <button onclick="goToPage('active', <?php echo $active_page - 1; ?>)" <?php echo $active_page <= 1 ? 'disabled' : ''; ?>>Previous</button>
+            <button type="button" onclick="goToPage('active', <?php echo $active_page - 1; ?>, <?php echo $active_total_pages; ?>)" <?php echo $active_page <= 1 ? 'disabled' : ''; ?>>Previous</button>
             <span>Page <?php echo $active_page; ?> of <?php echo $active_total_pages; ?></span>
-            <button onclick="goToPage('active', <?php echo $active_page + 1; ?>)" <?php echo $active_page >= $active_total_pages ? 'disabled' : ''; ?>>Next</button>
+            <button type="button" onclick="goToPage('active', <?php echo $active_page + 1; ?>, <?php echo $active_total_pages; ?>)" <?php echo $active_page >= $active_total_pages ? 'disabled' : ''; ?>>Next</button>
           </div>
         </div>
         <div id="ended-programs" class="tab-content">
@@ -928,9 +928,9 @@ if ($notifications_result) {
             <?php endforeach; ?>
           <?php endif; ?>
           <div class="pagination">
-            <button onclick="goToPage('ended', <?php echo $ended_page - 1; ?>)" <?php echo $ended_page <= 1 ? 'disabled' : ''; ?>>Previous</button>
+            <button type="button" onclick="goToPage('ended', <?php echo $ended_page - 1; ?>, <?php echo $ended_total_pages; ?>)" <?php echo $ended_page <= 1 ? 'disabled' : ''; ?>>Previous</button>
             <span>Page <?php echo $ended_page; ?> of <?php echo $ended_total_pages; ?></span>
-            <button onclick="goToPage('ended', <?php echo $ended_page + 1; ?>)" <?php echo $ended_page >= $ended_total_pages ? 'disabled' : ''; ?>>Next</button>
+            <button type="button" onclick="goToPage('ended', <?php echo $ended_page + 1; ?>, <?php echo $ended_total_pages; ?>)" <?php echo $ended_page >= $ended_total_pages ? 'disabled' : ''; ?>>Next</button>
           </div>
         </div>
       </div>
@@ -1101,7 +1101,8 @@ if ($notifications_result) {
     });
 
     // Pagination navigation (unchanged)
-    function goToPage(tab, page) {
+    function goToPage(tab, page, totalPages) {
+      if (page > totalPages || page < 1) return;
       const url = new URL(window.location);
       url.searchParams.set(`${tab}_page`, page);
       window.location.href = url.toString();
