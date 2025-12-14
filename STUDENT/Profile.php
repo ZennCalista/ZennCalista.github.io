@@ -240,6 +240,103 @@ if ($user_id) {
       font-style: italic;
       margin-top: 4px;
     }
+
+    /* Notification Modal */
+    .notification-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .notification-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 10001;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .notification-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .notification-modal-header i {
+      font-size: 2rem;
+    }
+
+    .notification-modal-header.success i {
+      color: #10b981;
+    }
+
+    .notification-modal-header.error i {
+      color: #ef4444;
+    }
+
+    .notification-modal-title {
+      font-size: 1.4rem;
+      color: #1b472b;
+      margin: 0;
+    }
+
+    .notification-modal-body {
+      margin-bottom: 24px;
+      font-size: 1.05rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .notification-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .notification-modal-btn {
+      padding: 10px 24px;
+      background: #10b981;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .notification-modal-btn:hover {
+      background: #059669;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
   </style>
 </head>
 <body>
@@ -404,6 +501,22 @@ if ($user_id) {
     </main>
   </div>
 
+  <!-- Notification Modal -->
+  <div class="notification-modal-overlay" id="notificationModalOverlay">
+    <div class="notification-modal">
+      <div class="notification-modal-header success" id="notificationModalHeader">
+        <i class="fas fa-check-circle"></i>
+        <h3 class="notification-modal-title" id="notificationModalTitle">Success</h3>
+      </div>
+      <div class="notification-modal-body">
+        <p id="notificationModalMessage"></p>
+      </div>
+      <div class="notification-modal-actions">
+        <button class="notification-modal-btn" onclick="closeNotificationModal()">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script>
 let originalProfileData = {};
 let isEditMode = false;
@@ -422,7 +535,7 @@ function loadProfile() {
         
         // Use firstname and lastname directly from backend
         document.getElementById('profile-firstname').value = p.firstname || '-';
-        document.getElementById('profile-mi').value = p.middle_initial || '';
+        document.getElementById('profile-mi').value = p.mi || '';
         document.getElementById('profile-lastname').value = p.lastname || '-';
         document.getElementById('profile-student-id').value = p.student_id || '-';
         
@@ -473,7 +586,7 @@ function cancelEdit() {
   
   // Restore original values
   document.getElementById('profile-firstname').value = originalProfileData.firstname || '-';
-  document.getElementById('profile-mi').value = originalProfileData.middle_initial || '';
+  document.getElementById('profile-mi').value = originalProfileData.mi || '';
   document.getElementById('profile-lastname').value = originalProfileData.lastname || '-';
   document.getElementById('profile-student-id').value = originalProfileData.student_id || '-';
   
@@ -603,67 +716,47 @@ function saveProfile() {
 }
 
 function showNotification(message, type) {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 20px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 600;
-    z-index: 10000;
-    animation: slideIn 0.3s ease-out;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  `;
+  const modal = document.getElementById('notificationModalOverlay');
+  const header = document.getElementById('notificationModalHeader');
+  const title = document.getElementById('notificationModalTitle');
+  const messageEl = document.getElementById('notificationModalMessage');
   
+  messageEl.textContent = message;
+  
+  // Update icon, title and styling based on type
   if (type === 'success') {
-    notification.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-    notification.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+    header.className = 'notification-modal-header success';
+    header.querySelector('i').className = 'fas fa-check-circle';
+    title.textContent = 'Success';
   } else {
-    notification.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-    notification.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+    header.className = 'notification-modal-header error';
+    header.querySelector('i').className = 'fas fa-exclamation-circle';
+    title.textContent = 'Error';
   }
   
-  document.body.appendChild(notification);
-  
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease-out';
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
+  modal.style.display = 'block';
 }
 
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from {
-      transform: translateX(400px);
-      opacity: 0;
+function closeNotificationModal() {
+  document.getElementById('notificationModalOverlay').style.display = 'none';
+}
+
+// Add event listeners for modal interactions
+document.addEventListener('DOMContentLoaded', function() {
+  // Close modal when clicking outside
+  document.getElementById('notificationModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeNotificationModal();
     }
-    to {
-      transform: translateX(0);
-      opacity: 1;
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeNotificationModal();
     }
-  }
-  
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-  }
-`;
-document.head.appendChild(style);
+  });
+});
   </script>
 
   <!-- Include Password Change Modal -->
