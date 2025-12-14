@@ -455,6 +455,7 @@
   <script>
     let allDocuments = [];
     let filteredDocuments = [];
+    let currentFilteredDocs = [];
     let currentDocumentId = null;
     let currentRecordType = 'document';
     
@@ -512,9 +513,11 @@
         const CACHE_BUSTER = 'v3_20251209_backend_first';
         console.log(`[${CACHE_BUSTER}] Fetching documents with BACKEND FIRST...`, { page, filters });
         
+        // If we have no filters and no allDocuments loaded yet, load ALL documents for client-side filtering
+        const isInitialLoad = Object.keys(filters).length === 0 && allDocuments.length === 0;
         const params = new URLSearchParams({
-          page: page,
-          limit: itemsPerPage,
+          page: isInitialLoad ? 1 : page,
+          limit: isInitialLoad ? 10000 : itemsPerPage, // Load many documents for initial load
           ...filters
         });
         
@@ -551,6 +554,12 @@
           throw lastError || new Error('Failed to fetch documents');
         }
         
+        // For initial load, store all documents for client-side filtering
+        if (isInitialLoad) {
+          allDocuments = responseData.data || [];
+          console.log(`[${CACHE_BUSTER}] Loaded ${allDocuments.length} documents for client-side filtering`);
+        }
+        
         // Store the current page data
         currentDocuments = responseData.data;
         totalDocuments = responseData.total;
@@ -578,11 +587,24 @@
             </td>
           </tr>
         `;
-        renderPagination(totalPages);
+        // Remove pagination if no documents
+        removePagination();
         return;
       }
+
+      // Calculate pagination
+      const totalPages = Math.ceil(docs.length / itemsPerPage);
       
-      docs.forEach(doc => {
+      // Adjust currentPage if out of bounds
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+      
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, docs.length);
+      const pageDocs = docs.slice(startIndex, endIndex);
+
+      // Render current page documents
+      pageDocs.forEach(doc => {
         const row = document.createElement('tr');
         row.className = `status-${doc.status}`;
         
@@ -634,9 +656,11 @@
         `;
         tbody.appendChild(row);
       });
-      
+
+      // Add pagination controls
+      renderPagination(totalPages, docs.length);
+
       updateStats(docs);
-      renderPagination(totalPages);
     }
 
     function renderPagination(totalPages) {
@@ -698,7 +722,8 @@
 
     async function changePage(page) {
       currentPage = page;
-      await loadDocuments(currentPage, currentFilters);
+      // Re-render the table with current filtered documents
+      renderDocumentsTable(currentFilteredDocs);
     }
 
     function getStatusBadge(status) {
@@ -737,32 +762,87 @@
     }
 
     async function applyFilters() {
+      currentPage = 1; // Reset to first page when applying filters
+      
       const typeFilter = document.getElementById('docTypeFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const dateFilter = document.getElementById('dateFilter').value;
       const searchInputEl = document.getElementById('searchInput');
-      const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim() : '';
+      const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim().toLowerCase() : '';
       
-      const filters = {};
-      if (typeFilter) filters.type = typeFilter;
-      if (statusFilter) filters.status = statusFilter;
-      if (dateFilter) filters.date = dateFilter;
-      if (searchTerm) filters.search = searchTerm;
+      let filteredDocs = allDocuments.filter(doc => {
+        // Type filter
+        if (typeFilter && doc.document_type !== typeFilter) return false;
+        
+        // Status filter
+        if (statusFilter && doc.status !== statusFilter) return false;
+        
+        // Date filter - more robust date comparison
+        if (dateFilter) {
+          try {
+            const filterDate = new Date(dateFilter);
+            if (isNaN(filterDate.getTime())) return false; // Invalid filter date
+            
+            const docDateStr = doc.upload_date || doc.submitted_at;
+            if (!docDateStr) return false;
+            
+            const docDate = new Date(docDateStr);
+            if (isNaN(docDate.getTime())) return false; // Invalid document date
+            
+            // Compare dates by year, month, day only (ignore time)
+            const filterYear = filterDate.getFullYear();
+            const filterMonth = filterDate.getMonth();
+            const filterDay = filterDate.getDate();
+            
+            const docYear = docDate.getFullYear();
+            const docMonth = docDate.getMonth();
+            const docDay = docDate.getDate();
+            
+            if (docYear !== filterYear || docMonth !== filterMonth || docDay !== filterDay) return false;
+          } catch (error) {
+            console.warn('Date filtering error:', error);
+            return false;
+          }
+        }
+        
+        // Search term filter (combine with other filters)
+        if (searchTerm) {
+          const searchableFields = [
+            doc.original_filename || '',
+            doc.file_path || '',
+            doc.faculty_id || '',
+            doc.id ? doc.id.toString() : '',
+            doc.proposal_title || '',
+            doc.document_type || '',
+            doc.status || ''
+          ].map(field => field.toString().toLowerCase());
+          
+          const matchesSearch = searchableFields.some(field => field.includes(searchTerm));
+          if (!matchesSearch) return false;
+        }
+        
+        return true;
+      });
       
-      currentFilters = filters;
-      currentPage = 1; // Reset to first page when filtering
-      await loadDocuments(currentPage, currentFilters);
+      currentFilteredDocs = filteredDocs; // Store filtered docs for pagination
+      renderDocumentsTable(filteredDocs);
     }
 
     async function clearFilters() {
+      currentPage = 1; // Reset to first page when clearing filters
+      
+      // Clear all filter inputs
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
+      
+      // Clear search input
       const searchInputEl = document.getElementById('searchInput');
       if (searchInputEl) searchInputEl.value = '';
-      currentFilters = {};
-      currentPage = 1;
-      await loadDocuments(currentPage, currentFilters);
+      
+      // Reset to show all documents
+      currentFilteredDocs = allDocuments;
+      renderDocumentsTable(allDocuments);
     }
 
     function showReviewModal(id, filename, type, facultyId, recordType) {
@@ -1088,9 +1168,16 @@ Note: No documents uploaded for this proposal.
     }
 
     async function loadDocuments(page = 1, filters = {}) {
-      const result = await fetchDocuments(page, filters);
-      renderDocumentsTable(result.data);
-      renderPagination(totalPages);
+      // If we don't have all documents loaded yet, fetch them
+      if (allDocuments.length === 0) {
+        await fetchDocuments(page, filters);
+        // Initialize currentFilteredDocs with all documents
+        currentFilteredDocs = allDocuments;
+      }
+      
+      // For client-side filtering, we don't need to fetch again
+      // Just render the current filtered documents
+      renderDocumentsTable(currentFilteredDocs);
     }
 
     // Initial load
@@ -1130,8 +1217,8 @@ Note: No documents uploaded for this proposal.
         if (searchBtn) searchBtn.addEventListener('click', () => { applyFilters(); });
         if (clearSearchBtn) clearSearchBtn.addEventListener('click', () => { 
           if (searchInput) searchInput.value = '';
-          // clear filters and search
-          clearFilters();
+          // Re-apply filters without the search term
+          applyFilters();
         });
         if (searchInput) {
           // Pressing Enter in the search box triggers the search
@@ -1145,8 +1232,17 @@ Note: No documents uploaded for this proposal.
           const debouncedApply = debounce(applyFilters, 300);
           searchInput.addEventListener('input', debouncedApply);
         }
+
+        // Wire up filter dropdowns to apply filters automatically on change
+        const docTypeFilter = document.getElementById('docTypeFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const dateFilter = document.getElementById('dateFilter');
+
+        if (docTypeFilter) docTypeFilter.addEventListener('change', applyFilters);
+        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+        if (dateFilter) dateFilter.addEventListener('change', applyFilters);
       } catch (e) {
-        console.warn('Search wiring failed', e);
+        console.warn('Search/filter wiring failed', e);
       }
     });
 

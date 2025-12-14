@@ -372,16 +372,6 @@
         </div>
         
         <div class="filter-group">
-          <label for="programFilter">
-            <i class="fas fa-calendar"></i>
-            Program
-          </label>
-          <select id="programFilter" name="programFilter">
-            <option value="">-- All Programs --</option>
-          </select>
-        </div>
-        
-        <div class="filter-group">
           <label for="statusFilter">
             <i class="fas fa-check-circle"></i>
             Status
@@ -565,8 +555,6 @@
   <script>
     let allDocuments = [];
     let currentDocumentId = null;
-    let allPrograms = [];
-    let programsMap = {};
 
     // Pagination variables
     let currentPage = 1;
@@ -628,62 +616,6 @@
         showErrorMessage('Failed to load documents. Please check your connection and try again.');
         return [];
       }
-    }
-
-    async function fetchPrograms() {
-      try {
-        // Request programs including archived ones so admin can filter by them too
-        const res = await fetch('../backend/get_programs.php?include_archived=1');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
-        // Get the response text first to debug JSON parsing issues
-        const responseText = await res.text();
-        let raw;
-        
-        try {
-          raw = JSON.parse(responseText);
-        } catch (jsonError) {
-          console.error('JSON parse error:', jsonError);
-          console.error('Response text:', responseText);
-          throw new Error('Invalid JSON response from server');
-        }
-        
-        // Handle both formats: { success: true, data: [...] } or direct array
-        const data = (raw && raw.success && Array.isArray(raw.data)) ? raw.data : (Array.isArray(raw) ? raw : []);
-        
-        // Optional: sort programs alphabetically by program_name
-        data.sort((a, b) => {
-          const aName = (a.program_name || '').toString().toLowerCase();
-          const bName = (b.program_name || '').toString().toLowerCase();
-          if (aName < bName) return -1;
-          if (aName > bName) return 1;
-          return 0;
-        });
-
-        allPrograms = data;
-        programsMap = {};
-        allPrograms.forEach(program => {
-          programsMap[program.id] = program.program_name || `Program ${program.id}`;
-        });
-        populateProgramFilter();
-      } catch (error) {
-        console.error('Error fetching programs:', error);
-        // Still populate with empty array so the page doesn't break
-        allPrograms = [];
-        programsMap = {};
-        populateProgramFilter();
-      }
-    }
-
-    function populateProgramFilter() {
-      const select = document.getElementById('programFilter');
-      select.innerHTML = '<option value="">-- All Programs --</option>';
-      allPrograms.forEach(program => {
-        const option = document.createElement('option');
-        option.value = program.id;
-        option.textContent = program.program_name || `Program ${program.id}`;
-        select.appendChild(option);
-      });
     }
 
     function renderDocumentsTable(docs) {
@@ -887,7 +819,6 @@
       const typeFilter = document.getElementById('docTypeFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const dateFilter = document.getElementById('dateFilter').value;
-      const programFilter = document.getElementById('programFilter').value;
       const searchInputEl = document.getElementById('searchInput');
       const searchTerm = searchInputEl && searchInputEl.value ? searchInputEl.value.trim().toLowerCase() : '';
       
@@ -899,7 +830,6 @@
           const filterDate = new Date(dateFilter).toDateString();
           if (docDate !== filterDate) return false;
         }
-        if (programFilter && doc.program_id != programFilter) return false;
         // Apply search term (combine with other filters)
         if (searchTerm) {
           const needle = searchTerm;
@@ -907,14 +837,12 @@
           const path = (doc.file_path || '').toString().toLowerCase();
           const faculty = (doc.faculty_id || '').toString().toLowerCase();
           const idStr = (doc.id || '').toString().toLowerCase();
-          const programName = programsMap && programsMap[doc.program_id] ? programsMap[doc.program_id].toString().toLowerCase() : '';
 
           if (!(
             filename.includes(needle) ||
             path.includes(needle) ||
             faculty.includes(needle) ||
-            idStr.includes(needle) ||
-            programName.includes(needle)
+            idStr.includes(needle)
           )) return false;
         }
         return true;
@@ -930,7 +858,6 @@
       document.getElementById('docTypeFilter').value = '';
       document.getElementById('statusFilter').value = '';
       document.getElementById('dateFilter').value = '';
-      document.getElementById('programFilter').value = '';
       currentFilteredDocs = allDocuments; // Store all docs as filtered docs
       renderDocumentsTable(allDocuments);
     }
@@ -1277,9 +1204,7 @@
         notificationModal.style.display = 'none';
       }
       
-      // Load programs first so program titles are available for search/filtering
-      await fetchPrograms();
-      // Then load documents (so search by program title works immediately)
+      // Load documents
       await loadDocuments();
 
       // Wire up search controls
