@@ -140,6 +140,12 @@ h1 {
     overflow: auto;
     background-color: rgba(30, 41, 59, 0.6); /* Tailwind slate-800 at 60% */
   }
+
+  .modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   
   .modal-content {
     background-color: #fff;

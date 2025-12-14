@@ -43,7 +43,7 @@ requireAdminAuth();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'clear_all') {
     header('Content-Type: application/json');
     
-    $stmt = $conn->prepare("UPDATE notifications SET is_active = 0 WHERE is_active = 1 AND audience IN ('admin', 'all')");
+    $stmt = $conn->prepare("UPDATE notifications SET is_active = 0 WHERE is_active = 1");
     if (!$stmt) {
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $conn->error]);
         exit;
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Fetch notifications for admin tab
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['for'] === 'admin') {
-    $result = $conn->query("SELECT * FROM notifications WHERE audience IN ('admin', 'all') AND is_active=1 ORDER BY created_at DESC");
+    $result = $conn->query("SELECT * FROM notifications WHERE is_active=1 ORDER BY created_at DESC");
     $notifications = $result->fetch_all(MYSQLI_ASSOC);
     echo json_encode(['success' => true, 'data' => $notifications]);
     exit;

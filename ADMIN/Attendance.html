@@ -147,7 +147,7 @@
   <!-- Manual Entry Modal -->
   <div id="manualEntryModal" class="modal">
     <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
+      <span class="close" onclick="closeManualEntryModal()">&times;</span>
       <h2>Manual Attendance Entry</h2>
       <form id="manualEntryForm">
         <label for="participantRole">Role</label>
@@ -182,7 +182,7 @@
 
         <div class="modal-buttons">
           <button type="submit" class="btn">Save Entry</button>
-          <button type="button" class="btn cancel" onclick="closeModal()">Cancel</button>
+          <button type="button" class="btn cancel" onclick="closeManualEntryModal()">Cancel</button>
         </div>
       </form>
     </div>
@@ -228,26 +228,14 @@
     
     <script>
 let currentSessionId = null;
-
-// Toast notification function
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.classList.add('show'), 100);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => document.body.removeChild(toast), 300);
-  }, 3000);
-}
+let currentProgramId = null;
 
 // Modal functions
 function openModal() {
   document.getElementById('manualEntryModal').style.display = 'block';
 }
 
-function closeModal() {
+function closeManualEntryModal() {
   document.getElementById('manualEntryModal').style.display = 'none';
   document.getElementById('manualEntryForm').reset();
 }
@@ -258,7 +246,7 @@ function closeBulkModal() {
 
 function openQuickCheckinModal() {
   if (!currentSessionId) {
-    showToast('Please select a session first.', 'info');
+    showNotificationModal('Please select a session first.', 'warning');
     return;
   }
   document.getElementById('quickCheckinModal').style.display = 'block';
@@ -273,6 +261,7 @@ function closeQuickCheckinModal() {
 document.getElementById('sessionSelector').addEventListener('change', function() {
   const sessionId = this.value;
   currentSessionId = sessionId;
+  console.log('Session selected:', sessionId);
 
   if (sessionId) {
     loadSessionInfo(sessionId);
@@ -281,21 +270,36 @@ document.getElementById('sessionSelector').addEventListener('change', function()
     document.getElementById('markAbsentBtn').disabled = false;
     document.getElementById('quickCheckinBtn').disabled = false;
   } else {
+    currentProgramId = null; // Reset program filter
+    console.log('Session deselected, currentProgramId reset to null');
     document.getElementById('sessionInfo').style.display = 'none';
     // Disable buttons
     document.getElementById('bulkBtn').disabled = true;
     document.getElementById('markAbsentBtn').disabled = true;
     document.getElementById('quickCheckinBtn').disabled = true;
+    // Refresh overview without filter
+    loadProgramAttendanceOverview();
   }
 });
 
 // Load session information
 function loadSessionInfo(sessionId) {
-  fetch(`../backend/bulk_attendance_processor.php?action=initialize_session_attendance&session_id=${sessionId}`)
+  console.log('Loading session info for sessionId:', sessionId);
+  
+  const formData = new FormData();
+  formData.append('action', 'initialize_session_attendance');
+  formData.append('session_id', sessionId);
+  
+  fetch('../backend/bulk_attendance_processor.php', {
+    method: 'POST',
+    body: formData
+  })
     .then(res => res.json())
     .then(data => {
       if (data.success) {
         const session = data.session;
+        currentProgramId = session.program_id; // Store program_id for filtering
+        console.log('Session loaded, program_id:', currentProgramId, 'session:', session);
         document.getElementById('sessionTitle').textContent = session.program_name + ' - ' + session.session_title;
         document.getElementById('sessionDate').textContent = new Date(session.session_date).toLocaleDateString();
         document.getElementById('sessionTime').textContent = session.session_start + ' - ' + session.session_end;
@@ -303,7 +307,17 @@ function loadSessionInfo(sessionId) {
         document.getElementById('enrolledCount').textContent = data.participants.length;
         document.getElementById('recordedCount').textContent = data.participants.filter(p => p.current_status !== 'Not Recorded').length;
         document.getElementById('sessionInfo').style.display = 'block';
+        // Refresh overview with program filter
+        console.log('Calling loadProgramAttendanceOverview with program filter');
+        loadProgramAttendanceOverview();
+      } else {
+        console.error('Failed to load session info:', data.error);
+        showNotificationModal('Failed to load session: ' + (data.error || 'Unknown error'), 'error');
       }
+    })
+    .catch(error => {
+      console.error('Error loading session info:', error);
+      showNotificationModal('Error loading session information', 'error');
     });
 }
 
@@ -389,11 +403,11 @@ function updateParticipantStatus(attendanceId, studentName, newStatus) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        showToast('Status updated successfully', 'success');
+        showNotificationModal('Status updated successfully', 'success');
         initializeBulkAttendance(); // Refresh the modal
         loadSessionInfo(currentSessionId); // Refresh session info
       } else {
-        showToast('Failed to update status: ' + (data.error || 'Unknown error'), 'error');
+        showNotificationModal('Failed to update status: ' + (data.error || 'Unknown error'), 'error');
       }
     });
 }
@@ -412,11 +426,11 @@ function markAllAbsent() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        showToast(data.message, 'success');
+        showNotificationModal(data.message, 'success');
         loadSessionInfo(currentSessionId);
         loadAttendanceLogs();
       } else {
-        showToast('Failed to mark absents: ' + (data.error || 'Unknown error'), 'error');
+        showNotificationModal('Failed to mark absents: ' + (data.error || 'Unknown error'), 'error');
       }
     });
 }
@@ -436,12 +450,12 @@ document.getElementById('quickCheckinForm').addEventListener('submit', function(
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        showToast(data.message, 'success');
+        showNotificationModal(data.message, 'success');
         closeQuickCheckinModal();
         loadSessionInfo(currentSessionId);
         loadAttendanceLogs();
       } else {
-        showToast('Failed to check in: ' + (data.error || 'Unknown error'), 'error');
+        showNotificationModal('Failed to check in: ' + (data.error || 'Unknown error'), 'error');
       }
     });
 });
@@ -462,11 +476,11 @@ document.getElementById('manualEntryForm').addEventListener('submit', function(e
     .then(res => res.json())
     .then(res => {
       if (res.success) {
-        showToast('Attendance saved successfully!', 'success');
-        closeModal();
+        showNotificationModal('Attendance saved successfully!', 'success');
+        closeManualEntryModal();
         loadAttendanceLogs();
       } else {
-        showToast('Failed to save attendance.', 'error');
+        showNotificationModal('Failed to save attendance.', 'error');
       }
     });
 });
@@ -535,10 +549,16 @@ function loadProgramAttendanceOverview() {
   if (filterTo) {
     url += `&to=${filterTo}`;
   }
+  if (currentProgramId) {
+    url += `&program_id=${currentProgramId}`;
+  }
+  
+  console.log('Loading program overview with URL:', url, 'currentProgramId:', currentProgramId);
   
   fetch(url)
     .then(res => res.json())
     .then(data => {
+      console.log('Program overview data received:', data);
       if (data.success) {
         const tbody = document.getElementById('programOverviewBody');
         tbody.innerHTML = '';
@@ -572,18 +592,347 @@ function loadProgramAttendanceOverview() {
             <td>${totalRegistered}</td>
             <td>${totalPresent}</td>
             <td>${totalAbsent}</td>
-            <td>${avgPercent}%</td>
-          </tr>
-        `;
+              <td>${avgPercent}%</td>
+            </tr>
+          `;
+      } else {
+        console.error('Failed to load program overview:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error loading program overview:', error);
+    });
+}
+
+// Load program attendance overview for export (returns Promise)
+function loadProgramAttendanceOverviewForExport(filterFrom, filterTo) {
+  return new Promise((resolve, reject) => {
+    // Build URL with date filters if provided
+    let url = 'api_attendance.php?action=get_program_summary';
+    if (filterFrom) {
+      url += `&from=${filterFrom}`;
+    }
+    if (filterTo) {
+      url += `&to=${filterTo}`;
+    }
+    if (currentProgramId) {
+      url += `&program_id=${currentProgramId}`;
+    }
+    
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const tbody = document.getElementById('programOverviewBody');
+          tbody.innerHTML = '';
+          let totalRegistered = 0, totalPresent = 0, totalAbsent = 0, percentSum = 0, count = 0;
+
+          data.data.forEach(row => {
+            const highlight = row.attendance_percent < 75 ? ' style="background:#ffe5e5;"' : '';
+            tbody.innerHTML += `
+              <tr${highlight}>
+                <td>${row.program_name}</td>
+                <td>${row.date}</td>
+                <td>${row.registered}</td>
+                <td>${row.present}</td>
+                <td>${row.absent}</td>
+                <td>${row.attendance_percent}%</td>
+              </tr>
+            `;
+            totalRegistered += parseInt(row.registered);
+            totalPresent += parseInt(row.present);
+            totalAbsent += parseInt(row.absent);
+            percentSum += parseInt(row.attendance_percent);
+            count++;
+          });
+
+          // Add totals row
+          const avgPercent = count > 0 ? Math.round(percentSum / count) : 0;
+          tbody.innerHTML += `
+            <tr style="font-weight:bold;background:#f7f7b6;">
+              <td>Total</td>
+              <td>-</td>
+              <td>${totalRegistered}</td>
+              <td>${totalPresent}</td>
+              <td>${totalAbsent}</td>
+              <td>${avgPercent}%</td>
+            </tr>
+          `;
+          resolve();
+        } else {
+          reject(new Error('Failed to load program summary'));
+        }
+      })
+      .catch(reject);
+  });
+}
+
+// Load attendance logs for export (returns Promise)
+function loadAttendanceLogsForExport() {
+  return new Promise((resolve, reject) => {
+    fetch('api_attendance.php?action=get_logs')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const tbody = document.querySelector('.attendance-logs tbody');
+          tbody.innerHTML = '';
+          data.data.forEach(log => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${log.student_name}</td>
+                <td>-</td>
+                <td>${log.program_name || ''}</td>
+                <td>${log.date}</td>
+                <td>${log.time_in || ''}</td>
+                <td><span class="status ${log.status.toLowerCase()}">${log.status}</span></td>
+              </tr>
+            `;
+          });
+          resolve();
+        } else {
+          reject(new Error('Failed to load attendance logs'));
+        }
+      })
+      .catch(reject);
+  });
+}
+
+// Load attendance logs
+function loadAttendanceLogs() {
+  fetch('api_attendance.php?action=get_logs')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const tbody = document.querySelector('.attendance-logs tbody');
+        tbody.innerHTML = '';
+        data.data.forEach(log => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${log.student_name}</td>
+              <td>-</td>
+              <td>${log.program_name || ''}</td>
+              <td>${log.date}</td>
+              <td>${log.time_in || ''}</td>
+              <td><span class="status ${log.status.toLowerCase()}">${log.status}</span></td>
+            </tr>
+          `;
+        });
       }
     });
 }
 
-// Export function placeholder
+// Fetch program summary data directly from API for export
+function fetchProgramSummaryForExport(filterFrom, filterTo) {
+  let url = 'api_attendance.php?action=get_program_summary';
+  if (filterFrom) {
+    url += `&from=${filterFrom}`;
+  }
+  if (filterTo) {
+    url += `&to=${filterTo}`;
+  }
+  if (currentProgramId) {
+    url += `&program_id=${currentProgramId}`;
+  }
+  
+  return fetch(url)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        return data.data || [];
+      } else {
+        throw new Error(data.error || 'Failed to fetch program summary');
+      }
+    });
+}
+
+// Fetch attendance logs data directly from API for export
+function fetchAttendanceLogsForExport() {
+  return fetch('api_attendance.php?action=get_logs')
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        return data.data || [];
+      } else {
+        throw new Error(data.error || 'Failed to fetch attendance logs');
+      }
+    });
+}
+
 function exportAttendanceSummary() {
-  showToast('Export functionality would be implemented here', 'info');
+  // Get current date filter values
+  const filterFrom = document.getElementById('filterFrom').value;
+  const filterTo = document.getElementById('filterTo').value;
+
+  // Show loading message
+  showNotificationModal('Preparing export data...', 'info');
+
+  // Load data directly from API for export
+  Promise.all([
+    fetchProgramSummaryForExport(filterFrom, filterTo),
+    fetchAttendanceLogsForExport()
+  ]).then(([programData, logsData]) => {
+    // Create CSV content
+    let csvContent = '';
+
+    // Add header information
+    csvContent += 'eTracker Attendance Report\n';
+    csvContent += `Generated on: ${new Date().toLocaleString()}\n`;
+    if (filterFrom || filterTo) {
+      csvContent += `Date Range: ${filterFrom || 'N/A'} to ${filterTo || 'N/A'}\n`;
+    }
+    csvContent += '\n';
+
+    // Export Program Attendance Overview
+    if (programData && programData.length > 0) {
+      csvContent += 'PROGRAM ATTENDANCE OVERVIEW\n';
+      csvContent += 'Program Name,Date,Registered Students,Present,Absent,Attendance %\n';
+
+      programData.forEach(row => {
+        const line = [
+          `"${(row.program_name || '').replace(/"/g, '""')}"`,
+          `"${row.date || ''}"`,
+          `"${row.registered || 0}"`,
+          `"${row.present || 0}"`,
+          `"${row.absent || 0}"`,
+          `"${row.attendance_percent || 0}%"`
+        ].join(',');
+        csvContent += line + '\n';
+      });
+      csvContent += '\n';
+    }
+
+    // Export Detailed Attendance Logs
+    if (logsData && logsData.length > 0) {
+      csvContent += 'DETAILED ATTENDANCE LOGS\n';
+      csvContent += 'Student Name,ID Number,Program,Date,Time In,Status\n';
+
+      logsData.forEach(log => {
+        const line = [
+          `"${(log.student_name || '').replace(/"/g, '""')}"`,
+          `"${log.id_number || '-'}"`,
+          `"${(log.program_name || '').replace(/"/g, '""')}"`,
+          `"${log.date || ''}"`,
+          `"${log.time_in || ''}"`,
+          `"${log.status || ''}"`
+        ].join(',');
+        csvContent += line + '\n';
+      });
+    }
+
+    // Check if we have any data
+    const hasData = (programData && programData.length > 0) || (logsData && logsData.length > 0);
+    if (!hasData) {
+      showNotificationModal('No data available to export', 'warning');
+      return;
+    }
+
+    // Create filename with date range if filters are applied
+    let filename = 'attendance_report';
+    if (filterFrom || filterTo) {
+      filename += '_';
+      if (filterFrom) filename += filterFrom.replace(/-/g, '');
+      if (filterTo) filename += '_to_' + filterTo.replace(/-/g, '');
+    }
+    filename += '.csv';
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showNotificationModal('Attendance report exported successfully!', 'success');
+    } else {
+      showNotificationModal('Your browser does not support file downloads', 'error');
+    }
+  }).catch(error => {
+    console.error('Export error:', error);
+    showNotificationModal('Failed to prepare export data', 'error');
+  });
+}
+
+// Notification modal function
+function showNotificationModal(message, type = 'info') {
+  const modal = document.getElementById('notification-modal');
+  const titleEl = document.getElementById('notification-title');
+  const iconEl = document.getElementById('notification-icon');
+  const messageEl = document.getElementById('notification-message');
+  
+  // Set title and icon based on type
+  let title, iconClass, iconColor;
+  switch (type) {
+    case 'success':
+      title = 'Success';
+      iconClass = 'fa-check-circle';
+      iconColor = '#10b981';
+      break;
+    case 'error':
+      title = 'Error';
+      iconClass = 'fa-exclamation-triangle';
+      iconColor = '#ef4444';
+      break;
+    case 'warning':
+      title = 'Warning';
+      iconClass = 'fa-exclamation-circle';
+      iconColor = '#f59e0b';
+      break;
+    default:
+      title = 'Information';
+      iconClass = 'fa-info-circle';
+      iconColor = '#3b82f6';
+  }
+  
+  titleEl.textContent = title;
+  iconEl.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i>`;
+  messageEl.textContent = message;
+  
+  modal.classList.add('show');
+}
+
+// Modal close function
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('show');
+  }
 }
     </script>
+
+  <!-- Notification Modal -->
+  <div id="notification-modal" class="modal" onclick="if(event.target===this)closeModal('notification-modal')">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 id="notification-title" style="margin:0; color:#1f2937; font-size:18px;">Notification</h2>
+        <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeModal('notification-modal')">&times;</span>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div id="notification-icon" style="font-size:48px; margin-bottom:16px;"></div>
+          <p id="notification-message" style="margin:0; color:#374151; line-height:1.5;"></p>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:none; background:#007bff; color:white; border-radius:6px; cursor:pointer;" onclick="closeModal('notification-modal')">OK</button>
+      </div>
+    </div>
+  </div>
 
 <script src="admin_notifications.js"></script>
 <script>

@@ -113,6 +113,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_program_summary') {
         WHERE 1=1
     ";
     
+    // Add program filter if provided
+    if (isset($_GET['program_id']) && !empty($_GET['program_id'])) {
+        $program_id = intval($_GET['program_id']);
+        $sql .= " AND a.program_id = $program_id";
+    }
+    
     // Add date filters if provided
     if (isset($_GET['from']) && !empty($_GET['from'])) {
         $from = $conn->real_escape_string($_GET['from']);

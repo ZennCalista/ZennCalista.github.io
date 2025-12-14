@@ -393,6 +393,23 @@
       color: #fff;
     }
 
+    .notif-audience {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #666;
+      background: #f8f9fa;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      border: 1px solid #e9ecef;
+      text-transform: capitalize;
+    }
+
+    .notif-audience.all { background: #e3f2fd; color: #1565c0; border-color: #bbdefb; }
+    .notif-audience.admin { background: #fff3e0; color: #ef6c00; border-color: #ffcc02; }
+    .notif-audience.faculty { background: #e8f5e8; color: #2e7d32; border-color: #c8e6c9; }
+    .notif-audience.student { background: #fce4ec; color: #c2185b; border-color: #f8bbd9; }
+
     .notif-empty {
       grid-column: 1/-1;
       text-align: center;
@@ -564,6 +581,7 @@
 
   <div class="main notif-main">
     <h1>Notifications</h1>
+    <p style="color: #666; margin-bottom: 24px; font-size: 0.95rem;">View and manage all notifications across all user types</p>
     <div class="notif-flex-container">
       <!-- Notification Form -->
       <div class="notif-form-card">
@@ -672,11 +690,12 @@
             <li class="notif-card notif-${n.priority} notif-fade-in" style="animation-delay:${i * 80}ms">
               <div class="notif-card-header">
                 <span class="notif-badge">${n.priority.toUpperCase()}</span>
+                <span class="notif-audience ${n.audience}">${n.audience}</span>
                 <span class="notif-date">Expires: ${n.expires_at}</span>
               </div>
               <div class="notif-card-message">${n.message}</div>
               <div class="notif-card-actions">
-                <button onclick="editNotification(${n.id}, '${n.message.replace(/'/g, "\\'")}', '${n.priority}', '${n.expires_at}')">
+                <button onclick="editNotification(${n.id}, '${n.message.replace(/'/g, "\\'")}', '${n.priority}', '${n.expires_at}', '${n.audience}')">
                   <i class="fas fa-edit"></i> Edit
                 </button>
               </div>
@@ -733,10 +752,11 @@
       });
     };
 
-    window.editNotification = function(id, message, priority, expires_at) {
+    window.editNotification = function(id, message, priority, expires_at, audience) {
       const form = document.getElementById('notificationForm');
       form.message.value = message;
       form.priority.value = priority;
+      form.audience.value = audience;
       form.expires_at.value = expires_at;
       form.id.value = id;
       form.scrollIntoView({behavior: "smooth"});

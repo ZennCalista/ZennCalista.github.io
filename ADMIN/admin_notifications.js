@@ -415,30 +415,123 @@ function confirmClearAllNotifications() {
 
 // Show success message
 function showSuccessMessage(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification-toast success';
-    notification.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    showNotificationModal(message, 'success');
 }
 
 // Show error message
 function showErrorMessage(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification-toast error';
-    notification.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    showNotificationModal(message, 'error');
+}
+
+// Show notification modal (create if doesn't exist)
+function showNotificationModal(message, type = 'info') {
+    let modal = document.getElementById('admin-notification-modal');
+    let titleEl, iconEl, messageEl;
+
+    // Create modal if it doesn't exist
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'admin-notification-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+                <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+                    <h2 id="admin-notification-title" style="margin:0; color:#1f2937; font-size:18px;">Notification</h2>
+                    <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeAdminNotificationModal()">&times;</span>
+                </div>
+                <div style="padding:20px;">
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <div id="admin-notification-icon" style="font-size:48px; margin-bottom:16px;"></div>
+                        <p id="admin-notification-message" style="margin:0; color:#374151; line-height:1.5;"></p>
+                    </div>
+                </div>
+                <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+                    <button style="padding:8px 16px; border:none; background:#007bff; color:white; border-radius:6px; cursor:pointer;" onclick="closeAdminNotificationModal()">OK</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Add modal styles if not already present
+        if (!document.getElementById('admin-notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'admin-notification-styles';
+            style.textContent = `
+                .modal.show {
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    z-index: 10000;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Add event listeners for the modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeAdminNotificationModal();
+            }
+        });
+    }
+
+    // Get elements
+    titleEl = document.getElementById('admin-notification-title');
+    iconEl = document.getElementById('admin-notification-icon');
+    messageEl = document.getElementById('admin-notification-message');
+
+    // Set title and icon based on type
+    let title, iconClass, iconColor;
+    switch (type) {
+        case 'success':
+            title = 'Success';
+            iconClass = 'fa-check-circle';
+            iconColor = '#10b981';
+            break;
+        case 'error':
+            title = 'Error';
+            iconClass = 'fa-exclamation-triangle';
+            iconColor = '#ef4444';
+            break;
+        case 'warning':
+            title = 'Warning';
+            iconClass = 'fa-exclamation-circle';
+            iconColor = '#f59e0b';
+            break;
+        default:
+            title = 'Information';
+            iconClass = 'fa-info-circle';
+            iconColor = '#3b82f6';
+    }
+
+    titleEl.textContent = title;
+    iconEl.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i>`;
+    messageEl.textContent = message;
+
+    modal.classList.add('show');
+
+    // Add Escape key listener
+    const escapeHandler = function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeAdminNotificationModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+}
+
+// Close admin notification modal
+function closeAdminNotificationModal() {
+    const modal = document.getElementById('admin-notification-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 }
 
 // Mark all notifications as read (legacy function - now uses modal)
@@ -461,6 +554,7 @@ function escapeHtml(text) {
 // Export functions for global access
 window.initAdminNotifications = initAdminNotifications;
 window.closeNotificationModal = closeNotificationModal;
+window.closeAdminNotificationModal = closeAdminNotificationModal;
 window.markAllAsRead = markAllAsRead;
 window.clearAllNotifications = clearAllNotifications;
 window.showMarkReadModal = showMarkReadModal;
