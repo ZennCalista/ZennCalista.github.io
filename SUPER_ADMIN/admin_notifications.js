@@ -124,6 +124,52 @@ function createConfirmationModals() {
     // Add to page
     document.body.appendChild(markReadModal);
     document.body.appendChild(clearAllModal);
+
+    // Success message modal
+    const successModal = document.createElement('div');
+    successModal.className = 'confirmation-modal-overlay';
+    successModal.id = 'successMessageModal';
+    successModal.innerHTML = `
+        <div class="confirmation-modal success-modal">
+            <div class="confirmation-modal-header">
+                <h3 class="confirmation-modal-title">
+                    <i class="fas fa-check-circle"></i> Success
+                </h3>
+                <button class="confirmation-modal-close" onclick="hideSuccessModal()">&times;</button>
+            </div>
+            <div class="confirmation-modal-body">
+                <p id="successMessageText"></p>
+            </div>
+            <div class="confirmation-modal-footer">
+                <button class="btn-confirm" onclick="hideSuccessModal()">OK</button>
+            </div>
+        </div>
+    `;
+
+    // Error message modal
+    const errorModal = document.createElement('div');
+    errorModal.className = 'confirmation-modal-overlay';
+    errorModal.id = 'errorMessageModal';
+    errorModal.innerHTML = `
+        <div class="confirmation-modal error-modal">
+            <div class="confirmation-modal-header">
+                <h3 class="confirmation-modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Error
+                </h3>
+                <button class="confirmation-modal-close" onclick="hideErrorModal()">&times;</button>
+            </div>
+            <div class="confirmation-modal-body">
+                <p id="errorMessageText"></p>
+            </div>
+            <div class="confirmation-modal-footer">
+                <button class="btn-confirm" onclick="hideErrorModal()">OK</button>
+            </div>
+        </div>
+    `;
+
+    // Add success and error modals to page
+    document.body.appendChild(successModal);
+    document.body.appendChild(errorModal);
 }
 
 // Set up event listeners
@@ -160,6 +206,27 @@ function setupEventListeners() {
     document.getElementById('clearAllConfirmationModal')?.addEventListener('click', function(e) {
         if (e.target === this) {
             hideClearAllModal();
+        }
+    });
+
+    // Close success and error modals when clicking overlay
+    document.getElementById('successMessageModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideSuccessModal();
+        }
+    });
+
+    document.getElementById('errorMessageModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideErrorModal();
+        }
+    });
+
+    // Close success and error modals on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideSuccessModal();
+            hideErrorModal();
         }
     });
 }
@@ -413,32 +480,40 @@ function confirmClearAllNotifications() {
     });
 }
 
-// Show success message
+// Show success message modal
 function showSuccessMessage(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification-toast success';
-    notification.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    const modal = document.getElementById('successMessageModal');
+    const messageText = document.getElementById('successMessageText');
+    if (modal && messageText) {
+        messageText.textContent = message;
+        modal.classList.add('show');
+    }
 }
 
-// Show error message
+// Hide success message modal
+function hideSuccessModal() {
+    const modal = document.getElementById('successMessageModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+// Show error message modal
 function showErrorMessage(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification-toast error';
-    notification.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    const modal = document.getElementById('errorMessageModal');
+    const messageText = document.getElementById('errorMessageText');
+    if (modal && messageText) {
+        messageText.textContent = message;
+        modal.classList.add('show');
+    }
+}
+
+// Hide error message modal
+function hideErrorModal() {
+    const modal = document.getElementById('errorMessageModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 }
 
 // Mark all notifications as read (legacy function - now uses modal)
@@ -469,3 +544,7 @@ window.showClearAllModal = showClearAllModal;
 window.hideClearAllModal = hideClearAllModal;
 window.confirmMarkAllAsRead = confirmMarkAllAsRead;
 window.confirmClearAllNotifications = confirmClearAllNotifications;
+window.showSuccessMessage = showSuccessMessage;
+window.hideSuccessModal = hideSuccessModal;
+window.showErrorMessage = showErrorMessage;
+window.hideErrorModal = hideErrorModal;
