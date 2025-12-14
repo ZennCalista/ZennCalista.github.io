@@ -108,7 +108,7 @@ unset($_SESSION['success_message']);
 unset($_SESSION['error_message']);
 
 // Fetch all proposals with faculty details
-// Sort by: pending first, then approved/rejected, ordered by submission date (newest first)
+// Sort by latest submitted first
 $proposals_sql = "SELECT pp.*, f.department, u.firstname, u.lastname, u.email,
                          COUNT(du.id) as document_count,
                          p.program_name
@@ -118,14 +118,7 @@ $proposals_sql = "SELECT pp.*, f.department, u.firstname, u.lastname, u.email,
                   LEFT JOIN document_uploads du ON du.proposal_id = pp.id
                   LEFT JOIN programs p ON pp.program_id = p.id
                   GROUP BY pp.id
-                  ORDER BY 
-                    CASE pp.status 
-                      WHEN 'pending' THEN 1 
-                      WHEN 'approved' THEN 2 
-                      WHEN 'rejected' THEN 3 
-                      ELSE 4 
-                    END,
-                    pp.submitted_at DESC";
+                  ORDER BY pp.submitted_at DESC";
 
 $proposals_result = $conn->query($proposals_sql);
 $proposals = [];
