@@ -135,7 +135,6 @@ function createConfirmationModals() {
                 <h3 class="confirmation-modal-title">
                     <i class="fas fa-check-circle"></i> Success
                 </h3>
-                <button class="confirmation-modal-close" onclick="hideSuccessModal()">&times;</button>
             </div>
             <div class="confirmation-modal-body">
                 <p id="successMessageText"></p>
@@ -156,7 +155,6 @@ function createConfirmationModals() {
                 <h3 class="confirmation-modal-title">
                     <i class="fas fa-exclamation-triangle"></i> Error
                 </h3>
-                <button class="confirmation-modal-close" onclick="hideErrorModal()">&times;</button>
             </div>
             <div class="confirmation-modal-body">
                 <p id="errorMessageText"></p>
