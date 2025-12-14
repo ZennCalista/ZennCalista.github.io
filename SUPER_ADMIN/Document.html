@@ -11,7 +11,6 @@
     .view-only-badge { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-left: 10px; }
     .sidebar { background: #1B472B; }
     .action-buttons button.delete-btn, button[onclick*="delete"], button[onclick*="Delete"] { display: none !important; }
-  <style>
     .modal-content.large-modal {
       width: 95vw !important;
       height: 95vh !important;
@@ -928,22 +927,39 @@
       showDeleteModal(doc);
     }
 
-    function viewProposal(proposalId) {
-      // Open proposal details - you might want to create a specific proposal view page
-      // For now, we'll show an alert with proposal details
-      const proposal = currentDocuments.find(d => d.id == proposalId && d.record_type === 'proposal');
-      if (proposal) {
-        const details = `
+    async function viewProposal(proposalId) {
+      try {
+        // Fetch documents associated with this proposal
+        const response = await fetch(`../backend/get_proposal_documents.php?proposal_id=${proposalId}`);
+        const documents = await response.json();
+        
+        if (documents && documents.length > 0) {
+          // Display the first (most recent) document
+          const doc = documents[0];
+          console.log('Viewing proposal document:', doc);
+          viewDocument(doc.file_path, doc.id);
+        } else {
+          // No documents found, show proposal details as fallback
+          const proposal = currentDocuments.find(d => d.id == proposalId && d.record_type === 'proposal');
+          if (proposal) {
+            const details = `
 Proposal Details:
 Title: ${proposal.proposal_title}
 Description: ${proposal.description || 'No description'}
 Faculty ID: ${proposal.faculty_id}
 Status: ${proposal.status}
 Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
-        `;
-        alert(details);
-      } else {
-        showErrorMessage('Proposal not found.');
+
+Note: No documents uploaded for this proposal.
+            `;
+            alert(details);
+          } else {
+            showErrorMessage('Proposal not found.');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching proposal documents:', error);
+        showErrorMessage('Error loading proposal documents. Please try again.');
       }
     }
 
@@ -964,7 +980,7 @@ Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
       
       let viewUrl;
       if (docId) {
-        viewUrl = `view_document.php?id=${docId}`;
+        viewUrl = `../ADMIN/view_document.php?id=${docId}`;
       } else {
         // Fallback to path, but construct proper URL
         viewUrl = path.startsWith('/') ? path : `../${path}`;
@@ -1001,7 +1017,7 @@ Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
         const filename = (path && path.split('/').pop()) || (docId ? `document_${docId}` : 'document');
         filenameEl.textContent = filename;
         // prefer using the view endpoint if we have an id
-        const downloadHref = docId ? `view_document.php?id=${docId}` : (viewUrl || path);
+        const downloadHref = docId ? `../ADMIN/view_document.php?id=${docId}` : (viewUrl || path);
         downloadEl.href = downloadHref;
         downloadEl.setAttribute('download', filename);
       } catch (e) {
@@ -1026,7 +1042,7 @@ Submitted: ${new Date(proposal.submitted_at).toLocaleString()}
       } else {
         // Original behavior for unsupported types
         if (docId) {
-          const viewUrl = `view_document.php?id=${docId}`;
+          const viewUrl = `../ADMIN/view_document.php?id=${docId}`;
           console.log('Opening document with ID:', docId);
           window.open(viewUrl, '_blank');
         } else if (path) {

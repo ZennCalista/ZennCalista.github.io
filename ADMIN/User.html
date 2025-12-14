@@ -279,9 +279,9 @@
       <span class="close-modal" onclick="closeModal('view-profile-modal')">&times;</span>
     </div>
     <div class="modal-profile">
+      <p id="profile-id-row" class="modal-profile-row"><strong id="profile-id-label">ID:</strong> <span id="profile-id">-</span></p>
       <p><strong>Full Name:</strong> <span id="profile-name">Loading...</span></p>
       <p><strong>Role:</strong> <span id="profile-role">-</span></p>
-      <p id="profile-id-row" class="modal-profile-row"><strong id="profile-id-label">ID:</strong> <span id="profile-id">-</span></p>
       <p><strong>Course/Department:</strong> <span id="profile-dept">-</span></p>
       <p><strong>Email:</strong> <span id="profile-email">-</span></p>
       <p><strong>Phone:</strong> <span id="profile-phone">-</span></p>
@@ -338,27 +338,22 @@
   </div>
 </div>
 
-<!-- Delete User Confirmation Modal -->
-<div id="delete-user-modal" class="modal hidden">
+<!-- Notification Modal -->
+<div id="notification-modal" class="modal hidden">
   <div class="modal-header">
-    <h2>Delete User</h2>
-    <span class="close-modal" onclick="closeModal('delete-user-modal')">&times;</span>
+    <h2 id="notification-title">Notification</h2>
+    <span class="close-modal" onclick="closeModal('notification-modal')">&times;</span>
   </div>
   <div class="modal-body">
-    <div class="confirmation-content">
-      <div class="confirmation-icon danger">
-        <i class="fas fa-trash"></i>
+    <div class="notification-content">
+      <div class="notification-icon" id="notification-icon">
+        <i class="fas fa-info-circle"></i>
       </div>
-      <p>Are you sure you want to delete this user? This action cannot be undone and will permanently remove all user data.</p>
-      <div class="user-info-preview">
-        <p><strong>User:</strong> <span id="delete-user-name">-</span></p>
-        <p><strong>Role:</strong> <span id="delete-user-role">-</span></p>
-      </div>
+      <p id="notification-message">Message</p>
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn-secondary" onclick="closeModal('delete-user-modal')">Cancel</button>
-    <button class="btn-danger" onclick="confirmDeleteUser()">Delete User</button>
+    <button class="btn-primary" onclick="closeModal('notification-modal')">OK</button>
   </div>
 </div>
   
@@ -470,7 +465,7 @@
   
 
   document.getElementById('modal-overlay').addEventListener('click', function () {
-  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal', 'verify-user-modal', 'unverify-user-modal', 'delete-user-modal'].forEach(id => closeModal(id));
+  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal', 'verify-user-modal', 'unverify-user-modal', 'delete-user-modal', 'notification-modal'].forEach(id => closeModal(id));
 });
 
 
@@ -1059,24 +1054,38 @@ function confirmDeleteUser() {
   });
 }
 
-// Show toast notification
+// Show notification modal
 function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `
-    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
-    <span>${message}</span>
-  `;
-  document.body.appendChild(toast);
+  const modal = document.getElementById('notification-modal');
+  const titleEl = document.getElementById('notification-title');
+  const iconEl = document.getElementById('notification-icon');
+  const messageEl = document.getElementById('notification-message');
 
-  // Trigger animation
-  setTimeout(() => toast.classList.add('show'), 10);
+  // Set title and icon based on type
+  let title, iconClass;
+  switch (type) {
+    case 'success':
+      title = 'Success';
+      iconClass = 'fas fa-check-circle';
+      break;
+    case 'error':
+      title = 'Error';
+      iconClass = 'fas fa-exclamation-triangle';
+      break;
+    case 'warning':
+      title = 'Warning';
+      iconClass = 'fas fa-exclamation-circle';
+      break;
+    default:
+      title = 'Information';
+      iconClass = 'fas fa-info-circle';
+  }
 
-  // Remove after 3 seconds
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  titleEl.textContent = title;
+  iconEl.innerHTML = `<i class="${iconClass}"></i>`;
+  messageEl.textContent = message;
+
+  openModal('notification-modal');
 }
 
 // Legacy functions (now use modals)
