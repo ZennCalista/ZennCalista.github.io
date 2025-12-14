@@ -103,9 +103,9 @@
   /* GRID LAYOUT */
   .main-grid {
     display: grid;
-    grid-template-columns: 1fr 270px;
+    grid-template-columns: 1fr 260px;
     flex: 1;
-    gap: 20px;
+    gap: 10px;
   }
   
   /* MAIN CENTER CONTENT */
@@ -221,7 +221,9 @@
   .right-panel {
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 10px;
+    width: 260px;
   }
   
   /* Top Actions (Search + User Info) */

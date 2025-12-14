@@ -672,37 +672,60 @@ if ($notifications_result) {
     }
     /* Notification styles */
     .notifications {
-      padding: 10px;
-    }
-    .note {
+      background: #d2eac8;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(27,71,43,0.06);
+      padding: 18px 18px 10px 18px;
+      margin-bottom: 18px;
+      height: 90vh;
+      overflow-y: auto;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      position: relative;
-      background: #fafdff;
-      box-shadow: 0 1px 4px rgba(59,183,126,0.06);
-      border-left: 5px solid #3bb77e;
+      flex-direction: column;
     }
-    .note.high { border-left: 5px solid #e53935; background: #f8d7da; color: #721c24; }
-.note.medium { border-left: 5px solid #fbc02d; background: #fff3cd; color: #856404; }
-.note.low { border-left: 5px solid #43a047; background: #d4edda; color: #155724; }
-.notif-icon { font-size: 1.1em; }
-.notif-label { font-weight: 600; margin-right: 5px; font-size: 0.97em; }
-.timestamp { font-size: 12px; color: #555; margin-left: auto; }
-.dismiss-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #555;
-}
-.dismiss-btn:hover { color: #000; }
+
+    .notifications h3 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #1b472b;
+      margin-bottom: 12px;
+    }
+
+    .note {
+      background: #fafdff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      box-shadow: 0 1px 4px rgba(59,183,126,0.06);
+      position: relative;
+      transition: box-shadow 0.18s;
+    }
+
+    .note:last-child {
+      margin-bottom: 0;
+    }
+
+    .notif-badge {
+      display: inline-block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 10px;
+      margin-right: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: #3bb77e;
+    }
+    .notif-high .notif-badge { background: #e53935; }
+    .notif-medium .notif-badge { background: #fbc02d; color: #222; }
+    .notif-low .notif-badge { background: #43a047; }
+
+    .notif-date {
+      font-size: 0.85rem;
+      color: #3bb77e;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -813,7 +836,7 @@ if ($notifications_result) {
 
         <?php if ($show_error): ?>
           <div class="error-message" style="background: #ffeaea; border: 1px solid #e74c3c; color: #e74c3c; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
-            <h3>⚠️ <?php echo htmlspecialchars($error_message); ?></h3>
+            <h3>?? <?php echo htmlspecialchars($error_message); ?></h3>
             <p>Please contact your system administrator to complete your faculty profile setup.</p>
           </div>
         <?php else: ?>
@@ -896,13 +919,14 @@ if ($notifications_result) {
                 </div>
               </div>
             <?php endforeach; ?>
-          <?php endif; ?>
+          
           <div class="pagination">
             <button type="button" onclick="goToPage('active', <?php echo $active_page - 1; ?>, <?php echo $active_total_pages; ?>)" <?php echo $active_page <= 1 ? 'disabled' : ''; ?>>Previous</button>
             <span>Page <?php echo $active_page; ?> of <?php echo $active_total_pages; ?></span>
             <button type="button" onclick="goToPage('active', <?php echo $active_page + 1; ?>, <?php echo $active_total_pages; ?>)" <?php echo $active_page >= $active_total_pages ? 'disabled' : ''; ?>>Next</button>
           </div>
         </div>
+          <?php endif; ?>
         <div id="ended-programs" class="tab-content">
           <?php if (empty($ended_programs)): ?>
             <p>No ended programs found.</p>
@@ -926,13 +950,14 @@ if ($notifications_result) {
                 </div>
               </div>
             <?php endforeach; ?>
-          <?php endif; ?>
+          
           <div class="pagination">
             <button type="button" onclick="goToPage('ended', <?php echo $ended_page - 1; ?>, <?php echo $ended_total_pages; ?>)" <?php echo $ended_page <= 1 ? 'disabled' : ''; ?>>Previous</button>
             <span>Page <?php echo $ended_page; ?> of <?php echo $ended_total_pages; ?></span>
             <button type="button" onclick="goToPage('ended', <?php echo $ended_page + 1; ?>, <?php echo $ended_total_pages; ?>)" <?php echo $ended_page >= $ended_total_pages ? 'disabled' : ''; ?>>Next</button>
           </div>
         </div>
+          <?php endif; ?>
       </div>
 
       <?php endif; // End of error check ?>
@@ -951,7 +976,7 @@ if ($notifications_result) {
       <button id="clear-notifications-btn" style="background: #b30000; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; font-weight: bold;">Clear All</button>
     </div>
     <?php if (empty($notifications)) { ?>
-      <p class="no-notifications">No notifications at this time.</p>
+      <div class="note">No notifications.</div>
     <?php } else { ?>
       <?php foreach ($notifications as $notification) { 
         // Icon, label, and class for priority
@@ -973,8 +998,7 @@ if ($notifications_result) {
         }
       ?>
         <div class="note <?php echo $class; ?>">
-          <span class="notif-icon"><?php echo $icon; ?></span>
-          <span class="notif-label"><?php echo $label; ?></span>
+          <span class="notif-badge"><?php echo $label; ?></span>
           <?php echo htmlspecialchars($notification['message']); ?>
           <?php if ($notification['expires_at']): ?>
             <div class="notif-date">Expires: <?php echo htmlspecialchars($notification['expires_at']); ?></div>
@@ -1652,6 +1676,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
   </script>
 </body>
-</html>< ? p h p   e n d i f ;   ? > 
- 
- 
+</html>
