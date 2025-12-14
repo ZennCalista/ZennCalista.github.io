@@ -935,7 +935,7 @@ function showCreateProgramForm() {
       const result = await response.json();
       
       if (result.status === 'success') {
-        alert('Program created successfully!');
+        showNotificationModal('Program created successfully!', 'success');
         closeModal('programFormModal');
         
         // Upload photos if any were selected
@@ -957,20 +957,20 @@ function showCreateProgramForm() {
             const uploadResult = await uploadResponse.json();
             if (!uploadResult.success) {
               console.warn('Image upload failed:', uploadResult.message);
-              alert('Program created but photo upload failed: ' + uploadResult.message);
+              showNotificationModal('Program created but photo upload failed: ' + uploadResult.message, 'error');
             }
           } catch (uploadError) {
             console.error('Photo upload error:', uploadError);
-            alert('Program created but photo upload failed');
+            showNotificationModal('Program created but photo upload failed', 'error');
           }
         }
         
         renderProgramsTable();
       } else {
-        alert('Error: ' + result.message);
+        showNotificationModal('Error: ' + result.message, 'error');
       }
     } catch (error) {
-      alert('Error creating program: ' + error.message);
+      showNotificationModal('Error creating program: ' + error.message, 'error');
     }
   };
 }
@@ -1064,6 +1064,8 @@ async function showEditProgramForm(programId) {
       
       const result = await response.json();
       if (result.success !== false) {
+        showNotificationModal('Program updated successfully!', 'success');
+        
         // Handle image removals
         if (window.editImagesToRemove && window.editImagesToRemove.length > 0) {
           try {
@@ -1096,22 +1098,22 @@ async function showEditProgramForm(programId) {
             const uploadResult = await uploadResponse.json();
             if (!uploadResult.success) {
               console.warn('Image upload failed:', uploadResult.message);
-              alert('Program updated but photo upload failed: ' + uploadResult.message);
+              showNotificationModal('Program updated but photo upload failed: ' + uploadResult.message, 'error');
             }
           } catch (uploadError) {
             console.error('Photo upload error:', uploadError);
-            alert('Program updated but photo upload failed');
+            showNotificationModal('Program updated but photo upload failed', 'error');
           }
         }
         
         closeModal('programFormModal');
         renderProgramsTable();
       } else {
-        alert('Error updating program: ' + (result.error || 'Unknown error'));
+        showNotificationModal('Error updating program: ' + (result.error || 'Unknown error'), 'error');
       }
     } catch (error) {
       console.error('Error updating program:', error);
-      alert('Error updating program: ' + error.message);
+      showNotificationModal('Error updating program: ' + error.message, 'error');
     }
   };
 }
@@ -1325,15 +1327,16 @@ function showCreateSessionForm(programId) {
       
       const result = await response.json();
       if (result.success !== false) {
+        showNotificationModal('Session created successfully!', 'success');
         closeModal('programFormModal');
         showProgramDetails(programId);
         renderProgramsTable();
       } else {
-        alert('Error creating session: ' + (result.error || 'Unknown error'));
+        showNotificationModal('Error creating session: ' + (result.error || 'Unknown error'), 'error');
       }
     } catch (error) {
       console.error('Error creating session:', error);
-      alert('Error creating session: ' + error.message);
+      showNotificationModal('Error creating session: ' + error.message, 'error');
     }
   };
 }
@@ -1386,15 +1389,16 @@ async function showEditSessionForm(sessionId, programId) {
       
       const result = await response.json();
       if (result.success !== false) {
+        showNotificationModal('Session updated successfully!', 'success');
         closeModal('programFormModal');
         showProgramDetails(programId);
         renderProgramsTable();
       } else {
-        alert('Error updating session: ' + (result.error || 'Unknown error'));
+        showNotificationModal('Error updating session: ' + (result.error || 'Unknown error'), 'error');
       }
     } catch (error) {
       console.error('Error updating session:', error);
-      alert('Error updating session: ' + error.message);
+      showNotificationModal('Error updating session: ' + error.message, 'error');
     }
   };
 }
@@ -1663,7 +1667,7 @@ function initializeImageUpload() {
   function handleProgramPhotos(files) {
     files.forEach(file => {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File ' + file.name + ' is too large. Maximum size is 5MB.');
+        showNotificationModal('File ' + file.name + ' is too large. Maximum size is 5MB.', 'warning');
         return;
       }
       
@@ -1831,7 +1835,7 @@ function initializeEditImageUpload(programId) {
   function handleEditProgramPhotos(files) {
     files.forEach(file => {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File ' + file.name + ' is too large. Maximum size is 5MB.');
+        showNotificationModal('File ' + file.name + ' is too large. Maximum size is 5MB.', 'warning');
         return;
       }
       
