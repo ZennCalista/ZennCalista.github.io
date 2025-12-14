@@ -60,7 +60,8 @@ while ($row = $result->fetch_assoc()) {
         'status' => $row['status'],
         'can_evaluate' => !$evaluated && $program_ended,
         'submitted_date' => $submitted_date,
-        'evaluated' => $evaluated
+        'evaluated' => $evaluated,
+        'program_ended' => $program_ended
     ];
     if ($evaluated) $total_evals++;
 }

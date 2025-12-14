@@ -32,7 +32,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <td><span class="status-badge status-${statusClass}">${row.status}</span></td>
             <td>${row.submitted_date || ''}</td>
             <td>
-              ${row.can_evaluate
+              ${!row.program_ended
+                ? `<button class="ongoing-btn" disabled>Program Ongoing</button>`
+                : row.can_evaluate
                 ? `<button class="eval-btn" data-pid="${row.program_id}" data-pname="${row.program_name}">Evaluate</button>`
                 : `<button class="evaluated-btn" disabled>Evaluated</button>`
               }

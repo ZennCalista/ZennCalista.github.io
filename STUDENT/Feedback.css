@@ -288,6 +288,17 @@
   border: 1.5px solid #e6d48f;
   cursor: default;
 }
+.ongoing-btn {
+  padding: 8px 22px;
+  border-radius: 18px;
+  border: 1.5px solid #ffeaa7;
+  font-size: 1em;
+  font-weight: 500;
+  background: #fff3cd;
+  color: #856404;
+  cursor: default;
+  transition: background 0.2s, color 0.2s;
+}
 
 /* Modal Styles */
 .eval-modal {
