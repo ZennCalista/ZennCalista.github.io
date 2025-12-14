@@ -623,14 +623,14 @@
                 <i class="fas fa-eye"></i>
               </button>
             `}
-            ${doc.status === 'pending' ? `
+            <!-- ${doc.status === 'pending' ? `
               <button class="btn btn-sm btn-warning" onclick="showReviewModal(${doc.id}, '${displayName.replace(/'/g, "\\'")}', '${doc.document_type}', ${doc.faculty_id}, '${doc.record_type}')" title="Review">
                 <i class="fas fa-clipboard-check"></i>
               </button>
-            ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="deleteRecord(${doc.id}, '${doc.record_type}')" title="Delete">
+            ` : ''} -->
+            <!-- <button class="btn btn-sm btn-danger" onclick="deleteRecord(${doc.id}, '${doc.record_type}')" title="Delete">
               <i class="fas fa-trash"></i>
-            </button>
+            </button> -->
           </td>
         `;
         tbody.appendChild(row);
