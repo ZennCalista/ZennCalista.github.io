@@ -56,30 +56,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 
                 if ($faculty_query) {
                     $faculty_query->bind_param("i", $proposal_id);
-                    $faculty_query->execute();
-                    $faculty_query->bind_result($faculty_firstname, $faculty_lastname, $faculty_id);
-                    
-                    if ($faculty_query->fetch()) {
-                        $faculty_query->close();
+                    if ($faculty_query->execute()) {
+                        $faculty_query->bind_result($faculty_firstname, $faculty_lastname, $faculty_id);
                         
-                        $faculty_name = $faculty_firstname . ' ' . $faculty_lastname;
-                        $message = "Your proposal has been " . ($status === 'approved' ? 'endorsed' : 'rejected') . " by admin.";
-                        if (!empty($review_notes)) {
-                            $message .= " Notes: " . $review_notes;
-                        }
+                        if ($faculty_query->fetch()) {
+                            $faculty_query->close();
+                            
+                            $faculty_name = $faculty_firstname . ' ' . $faculty_lastname;
+                            $message = "Your proposal has been " . ($status === 'approved' ? 'endorsed' : 'rejected') . " by admin.";
+                            if (!empty($review_notes)) {
+                                $message .= " Notes: " . $review_notes;
+                            }
 
-                        $notif_sql = "INSERT INTO notifications (message, priority, audience, recipient_id, is_active, created_at) VALUES (?, ?, 'faculty', ?, 1, NOW())";
-                        $priority = ($status === 'approved') ? 'low' : 'medium';
-                        $notif_stmt = $conn->prepare($notif_sql);
-                        
-                        if ($notif_stmt) {
-                            $notif_stmt->bind_param('ssis', $message, $priority, $faculty_id);
-                            $notif_stmt->execute();
-                            $notif_stmt->close();
+                            $notif_sql = "INSERT INTO notifications (message, priority, audience, recipient_id, is_active, created_at) VALUES (?, ?, 'faculty', ?, 1, NOW())";
+                            $priority = ($status === 'approved') ? 'low' : 'medium';
+                            $notif_stmt = $conn->prepare($notif_sql);
+                            
+                            if ($notif_stmt) {
+                                $notif_stmt->bind_param('ssi', $message, $priority, $faculty_id);
+                                if (!$notif_stmt->execute()) {
+                                    error_log("Failed to insert notification: " . $notif_stmt->error);
+                                }
+                                $notif_stmt->close();
+                            } else {
+                                error_log("Failed to prepare notification statement: " . $conn->error);
+                            }
+                        } else {
+                            $faculty_query->close();
+                            error_log("No faculty found for proposal ID: " . $proposal_id);
                         }
                     } else {
                         $faculty_query->close();
+                        error_log("Failed to execute faculty query: " . $faculty_query->error);
                     }
+                } else {
+                    error_log("Failed to prepare faculty query: " . $conn->error);
                 }
 
                 $_SESSION['success_message'] = "Proposal " . ($status === 'approved' ? 'endorsed' : 'rejected') . " successfully!";
