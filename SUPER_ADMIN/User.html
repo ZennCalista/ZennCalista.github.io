@@ -1027,14 +1027,14 @@ function confirmVerifyUser() {
       loadNonAcad();
       loadFaculty();
       loadAdmins();
-      showToast('User verified successfully!', 'success');
+      showSuccessMessage('User verified successfully!');
     } else {
-      showToast('Failed to verify user: ' + (res.message || 'Unknown error'), 'error');
+      showErrorMessage('Failed to verify user: ' + (res.message || 'Unknown error'));
     }
   })
   .catch(error => {
     console.error('Error:', error);
-    showToast('An error occurred while verifying the user.', 'error');
+    showErrorMessage('An error occurred while verifying the user.');
   });
 }
 
@@ -1058,14 +1058,14 @@ function confirmUnverifyUser() {
       loadNonAcad();
       loadFaculty();
       loadAdmins();
-      showToast('User unverified successfully!', 'success');
+      showSuccessMessage('User unverified successfully!');
     } else {
-      showToast('Failed to unverify user: ' + (res.message || 'Unknown error'), 'error');
+      showErrorMessage('Failed to unverify user: ' + (res.message || 'Unknown error'));
     }
   })
   .catch(error => {
     console.error('Error:', error);
-    showToast('An error occurred while unverifying the user.', 'error');
+    showErrorMessage('An error occurred while unverifying the user.');
   });
 }
 
