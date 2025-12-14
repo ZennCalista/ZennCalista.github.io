@@ -343,6 +343,25 @@
       </div>
     </div>
   </div>
+
+  <!-- Notification Modal -->
+  <div id="notification-modal" class="modal" onclick="if(event.target===this)closeModal('notification-modal')">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 id="notification-title" style="margin:0; color:#1f2937; font-size:18px;">Notification</h2>
+        <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeModal('notification-modal')">&times;</span>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div id="notification-icon" style="font-size:48px; margin-bottom:16px;"></div>
+          <p id="notification-message" style="margin:0; color:#374151; line-height:1.5;"></p>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:none; background:#007bff; color:white; border-radius:6px; cursor:pointer;" onclick="closeModal('notification-modal')">OK</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -649,7 +668,7 @@ async function showProgramDetails(programId) {
                   <td>${s.location}</td>
                   <td>
                     <button onclick="showEditSessionForm(${s.id}, ${programId})">Edit</button>
-                    <button onclick="deleteSession(${s.id}, ${programId})">Delete</button>
+                    <button onclick="deleteSession(${s.id}, ${programId})" style="background-color: red; color: white;">Delete</button>
                   </td>
                 </tr>
               `).join('')
@@ -1002,7 +1021,7 @@ async function showEditProgramForm(programId) {
           <div id="edit-program-photos-preview-container" class="image-preview-container"></div>
         </fieldset>
         
-        <button type="submit">Save</button>
+        <button type="submit" style="background-color: #28a745; color: white;">Save</button>
         <button type="button" onclick="closeModal('programFormModal')">Cancel</button>
       </form>
     </div>
@@ -1134,13 +1153,13 @@ async function confirmArchiveProgram() {
     if (result.success) {
       closeModal('archive-program-modal');
       renderProgramsTable();
-      showToast('Program archived successfully!', 'success');
+      showNotificationModal('Program archived successfully!', 'success');
     } else {
-      showToast('Error archiving program: ' + (result.error || 'Unknown error'), 'error');
+      showNotificationModal('Error archiving program: ' + (result.error || 'Unknown error'), 'error');
     }
   } catch (error) {
     console.error('Error archiving program:', error);
-    showToast('Error archiving program: ' + error.message, 'error');
+    showNotificationModal('Error archiving program: ' + error.message, 'error');
   }
 }
 
@@ -1172,13 +1191,13 @@ async function confirmRestoreProgram() {
     if (result.success) {
       closeModal('restore-program-modal');
       renderProgramsTable();
-      showToast('Program restored successfully!', 'success');
+      showNotificationModal('Program restored successfully!', 'success');
     } else {
-      showToast('Error restoring program: ' + (result.error || 'Unknown error'), 'error');
+      showNotificationModal('Error restoring program: ' + (result.error || 'Unknown error'), 'error');
     }
   } catch (error) {
     console.error('Error restoring program:', error);
-    showToast('Error restoring program: ' + error.message, 'error');
+    showNotificationModal('Error restoring program: ' + error.message, 'error');
   }
 }
 
@@ -1210,17 +1229,16 @@ async function confirmDeleteSession() {
     const result = await response.json();
     if (result.success) {
       closeModal('delete-session-modal');
-      showToast('Session deleted successfully!', 'success');
-      await loadSessions(programId);
+      showNotificationModal('Session deleted successfully!', 'success');
       showProgramDetails(programId);
     } else {
       closeModal('delete-session-modal');
-      showToast('Error deleting session: ' + (result.error || 'Unknown error'), 'error');
+      showNotificationModal('Error deleting session: ' + (result.error || 'Unknown error'), 'error');
     }
   } catch (error) {
     console.error('Error deleting session:', error);
     closeModal('delete-session-modal');
-    showToast('Error deleting session: ' + error.message, 'error');
+    showNotificationModal('Error deleting session: ' + error.message, 'error');
   }
 }
 
@@ -1286,7 +1304,7 @@ function showCreateSessionForm(programId) {
         <input name="session_start" type="time" required />
         <input name="session_end" type="time" required />
         <input name="location" placeholder="Location" required />
-        <button type="submit">Add</button>
+        <button type="submit" style="background-color: #28a745; color: white;">Add</button>
         <button type="button" onclick="closeModal('programFormModal')">Cancel</button>
       </form>
     </div>
@@ -1347,7 +1365,7 @@ async function showEditSessionForm(sessionId, programId) {
         <input name="session_end" type="time" value="${session.session_end}" required />
         <label>Location</label>
         <input name="location" value="${session.location}" required />
-        <button type="submit">Save</button>
+        <button type="submit" style="padding:8px 16px; border:none; background:#28a745; color:white; border-radius:6px; cursor:pointer;">Save</button>
         <button type="button" onclick="closeModal('programFormModal')">Cancel</button>
       </form>
     </div>
@@ -1908,39 +1926,42 @@ async function loadDepartmentListForEdit(selectedDeptId) {
   }
 }
 
-// Show toast notification
-function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-    color: white;
-    padding: 12px 16px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 10000;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    max-width: 300px;
-  `;
-  toast.innerHTML = `
-    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
-    <span>${message}</span>
-  `;
-  document.body.appendChild(toast);
-
-  // Trigger animation
-  setTimeout(() => toast.style.transform = 'translateX(0)', 10);
-
-  // Remove after 3 seconds
-  setTimeout(() => {
-    toast.style.transform = 'translateX(100%)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+// Show notification modal
+function showNotificationModal(message, type = 'info') {
+  const modal = document.getElementById('notification-modal');
+  const titleEl = document.getElementById('notification-title');
+  const iconEl = document.getElementById('notification-icon');
+  const messageEl = document.getElementById('notification-message');
+  
+  // Set title and icon based on type
+  let title, iconClass, iconColor;
+  switch (type) {
+    case 'success':
+      title = 'Success';
+      iconClass = 'fa-check-circle';
+      iconColor = '#10b981';
+      break;
+    case 'error':
+      title = 'Error';
+      iconClass = 'fa-exclamation-triangle';
+      iconColor = '#ef4444';
+      break;
+    case 'warning':
+      title = 'Warning';
+      iconClass = 'fa-exclamation-circle';
+      iconColor = '#f59e0b';
+      break;
+    default:
+      title = 'Information';
+      iconClass = 'fa-info-circle';
+      iconColor = '#3b82f6';
+  }
+  
+  titleEl.textContent = title;
+  iconEl.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i>`;
+  messageEl.textContent = message;
+  
+  modal.classList.add('show');
 }
 
 // --- Initial Render ---
