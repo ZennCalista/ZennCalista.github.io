@@ -17,7 +17,7 @@ const departments = [
   {
     id: 3,
     name: 'Department of Hospitality Management',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+    description: '',
     logo: '../images/LOGOS/dp3.png',
     backgroundImage: '../images/download2.jpg'
   },
@@ -31,8 +31,8 @@ const departments = [
   {
     id: 5,
     name: 'Department of Management',
-    description: 'Department Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    logo: '../images/LOGOS/dp5.png',
+    description: 'Advancing New Goals, Achievements, and Triumphs',
+    logo: '../images/LOGOS/dp5.jpg',
     backgroundImage: '../images/download1.jpg'
   },
   {
