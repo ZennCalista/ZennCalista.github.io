@@ -199,6 +199,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
     .change-password-btn i {
       font-size: 0.95rem;
     }
+
+    /* Modal styles */
+    .modal {
+      display: none !important;
+    }
+    .modal.show {
+      display: flex !important;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      max-width: 1400px;
+      width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      margin: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+      z-index: 1002;
+    }
+    .close-modal:hover {
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -215,6 +247,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
       <div class="clear-modal-actions">
         <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
         <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Modal -->
+  <div id="notification-modal" class="modal" onclick="if(event.target===this)closeModal('notification-modal')" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 id="notification-title" style="margin:0; color:#1f2937; font-size:18px;">Notification</h2>
+        <button style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:24px; color:#6b7280; cursor:pointer;" onclick="closeModal('notification-modal')">&times;</button>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div id="notification-icon" style="font-size:48px; margin-bottom:16px;"></div>
+          <p id="notification-message" style="margin:0; color:#374151; line-height:1.5;"></p>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:none; background:#007bff; color:white; border-radius:6px; cursor:pointer;" onclick="closeModal('notification-modal')">OK</button>
       </div>
     </div>
   </div>
@@ -365,7 +416,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
         <div class="modal-content">
           <h3>Profile Updated</h3>
           <p>Your profile has been successfully updated.</p>
-          <button onclick="closeModal()">OK</button>
+          <button onclick="closeUpdateModal()">OK</button>
         </div>
       </div>
 
@@ -402,8 +453,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
   </div>
 
   <script>
+    // Show notification modal
+    function showNotificationModal(message, type = 'info') {
+      const modal = document.getElementById('notification-modal');
+      const titleEl = document.getElementById('notification-title');
+      const iconEl = document.getElementById('notification-icon');
+      const messageEl = document.getElementById('notification-message');
+      
+      // Set title and icon based on type
+      let title, iconClass, iconColor;
+      switch (type) {
+        case 'success':
+          title = 'Success';
+          iconClass = 'fa-check-circle';
+          iconColor = '#10b981';
+          break;
+        case 'error':
+          title = 'Error';
+          iconClass = 'fa-exclamation-triangle';
+          iconColor = '#ef4444';
+          break;
+        case 'warning':
+          title = 'Warning';
+          iconClass = 'fa-exclamation-circle';
+          iconColor = '#f59e0b';
+          break;
+        default:
+          title = 'Information';
+          iconClass = 'fa-info-circle';
+          iconColor = '#3b82f6';
+      }
+      
+      titleEl.textContent = title;
+      iconEl.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i>`;
+      messageEl.textContent = message;
+      
+      modal.classList.add('show');
+    }
+
+    // Modal close utility
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        if (id === 'updateModal') {
+          modal.style.display = 'none';
+        } else {
+          modal.classList.remove('show');
+        }
+      }
+    }
+
     // Close modal
-    function closeModal() {
+    function closeUpdateModal() {
       document.getElementById('updateModal').style.display = 'none';
     }
 
@@ -419,7 +520,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
     // Close modal on outside click
     document.getElementById('updateModal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) {
-        closeModal();
+        closeUpdateModal();
       }
     });
 
@@ -447,30 +548,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_personal']) && $
     }
 
     function confirmClearNotifications() {
-      fetch('clear_notifications.php')
-        .then(response => response.text())
-        .then(text => {
-          if (text === 'Notifications cleared successfully') {
-            // Hide all notification notes
-            document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
-            // Show no notifications message if not already present
-            if (!document.querySelector('.no-notifications')) {
-              const noNotif = document.createElement('p');
-              noNotif.className = 'no-notifications';
-              noNotif.textContent = 'No notifications at this time.';
-              document.querySelector('.notifications').appendChild(noNotif);
-            }
-            closeClearModal();
-            alert('Notifications cleared successfully!');
+      fetch('clear_notifications.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Hide all notification notes and show no notifications message
+          const notes = document.querySelectorAll('.note');
+          notes.forEach(note => note.style.display = 'none');
+          const noNotifs = document.querySelector('.no-notifications');
+          if (noNotifs) {
+            noNotifs.style.display = 'block';
           } else {
-            closeClearModal();
-            alert('Failed to clear notifications: ' + text);
+            // Create no notifications message if it doesn't exist
+            const notificationsDiv = document.querySelector('.notifications');
+            const newNoNotifs = document.createElement('p');
+            newNoNotifs.className = 'no-notifications';
+            newNoNotifs.textContent = 'No notifications at this time.';
+            notificationsDiv.appendChild(newNoNotifs);
           }
-        })
-        .catch(error => {
           closeClearModal();
-          alert('Error clearing notifications: ' + error.message);
-        });
+          showNotificationModal('Notifications cleared successfully!', 'success');
+        } else {
+          closeClearModal();
+          showNotificationModal('Failed to clear notifications: ' + data.message, 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        closeClearModal();
+        showNotificationModal('An error occurred while clearing notifications.', 'error');
+      });
     }
 
     // Clear notifications handler

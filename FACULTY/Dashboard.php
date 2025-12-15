@@ -169,6 +169,36 @@ foreach ($programs as $program) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     /* Clear Notifications Modal */
+    .modal {
+      display: none !important;
+    }
+    .modal.show {
+      display: flex !important;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      max-width: 1400px;
+      width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      margin: auto;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+      z-index: 1002;
+    }
+    .close-modal:hover {
+      color: #333;
+    }
     .clear-modal-overlay {
       display: none;
       position: fixed;
@@ -456,7 +486,88 @@ foreach ($programs as $program) {
       </div>
     </div>
   </div>
+  <!-- Clear Notifications Modal -->
+  <div id="clearModalOverlay" class="clear-modal-overlay" onclick="if(event.target===this)closeClearModal()">
+    <div class="clear-modal">
+      <div class="clear-modal-header">
+        <i class="fas fa-trash-alt"></i>
+        <h3>Clear All Notifications</h3>
+      </div>
+      <div class="clear-modal-body">
+        Are you sure you want to clear all notifications? This action cannot be undone.
+      </div>
+      <div class="clear-modal-actions">
+        <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
+        <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Modal -->
+  <div id="notification-modal" class="modal" onclick="if(event.target===this)closeModal('notification-modal')" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="modal-content" style="background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); max-width:400px; width:90%; max-height:90vh; overflow-y:auto;">
+      <div style="padding:20px; border-bottom:1px solid #e2e8f0;">
+        <h2 id="notification-title" style="margin:0; color:#1f2937; font-size:18px;">Notification</h2>
+        <span style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:24px; color:#6b7280;" onclick="closeModal('notification-modal')">&times;</span>
+      </div>
+      <div style="padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div id="notification-icon" style="font-size:48px; margin-bottom:16px;"></div>
+          <p id="notification-message" style="margin:0; color:#374151; line-height:1.5;"></p>
+        </div>
+      </div>
+      <div style="padding:20px; border-top:1px solid #e2e8f0; display:flex; gap:12px; justify-content:flex-end;">
+        <button style="padding:8px 16px; border:none; background:#007bff; color:white; border-radius:6px; cursor:pointer;" onclick="closeModal('notification-modal')">OK</button>
+      </div>
+    </div>
+  </div>
   <script>
+  // Show notification modal
+  function showNotificationModal(message, type = 'info') {
+    const modal = document.getElementById('notification-modal');
+    const titleEl = document.getElementById('notification-title');
+    const iconEl = document.getElementById('notification-icon');
+    const messageEl = document.getElementById('notification-message');
+    
+    // Set title and icon based on type
+    let title, iconClass, iconColor;
+    switch (type) {
+      case 'success':
+        title = 'Success';
+        iconClass = 'fa-check-circle';
+        iconColor = '#10b981';
+        break;
+      case 'error':
+        title = 'Error';
+        iconClass = 'fa-exclamation-triangle';
+        iconColor = '#ef4444';
+        break;
+      case 'warning':
+        title = 'Warning';
+        iconClass = 'fa-exclamation-circle';
+        iconColor = '#f59e0b';
+        break;
+      default:
+        title = 'Information';
+        iconClass = 'fa-info-circle';
+        iconColor = '#3b82f6';
+    }
+    
+    titleEl.textContent = title;
+    iconEl.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i>`;
+    messageEl.textContent = message;
+    
+    modal.classList.add('show');
+  }
+
+  // Modal close utility
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.classList.remove('show');
+    }
+  }
+
   function showStatusTab(idx) {
     document.querySelectorAll('.status-tabs .tab-btn').forEach((btn, i) => {
       btn.classList.toggle('active', i === idx);
@@ -522,16 +633,16 @@ foreach ($programs as $program) {
           notificationsDiv.appendChild(newNoNotifs);
         }
         closeClearModal();
-        alert('Notifications cleared successfully!');
+        showNotificationModal('Notifications cleared successfully!', 'success');
       } else {
         closeClearModal();
-        alert('Failed to clear notifications: ' + data.message);
+        showNotificationModal('Failed to clear notifications: ' + data.message, 'error');
       }
     })
     .catch(error => {
       console.error('Error:', error);
       closeClearModal();
-      alert('An error occurred while clearing notifications.');
+      showNotificationModal('An error occurred while clearing notifications.', 'error');
     });
   }
 

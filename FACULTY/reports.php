@@ -383,6 +383,80 @@ $stmt->close();
         transform: translate(-50%, -50%);
       }
     }
+
+    /* General Notification Modal */
+    .general-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .general-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .general-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .general-modal-header i {
+      font-size: 2rem;
+      color: #2196f3;
+    }
+
+    .general-modal-header h3 {
+      font-size: 1.4rem;
+      color: #1b472b;
+      margin: 0;
+    }
+
+    .general-modal-body {
+      margin-bottom: 24px;
+      font-size: 1.05rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .general-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .general-modal-btn {
+      padding: 10px 24px;
+      background: #2196f3;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .general-modal-btn:hover {
+      background: #1976d2;
+    }
   </style>
 </head>
 <body>
@@ -399,6 +473,22 @@ $stmt->close();
       <div class="clear-modal-actions">
         <button class="clear-modal-btn clear-modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
         <button class="clear-modal-btn clear-modal-btn-confirm" onclick="confirmClearNotifications()">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- General Notification Modal -->
+  <div class="general-modal-overlay" id="generalModalOverlay">
+    <div class="general-modal">
+      <div class="general-modal-header">
+        <i class="fas fa-info-circle" id="general-modal-icon"></i>
+        <h3 id="general-modal-title">Information</h3>
+      </div>
+      <div class="general-modal-body" id="general-modal-message">
+        Message content will appear here.
+      </div>
+      <div class="general-modal-actions">
+        <button class="general-modal-btn" onclick="closeGeneralModal()">OK</button>
       </div>
     </div>
   </div>
@@ -604,16 +694,16 @@ $stmt->close();
             notificationsDiv.appendChild(newNoNotifs);
           }
           closeClearModal();
-          alert('Notifications cleared successfully!');
+          showGeneralModal('Notifications cleared successfully!', 'success');
         } else {
           closeClearModal();
-          alert('Failed to clear notifications: ' + data.message);
+          showGeneralModal('Failed to clear notifications: ' + data.message, 'error');
         }
       })
       .catch(error => {
         console.error('Error:', error);
         closeClearModal();
-        alert('An error occurred while clearing notifications.');
+        showGeneralModal('An error occurred while clearing notifications.', 'error');
       });
     }
 
@@ -641,6 +731,45 @@ $stmt->close();
         }
       });
     });
+
+    // General Modal functions
+    function showGeneralModal(message, type = 'info') {
+      const modal = document.getElementById('generalModalOverlay');
+      const icon = document.getElementById('general-modal-icon');
+      const title = document.getElementById('general-modal-title');
+      const messageEl = document.getElementById('general-modal-message');
+
+      messageEl.textContent = message;
+
+      // Update icon and title based on type
+      switch (type) {
+        case 'success':
+          icon.className = 'fas fa-check-circle';
+          icon.style.color = '#43a047';
+          title.textContent = 'Success';
+          break;
+        case 'warning':
+          icon.className = 'fas fa-exclamation-triangle';
+          icon.style.color = '#f39c12';
+          title.textContent = 'Warning';
+          break;
+        case 'error':
+          icon.className = 'fas fa-times-circle';
+          icon.style.color = '#e74c3c';
+          title.textContent = 'Error';
+          break;
+        default:
+          icon.className = 'fas fa-info-circle';
+          icon.style.color = '#2196f3';
+          title.textContent = 'Information';
+      }
+
+      modal.style.display = 'block';
+    }
+
+    function closeGeneralModal() {
+      document.getElementById('generalModalOverlay').style.display = 'none';
+    }
   </script>
 </body>
 </html>

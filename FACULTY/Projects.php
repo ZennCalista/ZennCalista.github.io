@@ -1395,10 +1395,15 @@ $unique_sdgs = count(array_unique($all_sdgs));
         }
 
         function confirmClearNotifications() {
-            fetch('clear_notifications.php')
-                .then(response => response.text())
-                .then(text => {
-                    if (text === 'Notifications cleared successfully') {
+            fetch('clear_notifications.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
                         // Hide all notification notes
                         document.querySelectorAll('.note').forEach(note => note.style.display = 'none');
                         // Show no notifications message if not already present
@@ -1412,7 +1417,7 @@ $unique_sdgs = count(array_unique($all_sdgs));
                         showGeneralModal('Notifications cleared successfully!', 'success');
                     } else {
                         closeClearModal();
-                        showGeneralModal('Failed to clear notifications: ' + text, 'error');
+                        showGeneralModal('Failed to clear notifications: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
