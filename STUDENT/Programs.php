@@ -43,7 +43,7 @@ if ($user_id) {
             <a href="Attendance.php" class="nav-item"><i class="fas fa-calendar-check"></i> Attendance</a>
             <a href="Feedback.php" class="nav-item"><i class="fas fa-comment-dots"></i> Feedback</a>
             <a href="Reports.php" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
-                        <a href="certificates.php" class="nav-item"><i class="fas fa-certificate"></i> Certificates</a>
+            <a href="certificates.php" class="nav-item"><i class="fas fa-certificate"></i> Certificates</a>
 
             <!-- <a href="Profile.php" class="nav-item"><i class="fas fa-user"></i> Profile</a> -->
         </nav>
@@ -514,6 +514,18 @@ if ($user_id) {
     });
   });
 
+  // Close view program modal when clicking outside
+  document.addEventListener('DOMContentLoaded', () => {
+    const viewProgramModal = document.getElementById('view-program-modal');
+    if (viewProgramModal) {
+      viewProgramModal.addEventListener('click', (e) => {
+        if (e.target === viewProgramModal) {
+          closeViewProgramModal();
+        }
+      });
+    }
+  });
+
   // Enhanced program card creation with comprehensive functionality
   function createEnhancedMyProgramCard(program, type) {
     const card = document.createElement('div');
@@ -666,8 +678,81 @@ if ($user_id) {
 
   // Supporting functions for enhanced My Programs functionality
   function viewProgramDetails(programId) {
-    // Redirect to a detailed view or show modal with full program information
-    window.location.href = `program-details.php?id=${programId}`;
+    // Show modal with program details instead of redirecting
+    fetch(`get_program_details.php?id=${programId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const program = data.program;
+          const detailsDiv = document.getElementById('view-program-details');
+          
+          // Format dates
+          const startDate = program.start_date ? new Date(program.start_date).toLocaleDateString() : 'TBA';
+          const endDate = program.end_date ? new Date(program.end_date).toLocaleDateString() : 'TBA';
+          
+          detailsDiv.innerHTML = `
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="color: #247a37; margin-bottom: 0.5rem;">${program.program_name}</h4>
+              <p style="color: #666; margin-bottom: 1rem;">${program.description || 'No description available.'}</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+              <div>
+                <strong>Department:</strong><br>
+                <span style="color: #555;">${program.department}</span>
+              </div>
+              <div>
+                <strong>Faculty:</strong><br>
+                <span style="color: #555;">${program.faculty_name || 'TBA'}</span>
+              </div>
+              <div>
+                <strong>Start Date:</strong><br>
+                <span style="color: #555;">${startDate}</span>
+              </div>
+              <div>
+                <strong>End Date:</strong><br>
+                <span style="color: #555;">${endDate}</span>
+              </div>
+              <div>
+                <strong>Location:</strong><br>
+                <span style="color: #555;">${program.location || 'TBA'}</span>
+              </div>
+              <div>
+                <strong>Max Students:</strong><br>
+                <span style="color: #555;">${program.max_students}</span>
+              </div>
+            </div>
+            
+            ${program.sessions && program.sessions.length > 0 ? `
+            <div>
+              <strong>Sessions:</strong>
+              <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                ${program.sessions.map(session => `
+                  <li style="margin-bottom: 0.5rem; color: #555;">
+                    <strong>${session.session_title}</strong><br>
+                    ${new Date(session.session_date).toLocaleDateString()} • 
+                    ${session.session_start} - ${session.session_end} • 
+                    ${session.location || 'TBA'}
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+            ` : '<p style="color: #666;"><em>No sessions scheduled yet.</em></p>'}
+          `;
+          
+          document.getElementById('view-program-modal').style.display = 'flex';
+        } else {
+          alert('Error loading program details: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error loading program details. Please try again.');
+      });
+  }
+
+  function closeViewProgramModal() {
+    document.getElementById('view-program-modal').style.display = 'none';
   }
 
   function markAttendance(programId) {
@@ -829,6 +914,20 @@ if ($user_id) {
       <div id="application-details"></div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="document.getElementById('application-status-modal').style.display='none'">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Program Details Modal -->
+  <div id="view-program-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeViewProgramModal()">&times;</span>
+      <h3>Program Details</h3>
+      <div id="view-program-details">
+        <!-- Program details will be populated here -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeViewProgramModal()">Close</button>
       </div>
     </div>
   </div>
