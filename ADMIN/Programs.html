@@ -525,7 +525,7 @@ function renderProgramsPage() {
       <td>${prog.status}</td>
       <td>
         <button onclick="showProgramDetails(${prog.id})">View</button>
-        <button onclick="showEditProgramForm(${prog.id})">Edit</button>
+        <button onclick="showEditProgramForm(${prog.id})" style="background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Edit</button>
         <button onclick="archiveProgram(${prog.id})">Archive</button>
       </td>
     `;
