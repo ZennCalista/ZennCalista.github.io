@@ -258,7 +258,20 @@
     <input type="text" name="lastname" id="edit-student-lastname" placeholder="Last Name" required />
     <input type="text" name="mi" id="edit-student-mi" placeholder="Middle Initial" />
     <input type="email" name="email" id="edit-student-email" placeholder="Email" disabled />
-    <input type="text" name="department" id="edit-student-department" placeholder="Course/Department" required />
+    <select name="department" id="edit-student-department" required>
+      <option value="">Select Course</option>
+      <option value="Bachelor Of Arts In Journalism">Bachelor Of Arts In Journalism</option>
+      <option value="Bachelor Of Early Childhood Education">Bachelor Of Early Childhood Education</option>
+      <option value="Bachelor Of Elementary Education">Bachelor Of Elementary Education</option>
+      <option value="Bachelor Of Science In Business Administration">Bachelor Of Science In Business Administration</option>
+      <option value="Bachelor Of Science In Computer Science">Bachelor Of Science In Computer Science</option>
+      <option value="Bachelor Of Science In Entrepreneurship">Bachelor Of Science In Entrepreneurship</option>
+      <option value="Bachelor Of Science In Hospitality Management">Bachelor Of Science In Hospitality Management</option>
+      <option value="Bachelor Of Science In Information Technology">Bachelor Of Science In Information Technology</option>
+      <option value="Bachelor Of Science In Office Administration">Bachelor Of Science In Office Administration</option>
+      <option value="Bachelor Of Science In Psychology">Bachelor Of Science In Psychology</option>
+      <option value="Bachelor Of Secondary Education">Bachelor Of Secondary Education</option>
+    </select>
     <input type="tel" name="phone" id="edit-student-phone" placeholder="Phone Number" />
     <select name="comm_preference" id="edit-student-comm_preference">
       <option value="email">Email</option>
@@ -970,6 +983,7 @@ function submitEditStudent(e) {
   e.preventDefault();
   const form = document.getElementById('edit-student-form');
   const data = new FormData(form);
+  data.append('email', document.getElementById('edit-student-email').value); // Include disabled email
   data.append('action', 'update_user');
   data.append('role', 'student'); // Ensure role is set
   fetch('api_users.php', { method: 'POST', body: data })
@@ -996,6 +1010,7 @@ function submitEditFaculty(e) {
   e.preventDefault();
   const form = document.getElementById('edit-faculty-form');
   const data = new FormData(form);
+  data.append('email', document.getElementById('edit-faculty-email').value); // Include disabled email
   data.append('action', 'update_user');
   data.append('role', 'faculty'); // Ensure role is set
   fetch('api_users.php', { method: 'POST', body: data })
