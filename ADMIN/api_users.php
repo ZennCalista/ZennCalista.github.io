@@ -211,6 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_user')
     $id = intval($_POST['id']);
     $firstname = $_POST['firstname'];
     $lastname = $_POST['lastname'];
+    $mi = $_POST['mi'] ?? '';
     $email = $_POST['email'];
     $department = $_POST['department'];
     $phone = $_POST['phone'] ?? '';
@@ -218,12 +219,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_user')
     $role = $_POST['role'];
     
     // Update users table
-    $stmt = $conn->prepare("UPDATE users SET firstname=?, lastname=?, email=?, department=?, phone=?, comm_preference=?, role=? WHERE id=?");
+    $stmt = $conn->prepare("UPDATE users SET firstname=?, lastname=?, middle_initial=?, email=?, department=?, phone=?, comm_preference=?, role=? WHERE id=?");
     if (!$stmt) {
         echo json_encode(['success' => false, 'error' => 'SQL Error: ' . $conn->error]);
         exit;
     }
-    $stmt->bind_param("sssssssi", $firstname, $lastname, $email, $department, $phone, $comm_preference, $role, $id);
+    $stmt->bind_param("ssssssssi", $firstname, $lastname, $mi, $email, $department, $phone, $comm_preference, $role, $id);
     
     if ($stmt->execute()) {
         // Update role-specific table

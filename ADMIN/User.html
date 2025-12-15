@@ -245,28 +245,60 @@
   </form>
 </div>
 
-<!-- Edit User Modal -->
-<div id="edit-user-modal" class="modal hidden">
+<!-- Edit Student Modal -->
+<div id="edit-student-modal" class="modal hidden">
   <div class="modal-header">
-    <h2>Edit User</h2>
-    <span class="close-modal" onclick="closeModal('edit-user-modal')">&times;</span>
+    <h2>Edit Non Academic User</h2>
+    <span class="close-modal" onclick="closeModal('edit-student-modal')">&times;</span>
   </div>
-  <form class="modal-form" id="edit-user-form" onsubmit="return submitEditUser(event)">
-    <input type="hidden" name="id" id="edit-id" />
-    <input type="text" name="firstname" id="edit-firstname" placeholder="First Name" required />
-    <input type="text" name="lastname" id="edit-lastname" placeholder="Last Name" required />
-    <input type="text" name="mi" id="edit-mi" placeholder="Middle Initial" />
-    <input type="email" name="email" id="edit-email" placeholder="Email" required />
-    <input type="text" name="department" id="edit-department" placeholder="Department/Course" required />
-    <input type="tel" name="phone" id="edit-phone" placeholder="Phone Number" />
-    <select name="comm_preference" id="edit-comm_preference">
+  <form class="modal-form" id="edit-student-form" onsubmit="return submitEditStudent(event)">
+    <input type="hidden" name="id" id="edit-student-id" />
+    <input type="text" name="student_id" id="edit-student-student_id" placeholder="Student ID" disabled />
+    <input type="text" name="firstname" id="edit-student-firstname" placeholder="First Name" required />
+    <input type="text" name="lastname" id="edit-student-lastname" placeholder="Last Name" required />
+    <input type="text" name="mi" id="edit-student-mi" placeholder="Middle Initial" />
+    <input type="email" name="email" id="edit-student-email" placeholder="Email" disabled />
+    <input type="text" name="department" id="edit-student-department" placeholder="Course/Department" required />
+    <input type="tel" name="phone" id="edit-student-phone" placeholder="Phone Number" />
+    <select name="comm_preference" id="edit-student-comm_preference">
       <option value="email">Email</option>
       <option value="sms">SMS</option>
     </select>
-    <select name="role" id="edit-role" required>
-      <option value="student">Student</option>
-      <option value="non_acad">Non-Acad</option>
-      <option value="faculty">Faculty</option>
+    <button type="submit" class="btn-edit full">Save Changes</button>
+  </form>
+</div>
+
+<!-- Edit Faculty Modal -->
+<div id="edit-faculty-modal" class="modal hidden">
+  <div class="modal-header">
+    <h2>Edit Faculty User</h2>
+    <span class="close-modal" onclick="closeModal('edit-faculty-modal')">&times;</span>
+  </div>
+  <form class="modal-form" id="edit-faculty-form" onsubmit="return submitEditFaculty(event)">
+    <input type="hidden" name="id" id="edit-faculty-id" />
+    <input type="text" name="firstname" id="edit-faculty-firstname" placeholder="First Name" required />
+    <input type="text" name="lastname" id="edit-faculty-lastname" placeholder="Last Name" required />
+    <input type="text" name="mi" id="edit-faculty-mi" placeholder="Middle Initial" />
+    <input type="email" name="email" id="edit-faculty-email" placeholder="Email" disabled />
+    <select name="department" id="edit-faculty-department" required>
+      <option value="" disabled selected>Select Department</option>
+      <option>Department of Hospitality Management</option>
+      <option>Department of Language and Mass Communication</option>
+      <option>Department of Physical Education</option>
+      <option>Department of Social Sciences and Humanities</option>
+      <option>Teacher Education Department</option>
+      <option>Department of Administration - ENTREP</option>
+      <option>Department of Administration - BSOA</option>
+      <option>Department of Administration - BM</option>
+      <option>Department of Computer Studies</option>
+      <option>RDE Department</option>
+    </select>
+    <input type="tel" name="phone" id="edit-faculty-phone" placeholder="Phone Number" />
+    <input type="text" name="position" id="edit-faculty-position" placeholder="Position" />
+    <p><strong>Communication Preference:</strong></p>
+    <select name="comm_preference" id="edit-faculty-comm_preference">
+      <option value="email">Email</option>
+      <option value="sms">SMS</option>
     </select>
     <button type="submit" class="btn-edit full">Save Changes</button>
   </form>
@@ -465,7 +497,7 @@
   
 
   document.getElementById('modal-overlay').addEventListener('click', function () {
-  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-user-modal', 'view-profile-modal', 'verify-user-modal', 'unverify-user-modal', 'delete-user-modal', 'notification-modal'].forEach(id => closeModal(id));
+  ['add-student-modal', 'add-faculty-modal', 'add-user-modal', 'edit-student-modal', 'edit-faculty-modal', 'view-profile-modal', 'verify-user-modal', 'unverify-user-modal', 'delete-user-modal', 'notification-modal'].forEach(id => closeModal(id));
 });
 
 
@@ -893,17 +925,31 @@ function editUser(id) {
     .then(data => {
       if (data.success && data.data.length > 0) {
         const user = data.data[0];
-        document.getElementById('edit-id').value = user.id;
-        document.getElementById('edit-firstname').value = user.firstname;
-        document.getElementById('edit-lastname').value = user.lastname;
-        document.getElementById('edit-mi').value = user.mi || '';
-        document.getElementById('edit-email').value = user.email;
-        document.getElementById('edit-department').value = user.department;
-        document.getElementById('edit-phone').value = user.phone || '';
-        document.getElementById('edit-comm_preference').value = user.comm_preference;
-        document.getElementById('edit-role').value = user.role;
-
-        openModal('edit-user-modal');
+        if (user.role === 'faculty') {
+          // Populate faculty modal
+          document.getElementById('edit-faculty-id').value = user.id;
+          document.getElementById('edit-faculty-firstname').value = user.firstname;
+          document.getElementById('edit-faculty-lastname').value = user.lastname;
+          document.getElementById('edit-faculty-mi').value = user.middle_initial || '';
+          document.getElementById('edit-faculty-email').value = user.email;
+          document.getElementById('edit-faculty-department').value = user.department || '';
+          document.getElementById('edit-faculty-phone').value = user.phone || '';
+          document.getElementById('edit-faculty-position').value = user.position || '';
+          document.getElementById('edit-faculty-comm_preference').value = user.comm_preference || 'email';
+          openModal('edit-faculty-modal');
+        } else {
+          // Populate student modal (for student or non_acad)
+          document.getElementById('edit-student-id').value = user.id;
+          document.getElementById('edit-student-student_id').value = user.student_id || '';
+          document.getElementById('edit-student-firstname').value = user.firstname;
+          document.getElementById('edit-student-lastname').value = user.lastname;
+          document.getElementById('edit-student-mi').value = user.middle_initial || '';
+          document.getElementById('edit-student-email').value = user.email;
+          document.getElementById('edit-student-department').value = user.course || user.department || '';
+          document.getElementById('edit-student-phone').value = user.contact_no || user.phone || '';
+          document.getElementById('edit-student-comm_preference').value = user.comm_preference || 'email';
+          openModal('edit-student-modal');
+        }
       }
     });
 }
@@ -920,22 +966,54 @@ function deleteUser(id) {
     });
 }
 
-function submitEditUser(e) {
+function submitEditStudent(e) {
   e.preventDefault();
-  const form = document.getElementById('edit-user-form');
+  const form = document.getElementById('edit-student-form');
   const data = new FormData(form);
   data.append('action', 'update_user');
+  data.append('role', 'student'); // Ensure role is set
   fetch('api_users.php', { method: 'POST', body: data })
     .then(res => res.json())
     .then(res => {
       if (res.success) {
-        closeModal('edit-user-modal');
+        closeModal('edit-student-modal');
         loadStudents();
         loadNonAcad();
         loadFaculty();
+        showToast('Non-Academic updated successfully!', 'success');
       } else {
-        alert('Failed to update user.');
+        showToast('Failed to update student: ' + (res.message || 'Unknown error'), 'error');
       }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('An error occurred while updating the student.', 'error');
+    });
+  return false;
+}
+
+function submitEditFaculty(e) {
+  e.preventDefault();
+  const form = document.getElementById('edit-faculty-form');
+  const data = new FormData(form);
+  data.append('action', 'update_user');
+  data.append('role', 'faculty'); // Ensure role is set
+  fetch('api_users.php', { method: 'POST', body: data })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        closeModal('edit-faculty-modal');
+        loadStudents();
+        loadNonAcad();
+        loadFaculty();
+        showToast('Faculty updated successfully!', 'success');
+      } else {
+        showToast('Failed to update faculty: ' + (res.message || 'Unknown error'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('An error occurred while updating the faculty.', 'error');
     });
   return false;
 }
